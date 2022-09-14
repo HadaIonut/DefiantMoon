@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /auth/sign-in:
+    post:
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                password:
+                  type: string
+              required:
+                - userId
+                - password
+      responses:
+        200:
+          description: "success"
+  /users:
+    get:
+      operationId: getUsers
+      responses:
+        200:
+          description: "success"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AvailableUser'
+
+components:
+  schemas:
+    AvailableUser:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
