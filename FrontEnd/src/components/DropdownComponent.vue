@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import {Ref, ref} from 'vue'
+import {onMounted, Ref, ref} from 'vue'
 
-const props = defineProps<{
+export interface DropdownProps {
     options: string[],
     initial: string,
-}>()
+}
 
-const emit = defineEmits<{(e: 'change', selected: string): void }>()
+const props = withDefaults(defineProps<DropdownProps>(), {
+    options: () => [],
+    initial: () => 'Enter your selection',
+})
+
+const emit = defineEmits<{(e: 'change', selected: string): string }>()
 
 const selectedOption: Ref<string> = ref(props.initial)
 const isVisible: Ref<boolean> = ref(false)
@@ -30,7 +35,12 @@ const selectOption = (option: string) => {
 <template>
     <div class="dropdown" v-click-away="closeDropdown">
         <div class="dropdown-header" @click="toggleDropdown">
-            {{ selectedOption }}
+            <span>
+                {{ selectedOption }}
+            </span>
+            <span :class="isVisible ? 'dropdown-icon-rotate dropdown-icon': 'dropdown-icon'">
+                <font-awesome-icon icon="fa-solid fa-caret-up" />
+            </span>
         </div>
         <div class="dropdown-options" v-if="isVisible">
             <div class="option" v-for="option in props.options" :key="option" @click="() => selectOption(option)">
@@ -52,6 +62,10 @@ const selectOption = (option: string) => {
     background: transparent;
     border-radius: 12px;
     border: 1px solid $secondary;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
 }
 
 .dropdown-options {
@@ -61,12 +75,14 @@ const selectOption = (option: string) => {
     border-radius: 12px;
     border: 1px solid $secondary;
     margin-top: 2px;
+    z-index: 10;
 }
 
 .option {
     border-radius: 12px;
     padding: 16px;
     transition: background 0.2s ease-in;
+    cursor: pointer;
 
     &:hover {
         background: $secondary;
@@ -75,5 +91,13 @@ const selectOption = (option: string) => {
 
 .is-hidden {
     display: none;
+}
+
+.dropdown-icon {
+    transition: transform 0.2s ease-in-out;
+}
+
+.dropdown-icon-rotate {
+    transform: rotate(180deg);
 }
 </style>
