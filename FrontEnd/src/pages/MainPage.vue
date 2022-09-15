@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import DropdownComponent from '../components/DropdownComponent.vue'
 import InputComponent from '../components/InputComponent.vue'
-import {apiClient} from "../api/index";
 import {ref} from "vue";
+import {apiClient} from "api/index";
 
 let players = ref(['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi'])
 
