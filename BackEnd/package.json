@@ -1,0 +1,9 @@
+{
+  "name": "BackEnd",
+  "version": "1.0.0",
+  "scripts": {
+    "run": "deno run --allow-net main.ts"
+  },
+  "dependencies": {
+  }
+}

@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import DropdownComponent from '../components/DropdownComponent.vue'
 import InputComponent from '../components/InputComponent.vue'
+import {ref} from "vue";
+import {apiClient} from "api/index";
 
-const players = ['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi']
+let players = ref(['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi'])
+
+apiClient.getAvailableUsers()
+    .then(({data}) => {
+        players.value = (data.users || []).map((user) => user.username)
+        console.log(players)
+    })
 
 const onDropdownChange = (newValue: string) => console.log(newValue)
 </script>
