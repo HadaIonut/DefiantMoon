@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import DropdownComponent from '../components/DropdownComponent.vue'
+
 const players = ['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi']
+
+const onDropdownChange = (newValue: string) => console.log(newValue)
 </script>
 
 <template>
     <div class="page-container">
         <div class="login-form-container">
-            <div class="input-container">
-                <span>User Select</span>
-                <select class="dropdown" name="player-selector">
-                    <option v-for="player in players" :value="player" :key="player">{{ player }}</option>
-                </select>
-            </div>
+            <DropdownComponent :options="players" :initial="players[0]" @change="onDropdownChange"/>
+
             <div class="input-container">
                 <span>User Password</span>
                 <input class="input" type="password" placeholder="password">
@@ -41,19 +41,6 @@ const players = ['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi']
     border: 1px solid #007F5F;
     padding: 16px;
     border-radius: 16px;
-}
-
-.dropdown {
-    width: 70%;
-    padding: 16px;
-    background: transparent;
-    border-radius: 12px;
-    border: 1px solid #007F5F;
-    color: #DAD1C3;
-
-    & > option {
-        background: #3A5268;
-    }
 }
 
 .input {
