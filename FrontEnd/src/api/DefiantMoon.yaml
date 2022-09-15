@@ -47,8 +47,8 @@ components:
       properties:
         id:
           type: string
-        name:
+        username:
           type: string
       required:
         - id
-        - name
+        - username

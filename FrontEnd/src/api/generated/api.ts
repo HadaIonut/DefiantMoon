@@ -38,7 +38,7 @@ export interface AvailableUser {
      * @type {string}
      * @memberof AvailableUser
      */
-    'name': string;
+    'username': string;
 }
 /**
  * 
