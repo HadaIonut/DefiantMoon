@@ -27,7 +27,7 @@ paths:
           description: "success"
   /users:
     get:
-      operationId: getUsers
+      operationId: getAvailableUsers
       responses:
         200:
           description: "success"

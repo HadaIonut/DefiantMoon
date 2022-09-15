@@ -5,16 +5,25 @@ import { UserSchema } from "../schemas/user.ts";
 
 const usersCollection = db.collection<UserSchema>("users");
 
+export const getUsersForWorld = (worldId: string) => {
+	return usersCollection.find({});
+}
+
 export const getUserByUsername = (username: string) => {
 	return usersCollection.findOne({
 		username: username,
 	});
 };
 
-export const createUser = (username: string, password: string) => {
-	return usersCollection.insertOne({
+export const createUser = ({ username, password }: { username: string, password: string }) => {
+	const user = {
 		username: username,
 		password: hashPassword(password),
+	};
+	return new Promise<UserSchema>((resolve, reject) => {
+		usersCollection.insertOne(user)
+			.then((userId) => resolve({ ...user, _id: userId }))
+			.catch(reject)
 	});
 };
 

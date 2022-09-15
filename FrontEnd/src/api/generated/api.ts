@@ -43,13 +43,13 @@ export interface AvailableUser {
 /**
  * 
  * @export
- * @interface GetUsers200Response
+ * @interface GetAvailableUsers200Response
  */
-export interface GetUsers200Response {
+export interface GetAvailableUsers200Response {
     /**
      * 
      * @type {Array<AvailableUser>}
-     * @memberof GetUsers200Response
+     * @memberof GetAvailableUsers200Response
      */
     'users'?: Array<AvailableUser>;
 }
@@ -84,7 +84,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUsers: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAvailableUsers: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/users`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -156,8 +156,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUsers(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetUsers200Response>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUsers(options);
+        async getAvailableUsers(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<GetAvailableUsers200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAvailableUsers(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -185,8 +185,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUsers(options?: any): AxiosPromise<GetUsers200Response> {
-            return localVarFp.getUsers(options).then((request) => request(axios, basePath));
+        getAvailableUsers(options?: any): AxiosPromise<GetAvailableUsers200Response> {
+            return localVarFp.getAvailableUsers(options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -213,8 +213,8 @@ export class DefaultApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getUsers(options?: AxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getUsers(options).then((request) => request(this.axios, this.basePath));
+    public getAvailableUsers(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getAvailableUsers(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
