@@ -22,3 +22,4 @@ FrontEnd/.vscode/extensions.json
 *.njsproj
 *.sln
 *.sw?
+/FrontEnd/yarn.lock
