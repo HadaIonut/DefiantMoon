@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import DropdownComponent from '../components/DropdownComponent.vue'
 import InputComponent from '../components/InputComponent.vue'
-import {ref} from "vue";
-import {apiClient} from "api/index";
+import {ref} from 'vue'
+import {apiClient} from '../api/index'
+import {AvailableUser} from '../api/generated'
 
-let players = ref(['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi'])
+const players = ref(['Ionut', 'Claudiu', 'Marian', 'Bogdan', 'Ana', 'Cristi'])
 
 apiClient.getAvailableUsers()
     .then(({data}) => {
-        players.value = (data.users || []).map((user) => user.username)
+        players.value = (data.users || []).map((user: AvailableUser) => user.username)
         console.log(players)
     })
 
