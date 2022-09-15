@@ -66,10 +66,11 @@ const onDropdownChange = (newValue: string) => console.log(newValue)
 .button {
     padding: 16px;
     background: $primary;
-    color: $background;
+    color: $text;
     border-radius: 12px;
     cursor: pointer;
     border: 1px solid $primary;
+    font-weight: bold;
     transition: background-color 90ms ease-in-out, color 0.2s ease-in;
 
     &:hover {
@@ -77,7 +78,7 @@ const onDropdownChange = (newValue: string) => console.log(newValue)
     }
 
     &:active {
-        background-color: $secondary;
+        background-color: $tertiary;
         color: $text;
     }
 }

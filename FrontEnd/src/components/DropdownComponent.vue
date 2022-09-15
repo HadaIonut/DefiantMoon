@@ -81,11 +81,12 @@ const selectOption = (option: string) => {
 .option {
     border-radius: 12px;
     padding: 16px;
-    transition: background 0.2s ease-in;
+    transition: background 0.2s ease-in, color 0.2s ease-in;
     cursor: pointer;
 
     &:hover {
         background: $secondary;
+        color: $text-dark;
     }
 }
 
