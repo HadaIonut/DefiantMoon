@@ -21,6 +21,7 @@ module.exports = {
     semi: ["error", "never"],
     'max-len': 'off',
     'guard-for-in': 'off',
-    'linebreak-style': 'off'
+    'linebreak-style': 'off',
+    'indent': ['warn', 4]
   },
 };
