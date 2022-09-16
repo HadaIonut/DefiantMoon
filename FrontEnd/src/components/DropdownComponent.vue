@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import {onMounted, Ref, ref} from 'vue'
+import {Ref, ref} from 'vue'
+import {DropdownOption} from '../types/Dropdown'
 
-export interface DropdownProps {
-    options: string[],
-    initial: string,
+interface DropdownProps {
+    options: DropdownOption[],
+    initial: DropdownOption,
 }
 
 const props = withDefaults(defineProps<DropdownProps>(), {
     options: () => [],
-    initial: () => 'Enter your selection',
+    initial: () => {
+        return {
+            optionName: 'Enter Your Selection',
+            id: '0',
+        } as DropdownOption
+    },
 })
 
-const emit = defineEmits<{(e: 'change', selected: string): string }>()
+const emit = defineEmits<{(e: 'change', selected: DropdownOption): void }>()
 
-const selectedOption: Ref<string> = ref(props.initial)
+const selectedOption: Ref<DropdownOption> = ref(props.initial)
 const isVisible: Ref<boolean> = ref(false)
 
 const toggleDropdown = () => {
@@ -24,7 +30,7 @@ const closeDropdown = () => {
     isVisible.value = false
 }
 
-const selectOption = (option: string) => {
+const selectOption = (option: DropdownOption) => {
     selectedOption.value = option
     isVisible.value = false
     emit('change', selectedOption.value)
@@ -36,15 +42,15 @@ const selectOption = (option: string) => {
     <div class="dropdown" v-click-away="closeDropdown">
         <div class="dropdown-header" @click="toggleDropdown">
             <span>
-                {{ selectedOption }}
+                {{ selectedOption.optionName }}
             </span>
             <span :class="isVisible ? 'dropdown-icon-rotate dropdown-icon': 'dropdown-icon'">
                 <font-awesome-icon icon="fa-solid fa-caret-up" />
             </span>
         </div>
         <div class="dropdown-options" v-if="isVisible">
-            <div class="option" v-for="option in props.options" :key="option" @click="() => selectOption(option)">
-                {{ option }}
+            <div class="option" v-for="option in props.options" :key="option.id" @click="() => selectOption(option)">
+                {{ option.optionName }}
             </div>
         </div>
     </div>
@@ -61,7 +67,7 @@ const selectOption = (option: string) => {
     padding: 16px;
     background: transparent;
     border-radius: 12px;
-    border: 1px solid $secondary;
+    border: 1px solid $accent;
     cursor: pointer;
     user-select: none;
     display: flex;
@@ -73,7 +79,7 @@ const selectOption = (option: string) => {
     background: $tertiary;
     width: 100%;
     border-radius: 12px;
-    border: 1px solid $secondary;
+    border: 1px solid $accent;
     margin-top: 2px;
     z-index: 10;
 }

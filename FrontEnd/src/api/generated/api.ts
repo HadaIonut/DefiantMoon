@@ -32,7 +32,7 @@ export interface AvailableUser {
      * @type {string}
      * @memberof AvailableUser
      */
-    'id': string;
+    '_id': string;
     /**
      * 
      * @type {string}
@@ -64,7 +64,7 @@ export interface LoginRequest {
      * @type {string}
      * @memberof LoginRequest
      */
-    'userId': string;
+    'username'?: string;
     /**
      * 
      * @type {string}
@@ -115,7 +115,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @throws {RequiredError}
          */
         login: async (loginRequest?: LoginRequest, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/auth/sign-in`;
+            const localVarPath = `/auth/login`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;

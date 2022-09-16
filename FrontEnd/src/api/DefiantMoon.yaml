@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:8000
 paths:
-  /auth/sign-in:
+  /auth/login:
     post:
       operationId: login
       requestBody:
@@ -15,7 +15,7 @@ paths:
             schema:
               type: object
               properties:
-                userId:
+                username:
                   type: string
                 password:
                   type: string
@@ -45,10 +45,10 @@ components:
   schemas:
     AvailableUser:
       properties:
-        id:
+        _id:
           type: string
         username:
           type: string
       required:
-        - id
+        - _id
         - username
