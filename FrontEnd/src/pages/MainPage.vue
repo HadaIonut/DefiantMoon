@@ -2,7 +2,7 @@
 import DropdownComponent from '../components/DropdownComponent.vue'
 import InputComponent from '../components/InputComponent.vue'
 import ButtonComponent from '../components/ButtonComponent.vue'
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import {apiClient} from '../api/index'
 import {DropdownOption} from 'types/Dropdown'
 import {LoginRequest} from 'api/generated'
@@ -14,6 +14,8 @@ const loginData = ref<LoginRequest>({username: '', password: ''})
 const usersStore = useUsersStore()
 const router = useRouter()
 
+onMounted(() => usersStore.clearUser())
+
 apiClient.getAvailableUsers().then(({data}) => {
     players.value = data?.users?.map?.((user) => ({optionName: user.username, id: user._id})) ?? []
 })
@@ -21,7 +23,7 @@ apiClient.getAvailableUsers().then(({data}) => {
 const onDropdownChange = (newValue: DropdownOption) => loginData.value.username = newValue.optionName
 const onInputChange = (newValue: string) => loginData.value.password = newValue
 const login = async () => {
-    const loginResult = await usersStore.updateCurrentUser(loginData.value)
+    const loginResult = await usersStore.loginUser(loginData.value)
 
     if (loginResult) await router.push('/game')
 }

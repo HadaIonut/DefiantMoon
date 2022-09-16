@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {LoginRequest} from 'api/generated'
 import {apiClient} from '../api/index'
-import {UsersStore} from 'types/users'
+import {User, UsersStore} from 'types/users'
 
 export const useUsersStore = defineStore('users', {
     state: (): UsersStore => {
@@ -15,18 +15,22 @@ export const useUsersStore = defineStore('users', {
         }
     },
     actions: {
-        async updateCurrentUser(loginData: LoginRequest) {
+        async loginUser(loginData: LoginRequest): Promise<User | null> {
             this.currentUser.name = loginData.username ?? ''
 
             try {
                 const {data} = await apiClient.login(loginData)
+                // @ts-ignore
                 this.currentUser.id = data.accessToken
 
                 return this.currentUser
             } catch (e) {
-                console.log('login failed')
-                return
+                return null
             }
+        },
+        clearUser() {
+            this.currentUser.name = ''
+            this.currentUser.id = ''
         },
     },
     persist: true,
