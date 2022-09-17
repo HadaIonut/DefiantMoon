@@ -8,11 +8,13 @@ import {DropdownOption} from 'types/Dropdown'
 import {LoginRequest} from 'api/generated'
 import {useUsersStore} from '../stores/users'
 import {useRouter} from 'vue-router'
+import {useToast} from 'vue-toastification'
 
 const players = ref<DropdownOption[]>([])
 const loginData = ref<LoginRequest>({username: '', password: ''})
 const usersStore = useUsersStore()
 const router = useRouter()
+const toast = useToast()
 
 onMounted(() => usersStore.clearUser())
 
@@ -28,6 +30,23 @@ const login = async () => {
     if (loginResult) await router.push('/game')
 }
 
+const testButton = () => {
+    toast('poggers', {
+        toastClassName: 'my-custom-toast-class',
+    })
+    toast.info('poggers', {
+        toastClassName: 'my-custom-toast-class',
+    })
+    toast.success('poggers', {
+        toastClassName: 'my-custom-toast-class',
+    })
+    toast.error('poggers', {
+        toastClassName: 'my-custom-toast-class',
+    })
+    toast.warning('poggers', {
+        toastClassName: 'my-custom-toast-class',
+    })
+}
 </script>
 
 <template>
@@ -47,6 +66,8 @@ const login = async () => {
                 <ButtonComponent content="Join the game" @click="login"/>
             </div>
         </div>
+
+        <button @click="testButton">test</button>
     </div>
 </template>
 
