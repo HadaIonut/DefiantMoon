@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<DropdownProps>(), {
     options: () => [],
     initial: () => {
         return {
-            optionName: 'Enter Your Selection',
+            optionName: 'defaults.dropdownInitialValue',
             id: '0',
         } as DropdownOption
     },
@@ -42,7 +42,7 @@ const selectOption = (option: DropdownOption) => {
     <div class="dropdown" v-click-away="closeDropdown">
         <div class="dropdown-header" @click="toggleDropdown">
             <span>
-                {{ selectedOption.optionName }}
+                {{ $t(selectedOption.optionName) }}
             </span>
             <span :class="isVisible ? 'dropdown-icon-rotate dropdown-icon': 'dropdown-icon'">
                 <font-awesome-icon icon="fa-solid fa-caret-up" />

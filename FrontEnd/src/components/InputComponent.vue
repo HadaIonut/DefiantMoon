@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {DropdownOption} from 'types/Dropdown'
 
 export interface InputProps {
     placeholder?: string,
@@ -8,7 +7,7 @@ export interface InputProps {
 }
 
 const props = withDefaults(defineProps<InputProps>(), {
-    placeholder: 'Type something',
+    placeholder: 'defaults.inputPlaceholder',
     animate: true,
     type: 'text',
 })
@@ -21,7 +20,7 @@ const onChange = (event: Event) => emit('change', (<HTMLInputElement>event.targe
 
 <template>
     <div class="input-wrapper">
-        <input class="input" :type="props.type" :placeholder="props.placeholder" @change="onChange">
+        <input class="input" :type="props.type" :placeholder="$t(props.placeholder)" @change="onChange">
         <div class="animation"></div>
     </div>
 </template>
