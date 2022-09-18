@@ -1,7 +1,7 @@
 .Vue-Toastification__toast--default {
   background-color: $notification-default;
   color: $text;
-  &.my-custom-toast-class {
+  &.notification {
     background-color: rgba($notification-default, $notification-alpha);
     border: $notification-border;
   }
@@ -9,7 +9,7 @@
 .Vue-Toastification__toast--info {
   background-color: $notification-info;
   color: $text;
-  &.my-custom-toast-class {
+  &.notification {
     background-color: rgba($notification-info, $notification-alpha);
     border: $notification-border;
 
@@ -18,7 +18,7 @@
 .Vue-Toastification__toast--success {
   background-color: $notification-success;
   color: $text;
-  &.my-custom-toast-class {
+  &.notification {
     background-color: rgba($notification-success, $notification-alpha);
     border: $notification-border;
   }
@@ -26,7 +26,7 @@
 .Vue-Toastification__toast--error {
   background-color: $notification-error;
   color: $text;
-  &.my-custom-toast-class {
+  &.notification {
     background-color: rgba($notification-error, $notification-alpha);
     border: $notification-border;
   }
@@ -34,7 +34,7 @@
 .Vue-Toastification__toast--warning {
   background-color: $notification-warning;
   color: $text;
-  &.my-custom-toast-class {
+  &.notification {
     background-color: rgba($notification-warning, $notification-alpha);
     border: $notification-border;
   }

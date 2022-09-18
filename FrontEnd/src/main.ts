@@ -31,7 +31,7 @@ const toastOptions = {
     position: POSITION.TOP_LEFT,
     hideProgressBar: true,
     transition: 'Vue-Toastification__slideBlurred',
-    timeout: false,
+    toastClassName: 'notification',
 }
 
 app.use(pinia)

@@ -25,27 +25,11 @@ apiClient.getAvailableUsers().then(({data}) => {
 const onDropdownChange = (newValue: DropdownOption) => loginData.value.username = newValue.optionName
 const onInputChange = (newValue: string) => loginData.value.password = newValue
 const login = async () => {
+    if (loginData.value.username === '') return toast.error('No user selected')
     const loginResult = await usersStore.loginUser(loginData.value)
 
-    if (loginResult) await router.push('/game')
-}
-
-const testButton = () => {
-    toast('poggers', {
-        toastClassName: 'my-custom-toast-class',
-    })
-    toast.info('poggers', {
-        toastClassName: 'my-custom-toast-class',
-    })
-    toast.success('poggers', {
-        toastClassName: 'my-custom-toast-class',
-    })
-    toast.error('poggers', {
-        toastClassName: 'my-custom-toast-class',
-    })
-    toast.warning('poggers', {
-        toastClassName: 'my-custom-toast-class',
-    })
+    if (loginResult) return await router.push('/game')
+    toast.error('Incorrect password')
 }
 </script>
 
@@ -66,8 +50,6 @@ const testButton = () => {
                 <ButtonComponent content="Join the game" @click="login"/>
             </div>
         </div>
-
-        <button @click="testButton">test</button>
     </div>
 </template>
 
