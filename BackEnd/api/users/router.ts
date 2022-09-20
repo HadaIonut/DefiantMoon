@@ -1,5 +1,6 @@
 import { Router } from "https://deno.land/x/oak@v11.1.0/router.ts";
-import { createUser, getUserByUsername, getUsersForWorld } from "../../database/repos/users.ts";
+import { authMiddleWare } from "../../auth/index.ts";
+import { createUser, getUserById, getUsersForWorld } from "../../database/repos/users.ts";
 import { UserSchema } from "../../database/schemas/user.ts";
 import { thowBadRequest } from "../utils.ts";
 
@@ -7,7 +8,9 @@ export const usersRouter = new Router();
 
 const mapAvailableUser = (user: UserSchema) => ({
     ...user,
-    password: undefined
+    _id: undefined,
+    password: undefined,
+    id: user._id,
 });
 
 usersRouter.get("/", async ({ response }) => {
@@ -33,4 +36,12 @@ usersRouter.post("/", async ({ request, response }) => {
         user: mapAvailableUser(user),
     }
     response.status = 200;
+});
+
+usersRouter.get("/me", authMiddleWare, async ({ response, state }) => {
+    const user = await getUserById(state.userId);
+    if (!user) {
+        return thowBadRequest(response, "UserNotFound");
+    }
+    response.body = mapAvailableUser(user);
 });

@@ -1,4 +1,4 @@
-import { Sha512 } from "https://deno.land/std/hash/sha512.ts"
+import { Sha512 } from "https://deno.land/std@0.156.0/hash/sha512.ts"
 
 
 export const hashPassword = (password: string) => {

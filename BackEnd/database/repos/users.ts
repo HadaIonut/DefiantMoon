@@ -15,6 +15,12 @@ export const getUserByUsername = (username: string) => {
 	});
 };
 
+export const getUserById = (userId: string) => {
+	return usersCollection.findOne({
+		_id: new ObjectId(userId),
+	});
+};
+
 export const createUser = ({ username, password }: { username: string, password: string }) => {
 	const user = {
 		username: username,
