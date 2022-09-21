@@ -1,7 +1,7 @@
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 import {library} from '@fortawesome/fontawesome-svg-core'
-import {faCaretUp} from '@fortawesome/free-solid-svg-icons'
+import {faCaretUp, faComment, faUsers, faShirt} from '@fortawesome/free-solid-svg-icons'
 
-library.add(faCaretUp)
+library.add(faCaretUp, faComment, faUsers, faShirt)
 
 export default FontAwesomeIcon
