@@ -5,7 +5,7 @@ import { UserSchema } from "../schemas/user.ts";
 
 const usersCollection = db.collection<UserSchema>("users");
 
-export const getUsersForWorld = (worldId: string) => {
+export const getUsersForWorld = () => {
 	return usersCollection.find({});
 }
 
