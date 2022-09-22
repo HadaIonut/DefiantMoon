@@ -43,5 +43,5 @@ usersRouter.get("/me", authMiddleWare, async ({ response, state }) => {
     if (!user) {
         return thowBadRequest(response, "UserNotFound");
     }
-    response.body = mapAvailableUser(user);
+    response.body = { user: mapAvailableUser(user) };
 });

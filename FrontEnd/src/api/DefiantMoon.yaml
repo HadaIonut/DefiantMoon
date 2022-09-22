@@ -25,6 +25,10 @@ paths:
       responses:
         200:
           description: "success"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
   /users:
     get:
       operationId: getAvailableUsers
@@ -40,15 +44,36 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/AvailableUser'
-
+  /users/me:
+    get:
+      operationId: getUserProfile
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: "success"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AvailableUser'
 components:
+  securitySchemes:
+    cookieAuth: # arbitrary name for the security scheme; will be used in the "security" key later
+      type: apiKey
+      in: cookie
+      name: accessToken  # cookie name
   schemas:
     AvailableUser:
       properties:
-        _id:
+        id:
           type: string
         username:
           type: string
       required:
-        - _id
+        - id
         - username

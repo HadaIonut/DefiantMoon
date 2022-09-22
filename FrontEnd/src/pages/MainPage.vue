@@ -30,6 +30,7 @@ const onInputChange = (newValue: string) => loginData.value.password = newValue
 const login = async () => {
     if (loginData.value.username === '') return toast.error(t('notifications.noUser'))
     const loginResult = await usersStore.loginUser(loginData.value)
+    console.log(await apiClient.getUserProfile())
 
     if (loginResult) return await router.push('/game')
     toast.error(t('notifications.wrongPassword'))
@@ -40,6 +41,11 @@ const dropdownInitialValue = computed(() => {
         id: '0',
     } as DropdownOption
 })
+
+fetch("http://localhost:8000/auth/login",
+    {body: JSON.stringify({username: "admin", password: "admin"}), method: "POST", headers: {"Content-Type": "application/json"}, credentials: "omit"}
+).then(r => console.log(Array.from(r.headers)))
+
 </script>
 
 <template>
