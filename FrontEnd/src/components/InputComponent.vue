@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<InputProps>(), {
 
 const emit = defineEmits<{(e: 'change', input: string): void }>()
 
-const onChange = (event: Event) => emit('change', (<HTMLInputElement>event.target).value)
+const onChange = (event: Event) => emit('change', (event.target as HTMLInputElement).value)
 
 </script>
 

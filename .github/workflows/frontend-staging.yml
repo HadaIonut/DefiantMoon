@@ -1,0 +1,31 @@
+name: Frontend staging
+
+on:
+  push:
+    branches:
+      - staging
+    paths:
+      - FrontEnd/**
+      - .github/workflows/frontend-staging.yml
+  pull_request:
+    branches:
+      - staging
+    paths:
+      - FrontEnd/**
+      - .github/workflows/frontend-staging.yml
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v3
+
+      - name: Yarn install
+        run: cd Frontend && yarn install
+
+      - name: Build project
+        run: cd Frontend && yarn build
+
+      - name: Start server
+        run: cd Frontend && yarn preview

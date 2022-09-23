@@ -22,7 +22,7 @@ const {t} = useI18n()
 onMounted(() => usersStore.clearUser())
 
 apiClient.getAvailableUsers().then(({data}) => {
-    players.value = data?.users?.map?.((user) => ({optionName: user.username, id: user._id})) ?? []
+    players.value = data?.users?.map?.((user) => ({optionName: user.username, id: user.id})) ?? []
 })
 
 const onDropdownChange = (newValue: DropdownOption) => loginData.value.username = newValue.optionName
@@ -41,10 +41,6 @@ const dropdownInitialValue = computed(() => {
         id: '0',
     } as DropdownOption
 })
-
-fetch("http://localhost:8000/auth/login",
-    {body: JSON.stringify({username: "admin", password: "admin"}), method: "POST", headers: {"Content-Type": "application/json"}, credentials: "omit"}
-).then(r => console.log(Array.from(r.headers)))
 
 </script>
 
