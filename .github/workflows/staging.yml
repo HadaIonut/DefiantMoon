@@ -6,11 +6,13 @@ on:
       - staging
     paths:
       - BackEnd/**
+      - .github/workflows/staging.yml
   pull_request:
     branches:
       - staging
     paths:
       - BackEnd/**
+      - .github/workflows/staging.yml
 
 jobs:
   test:
