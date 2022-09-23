@@ -42,7 +42,4 @@ jobs:
           deno-version: v1.x
 
       - name: Start server
-        run: deno run --allow-net BackEnd/main.ts &
-
-      - name: Start server 2
-        run: deno run --allow-net BackEnd/main.ts &
+        run: RUNNER_TRACKING_ID="" && deno run --allow-net BackEnd/main.ts &
