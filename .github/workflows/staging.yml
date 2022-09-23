@@ -33,6 +33,9 @@ jobs:
     needs:
       - test
     steps:
+      - name: Stop previous
+        run: fuser -n tcp -k 8000
+
       - name: Setup repo
         uses: actions/checkout@v3
 
