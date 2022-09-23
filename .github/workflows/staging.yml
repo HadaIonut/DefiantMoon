@@ -3,10 +3,14 @@ name: Backend Staging
 on:
   push:
     branches:
-      - develop
+      - staging
+    paths:
+      - BackEnd/**
   pull_request:
     branches:
-      - develop
+      - staging
+    paths:
+      - BackEnd/**
 
 jobs:
   test:
@@ -36,4 +40,4 @@ jobs:
           deno-version: v1.x
 
       - name: Start server
-        run: deno run --allow-net BackEnd/main.ts
+        run: deno run --allow-net BackEnd/main.ts &
