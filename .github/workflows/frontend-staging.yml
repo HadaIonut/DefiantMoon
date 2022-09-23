@@ -18,6 +18,9 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
+      - name: Stop previous
+        run: fuser -n tcp -k 4173 &
+
       - name: Setup repo
         uses: actions/checkout@v3
 
@@ -28,4 +31,4 @@ jobs:
         run: cd FrontEnd && yarn build
 
       - name: Start server
-        run: cd FrontEnd && yarn preview
+        run: cd FrontEnd && yarn preview --host 0.0.0.0 &
