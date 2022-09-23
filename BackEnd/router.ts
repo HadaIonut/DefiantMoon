@@ -4,6 +4,6 @@ import { usersRouter } from "./api/users/router.ts";
 
 export const apiRouter = new Router();
 
-apiRouter.get("api/", (context) => { context.response.body = { status: "active", version: "1.0.0"} })
-apiRouter.use("api/auth", authRouter.routes(), authRouter.allowedMethods());
-apiRouter.use("api/users", usersRouter.routes(), usersRouter.allowedMethods());
+apiRouter.get("/api/", (context) => { context.response.body = { status: "active", version: "1.0.0"} })
+apiRouter.use("/api/auth", authRouter.routes(), authRouter.allowedMethods());
+apiRouter.use("/api/users", usersRouter.routes(), usersRouter.allowedMethods());
