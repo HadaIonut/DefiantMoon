@@ -36,4 +36,4 @@ jobs:
           deno-version: v1.x
 
       - name: Start server
-        run: deno run --allow-new BackEnd/main.ts
+        run: deno run --allow-new BackEnd/main.ts &
