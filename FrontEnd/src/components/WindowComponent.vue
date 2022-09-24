@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {Ref, ref} from 'vue'
 
 const isMoving = ref(false)
-const hasMoved = ref(false)
+const window: Ref<HTMLElement | null> = ref(null)
 let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
-let windowElement: HTMLElement | null
+const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 
 const startWindowMove = (event: PointerEvent) => {
     windowLocation = {
@@ -14,7 +14,6 @@ const startWindowMove = (event: PointerEvent) => {
     }
 
     isMoving.value = true
-    windowElement = (event?.target as HTMLElement)?.parentElement
 
     document.addEventListener('mousemove', windowMove)
 }
@@ -29,25 +28,60 @@ const windowMove = (event: MouseEvent) => {
         startY: event.clientY,
     }
 
-    if (!windowElement) return
+    if (!window.value) return
 
-    windowElement.style.top = (windowElement.offsetTop - windowLocation.stopY) + 'px'
-    windowElement.style.left = (windowElement.offsetLeft - windowLocation.stopX) + 'px'
+    window.value.style.top = (window.value.offsetTop - windowLocation.stopY) + 'px'
+    window.value.style.left = (window.value.offsetLeft - windowLocation.stopX) + 'px'
 }
 
-const stopWindowMove = (event: PointerEvent) => {
+const stopWindowMove = () => {
     isMoving.value = false
     document.removeEventListener('mousemove', windowMove)
+}
+
+const initDrag = (event: MouseEvent) => {
+    dragWindowLocation.startX = event.clientX
+    dragWindowLocation.startY = event.clientY
+    if (!window.value) return
+
+    dragWindowLocation.startWidth = parseInt(
+        document?.defaultView?.getComputedStyle?.(window.value)?.width ?? '',
+        10,
+    )
+    dragWindowLocation.startHeight = parseInt(
+        document?.defaultView?.getComputedStyle?.(window.value)?.height ?? '',
+        10,
+    )
+
+    document.addEventListener('mousemove', doDrag)
+    document.addEventListener('mouseup', stopDrag)
+}
+
+const doDrag = (event: MouseEvent) => {
+    if (!window.value) return
+
+    window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+    window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+}
+
+const stopDrag = (event: MouseEvent) => {
+    document.removeEventListener('mousemove', doDrag)
+    document.removeEventListener('mouseup', stopDrag)
 }
 </script>
 
 <template>
-    <div class="draggable-window">
+    <div class="draggable-window" ref="window">
         <div class="draggable-window-header" @mousedown="startWindowMove" @mouseup="stopWindowMove">
             header
         </div>
         <div class="draggable-window-content">
-            big content energy
+            <span>
+                big content energy
+            </span>
+            <span class="resizer-right" @mousedown="initDrag"/>
+            <span class="resizer-bottom" @mousedown="initDrag"/>
+            <span class="resizer-both" @mousedown="initDrag"/>
         </div>
     </div>
 </template>
@@ -59,16 +93,50 @@ const stopWindowMove = (event: PointerEvent) => {
     left: 50%;
 }
 
-.draggable-window-content {
-    background-color: $secondary;
-    color: $text-dark;
-    padding: 20px;
-}
-
 .draggable-window-header {
     background-color: $tertiary;
     color: $text;
-    padding: 10px;
+    height: 30px;
     z-index: 100;
+    cursor: move;
+    user-select: none;
+}
+
+.draggable-window-content {
+    background-color: $secondary;
+    color: $text-dark;
+    position: relative;
+    height: calc(100% - 30px);
+}
+
+.resizer-right {
+    width: 5px;
+    height: 100%;
+    background: transparent;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: e-resize;
+}
+
+.resizer-bottom {
+    width: 100%;
+    height: 5px;
+    background: transparent;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: n-resize;
+}
+
+.resizer-both {
+    width: 5px;
+    height: 5px;
+    background: transparent;
+    z-index: 10;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: nw-resize;
 }
 </style>
