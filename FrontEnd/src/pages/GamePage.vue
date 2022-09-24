@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {useUsersStore} from '../stores/users'
 import ActionsSidebar from '../components/ActionsSidebar.vue'
+import WindowComponent from '../components/WindowComponent.vue'
 
 const usersStore = useUsersStore()
 const stuff = []
@@ -8,9 +9,12 @@ const stuff = []
 
 <template>
     <div class="page-container">
-        you are now logged in, poggers {{usersStore.currentUser.name}}
+        <span style="user-select: none">
+            you are now logged in, poggers {{usersStore.currentUser.name}}
+        </span>
 
         <ActionsSidebar/>
+        <WindowComponent/>
     </div>
 </template>
 
