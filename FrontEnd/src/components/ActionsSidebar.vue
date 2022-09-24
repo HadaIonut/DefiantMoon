@@ -5,13 +5,8 @@ import {WindowStore} from 'types/windows'
 const windowStore = useWindowsStore()
 const windowObject:WindowStore = windowStore.$state
 
-const actionClick = (windowKey: string) => {
-    if (windowStore[windowKey].action.isActive) {
-        windowStore.closeWindow(windowKey)
-    } else {
-        windowStore.openWindow(windowKey)
-    }
-}
+const actionClick = (windowKey: string) => windowStore.handleActionBarClick(windowKey)
+
 </script>
 
 <template>
@@ -19,7 +14,7 @@ const actionClick = (windowKey: string) => {
         <perfect-scrollbar>
             <div class="icon-container" v-for="(item, key) in windowObject" :key="item.action.icon" @click="() => actionClick(key)">
                 <font-awesome-icon :icon="`fa-solid fa-${item.action.icon}`" size="3x" />
-                <span :class="`active-marker ${item.action.isActive ? 'marker-selected' : ''}`"></span>
+                <span :class="`activity-marker ${item.status !== 'closed' ? 'marker-' + item.status : ''}`"></span>
             </div>
         </perfect-scrollbar>
     </div>
@@ -70,7 +65,7 @@ const actionClick = (windowKey: string) => {
     }
 }
 
-.active-marker {
+.activity-marker {
     position: absolute;
     height: 0;
     width: 3px;
@@ -83,7 +78,11 @@ const actionClick = (windowKey: string) => {
     transition: height 0.2s ease-in-out;
 }
 
-.marker-selected {
+.marker-focused {
     height: 60%;
+}
+
+.marker-opened {
+    height: 3px;
 }
 </style>
