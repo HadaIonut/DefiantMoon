@@ -15,6 +15,7 @@ const stuff = []
 
         <ActionsSidebar/>
         <WindowComponent/>
+        <WindowComponent/>
     </div>
 </template>
 

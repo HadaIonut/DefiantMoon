@@ -5,8 +5,12 @@ const isMoving = ref(false)
 const window: Ref<HTMLElement | null> = ref(null)
 let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
 const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
+let windowMoveOffset = {x: 0, y: 0}
+
+const RIGHT_MARGIN_OFFSET = 0
 
 const startWindowMove = (event: PointerEvent) => {
+    if (!window.value) return
     windowLocation = {
         ...windowLocation,
         startX: event.clientX,
@@ -16,23 +20,54 @@ const startWindowMove = (event: PointerEvent) => {
     isMoving.value = true
     if (window.value) window.value.style.userSelect = 'none'
 
+    windowMoveOffset = {
+        x: event.pageX - window.value.offsetLeft,
+        y: event.pageY - window.value.offsetTop,
+    }
+
     document.addEventListener('mousemove', windowMove)
 }
 
+const getLimitedXMovement = (clientX: number): number => {
+    if (!window.value) return 0
+
+    const windowX = parseInt(
+        document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
+        10,
+    )
+
+    if (clientX - windowMoveOffset.x < 0) return 0
+    else if (clientX - windowMoveOffset.x + windowX > document.body.clientWidth) {
+        return document.body.clientWidth - windowX - RIGHT_MARGIN_OFFSET
+    } else return clientX - windowMoveOffset.x
+}
+
+const getLimitedYMovement = (clientY: number): number => {
+    if (!window.value) return 0
+
+    const windowY = parseInt(
+        document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+        10,
+    )
+
+    if (clientY - windowMoveOffset.y < 0) return 0
+    else if (clientY - windowMoveOffset.y + windowY > document.body.clientHeight) {
+        return document.body.clientHeight - windowY - RIGHT_MARGIN_OFFSET
+    } else return clientY - windowMoveOffset.y
+}
+
 const windowMove = (event: MouseEvent) => {
-    if (!isMoving.value) return
+    if (!isMoving.value || !window.value) return
 
     windowLocation = {
-        stopX: windowLocation.startX - event.clientX,
-        stopY: windowLocation.startY - event.clientY,
+        stopX: getLimitedXMovement(event.clientX),
+        stopY: getLimitedYMovement(event.clientY),
         startX: event.clientX,
         startY: event.clientY,
     }
 
-    if (!window.value) return
-
-    window.value.style.top = (window.value.offsetTop - windowLocation.stopY) + 'px'
-    window.value.style.left = (window.value.offsetLeft - windowLocation.stopX) + 'px'
+    window.value.style.top = windowLocation.stopY + 'px'
+    window.value.style.left = windowLocation.stopX + 'px'
 }
 
 const stopWindowMove = () => {
@@ -69,7 +104,7 @@ const doDrag = (event: MouseEvent) => {
     window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
 }
 
-const stopDrag = (event: MouseEvent) => {
+const stopDrag = () => {
     if (window.value) window.value.style.userSelect = ''
 
     document.removeEventListener('mousemove', doDrag)
@@ -90,18 +125,14 @@ const stopDrag = (event: MouseEvent) => {
                     big content energy
                 </span>
             </div>
-            <span class="resizer-right" @mousedown="initDrag"/>
-            <span class="resizer-bottom" @mousedown="initDrag"/>
-            <span class="resizer-both" @mousedown="initDrag"/>
         </div>
+        <span class="resizer-right" @mousedown="initDrag"/>
+        <span class="resizer-bottom" @mousedown="initDrag"/>
+        <span class="resizer-both" @mousedown="initDrag"/>
     </div>
 </template>
 
 <style scoped lang="scss">
-$window-height: 30px;
-$window-default-location-top: 50%;
-$window-default-location-left: 50%;
-
 .draggable-window {
     position: absolute;
     top: $window-default-location-top;
@@ -112,8 +143,9 @@ $window-default-location-left: 50%;
     background-color: $tertiary;
     color: $text;
     height: $window-height;
-    z-index: 100;
+    z-index: $window-z-index;
     cursor: move;
+    display: flex;
 }
 
 .draggable-window-body {
@@ -121,15 +153,16 @@ $window-default-location-left: 50%;
     color: $text-dark;
     position: relative;
     height: calc(100% - #{$window-height});
+    display: flex;
 }
 
 .window-header-content {
-    height: 100%;
+    flex: 1;
     padding: 5px;
 }
 
 .window-body-content {
-    height: 100%;
+    flex: 1;
     padding: 5px;
 }
 
@@ -157,7 +190,7 @@ $window-default-location-left: 50%;
     width: 5px;
     height: 5px;
     background: transparent;
-    z-index: 100;
+    z-index: $window-z-index;
     position: absolute;
     right: 0;
     bottom: 0;
