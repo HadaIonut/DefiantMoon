@@ -31,4 +31,4 @@ jobs:
         run: cd FrontEnd && yarn build
 
       - name: Start server
-        run: RUNNER_TRACKING_ID="" && cd FrontEnd && yarn preview --host
+        run: RUNNER_TRACKING_ID="" && cd FrontEnd && yarn preview --host &
