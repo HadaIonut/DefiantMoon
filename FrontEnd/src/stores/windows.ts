@@ -12,7 +12,7 @@ export const useWindowsStore = defineStore('counter', {
                     componentData: 'Chat',
                 },
                 body: {
-                    componentType: 'chat',
+                    componentType: 'Chat',
                 },
             },
             'actorList': {

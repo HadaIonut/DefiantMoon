@@ -3,7 +3,8 @@ import {useUsersStore} from '../stores/users'
 import ActionsSidebar from '../components/ActionsSidebar.vue'
 import WindowComponent from '../components/WindowComponent.vue'
 import {useWindowsStore} from '../stores/windows'
-import WindowHeaderRenderer from '../components/WindowHeaderRender.vue'
+import WindowHeaderRenderer from '../components/windowHeaders/WindowHeaderRender.vue'
+import WindowBodyRenderer from '../components/windowBodies/WindowBodyRenderer.vue'
 
 const usersStore = useUsersStore()
 const windowStore = useWindowsStore()
@@ -24,7 +25,7 @@ const stuff = []
                                       :headerData="window.header.componentData"/>
             </template>
             <template v-slot:body>
-                <component :is="window.body"/>
+                <WindowBodyRenderer :componentToRender="window.body.componentType"/>
             </template>
         </WindowComponent>
     </div>
