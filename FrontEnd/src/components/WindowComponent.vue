@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import {Ref, ref} from 'vue'
+import {onMounted, Ref, ref} from 'vue'
+const RIGHT_MARGIN_OFFSET = 0
+const WINDOW_HEADER_HEIGHT = '30px'
 
-const isMoving = ref(false)
-const window: Ref<HTMLElement | null> = ref(null)
 let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
 const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 let windowMoveOffset = {x: 0, y: 0}
+let lastHeightBeforeMinimize = '0px'
 
-const RIGHT_MARGIN_OFFSET = 0
+const isMoving: Ref<Boolean> = ref(false)
+const window: Ref<HTMLElement | null> = ref(null)
+const isMinimized: Ref<Boolean> = ref(false)
 
 const startWindowMove = (event: PointerEvent) => {
     if (!window.value) return
@@ -92,6 +95,7 @@ const initDrag = (event: MouseEvent) => {
     )
 
     window.value.style.userSelect = 'none'
+    window.value.style.transition = 'none'
 
     document.addEventListener('mousemove', doDrag)
     document.addEventListener('mouseup', stopDrag)
@@ -105,30 +109,57 @@ const doDrag = (event: MouseEvent) => {
 }
 
 const stopDrag = () => {
-    if (window.value) window.value.style.userSelect = ''
+    if (!window.value) return
+
+    window.value.style.userSelect = ''
+    window.value.style.transition = ''
 
     document.removeEventListener('mousemove', doDrag)
     document.removeEventListener('mouseup', stopDrag)
 }
+
+const minimize = () => {
+    if (!window.value) return
+
+    isMinimized.value = !isMinimized.value
+
+    if (isMinimized.value) {
+        lastHeightBeforeMinimize = window.value?.style.height
+
+        window.value.style.height = WINDOW_HEADER_HEIGHT
+    } else window.value.style.height = lastHeightBeforeMinimize
+}
+
+onMounted(() => {
+    if (!window.value) return
+
+    const windowSizes = {
+        x: document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
+        y: document?.defaultView?.getComputedStyle?.(window?.value)?.height?? '',
+    }
+
+    window.value.style.height = windowSizes.y
+    window.value.style.width = windowSizes.x
+})
 </script>
 
 <template>
     <div class="draggable-window" ref="window">
-        <div class="draggable-window-header" @mousedown="startWindowMove" @mouseup="stopWindowMove">
+        <div class="draggable-window-header" @dblclick="minimize" @mousedown="startWindowMove" @mouseup="stopWindowMove">
             <div class="window-header-content">
                 header
             </div>
         </div>
-        <div class="draggable-window-body">
+        <div :class="`draggable-window-body ${isMinimized ? 'draggable-window-body--minimized' : ''}`">
             <div class="window-body-content">
                 <span>
                     big content energy
                 </span>
             </div>
         </div>
-        <span class="resizer-right" @mousedown="initDrag"/>
-        <span class="resizer-bottom" @mousedown="initDrag"/>
-        <span class="resizer-both" @mousedown="initDrag"/>
+        <span v-if="!isMinimized" class="resizer-right" @mousedown="initDrag"/>
+        <span v-if="!isMinimized" class="resizer-bottom" @mousedown="initDrag"/>
+        <span v-if="!isMinimized" class="resizer-both" @mousedown="initDrag"/>
     </div>
 </template>
 
@@ -137,12 +168,14 @@ const stopDrag = () => {
     position: absolute;
     top: $window-default-location-top;
     left: $window-default-location-left;
+    transition: height 0.2s ease-in-out;
+
 }
 
 .draggable-window-header {
     background-color: $tertiary;
     color: $text;
-    height: $window-height;
+    height: $window-header-height;
     z-index: $window-z-index;
     cursor: move;
     display: flex;
@@ -152,8 +185,13 @@ const stopDrag = () => {
     background-color: $secondary;
     color: $text-dark;
     position: relative;
-    height: calc(100% - #{$window-height});
+    height: calc(100% - #{$window-header-height});
     display: flex;
+    transition: height 0.2s ease-in-out;
+
+    &--minimized {
+        height: 0;
+    }
 }
 
 .window-header-content {

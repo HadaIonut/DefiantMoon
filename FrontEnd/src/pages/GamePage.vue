@@ -29,5 +29,6 @@ const stuff = []
     align-items: center;
     color: $text;
     position: relative;
+    overflow: hidden;
 }
 </style>
