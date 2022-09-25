@@ -6,6 +6,7 @@ const sendMessage = (event: string, message: Object | string) => {
 
 const eventsMap: WebsocketEvents = {};
 
+
 ws.onmessage = (messageEvent: MessageEvent) => {
     const {event, message} = JSON.parse(messageEvent.data);
     if (eventsMap[event]) {
