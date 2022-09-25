@@ -2,6 +2,7 @@
 import {useUsersStore} from '../stores/users'
 import ActionsSidebar from '../components/ActionsSidebar.vue'
 import WindowComponent from '../components/WindowComponent.vue'
+import WebsocketComponent from '../components/WebsocketComponent.vue';
 
 const usersStore = useUsersStore()
 const stuff = []
@@ -16,6 +17,7 @@ const stuff = []
         <ActionsSidebar/>
         <WindowComponent/>
         <WindowComponent/>
+        <WebsocketComponent/>
     </div>
 </template>
 

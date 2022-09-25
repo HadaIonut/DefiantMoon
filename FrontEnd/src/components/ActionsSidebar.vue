@@ -12,7 +12,7 @@ const actionClick = (windowKey: string) => windowStore.handleActionBarClick(wind
 <template>
     <div class="sidebar">
         <perfect-scrollbar>
-            <div class="icon-container" v-for="(item, key) in windowObject" :key="item.action.icon" @click="() => actionClick(key)">
+            <div class="icon-container" v-for="(item, key) in windowObject" :key="item.action.icon" @click="() => actionClick(key.toString())">
                 <font-awesome-icon :icon="`fa-solid fa-${item.action.icon}`" size="3x" />
                 <span :class="`activity-marker ${item.status !== 'closed' ? 'marker-' + item.status : ''}`"></span>
             </div>

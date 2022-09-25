@@ -9,7 +9,7 @@ let windowMoveOffset = {x: 0, y: 0}
 
 const RIGHT_MARGIN_OFFSET = 0
 
-const startWindowMove = (event: PointerEvent) => {
+const startWindowMove = (event: MouseEvent) => {
     if (!window.value) return
     windowLocation = {
         ...windowLocation,
