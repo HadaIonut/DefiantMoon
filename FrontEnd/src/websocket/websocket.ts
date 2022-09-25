@@ -1,4 +1,4 @@
-const ws = new WebSocket("ws://localhost:8000/api/websocket");
+const ws = new WebSocket(`ws://${window.location.origin}/api/websocket`);
 
 const sendMessage = (event: string, message: Object | string) => {
     ws.send(JSON.stringify({event, message}));

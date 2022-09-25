@@ -15,7 +15,7 @@ const mapAvailableUser = (user: UserSchema) => ({
 
 usersRouter.get("/", async ({ response }) => {
     response.body = {
-        users: await getUsersForWorld("").map(mapAvailableUser),
+        users: await getUsersForWorld().map(mapAvailableUser),
     }
     response.status = 200;
 });
