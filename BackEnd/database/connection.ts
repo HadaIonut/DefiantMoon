@@ -8,6 +8,6 @@ import {
 
 const client = new MongoClient();
 
-await client.connect("mongodb://127.0.0.1:27017");
+await client.connect("mongodb://admin:admin@127.0.0.1:27018");
 
 export const db = client.database("MyTestDb");
