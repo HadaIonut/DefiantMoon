@@ -47,5 +47,5 @@ jobs:
       - name: Start server
         run: RUNNER_TRACKING_ID="" && deno run --allow-net BackEnd/main.ts &
 
-      - name: Check running
-        run: curl http://localhost:8000
+#      - name: Check running
+#        run: curl http://localhost:8000
