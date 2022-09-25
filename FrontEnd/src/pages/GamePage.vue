@@ -2,20 +2,31 @@
 import {useUsersStore} from '../stores/users'
 import ActionsSidebar from '../components/ActionsSidebar.vue'
 import WindowComponent from '../components/WindowComponent.vue'
+import {useWindowsStore} from '../stores/windows'
+import WindowHeaderRenderer from '../components/WindowHeaderRender.vue'
 
 const usersStore = useUsersStore()
+const windowStore = useWindowsStore()
 const stuff = []
 </script>
 
 <template>
     <div class="page-container">
         <span style="user-select: none">
-            you are now logged in, poggers {{usersStore.currentUser.name}}
+            you are now logged in, poggers {{ usersStore.currentUser.name }}
         </span>
 
         <ActionsSidebar/>
-        <WindowComponent/>
-        <WindowComponent/>
+
+        <WindowComponent v-for="(window, key) in windowStore.$state" :key="key" :windowData="window">
+            <template v-slot:header>
+                <WindowHeaderRenderer :componentToRender="window.header.componentType"
+                                      :headerData="window.header.componentData"/>
+            </template>
+            <template v-slot:body>
+                <component :is="window.body"/>
+            </template>
+        </WindowComponent>
     </div>
 </template>
 

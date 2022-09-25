@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import {onMounted, Ref, ref} from 'vue'
+import {Window} from 'types/windows'
+
+export interface WindowProps {
+    windowData: Window
+}
+
+const props = defineProps<WindowProps>()
 
 const RIGHT_MARGIN_OFFSET = 0
 const WINDOW_HEADER_HEIGHT = '30px'
@@ -140,7 +147,7 @@ onMounted(() => {
 
     const windowSizes = {
         x: document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
-        y: document?.defaultView?.getComputedStyle?.(window?.value)?.height?? '',
+        y: document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
     }
 
     window.value.style.height = windowSizes.y
@@ -149,7 +156,9 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="draggable-window" ref="window">
+    <div
+        :class="`draggable-window ${(props.windowData.status === 'closing' || props.windowData.status === 'opening') ? 'draggable-window--closed' : ''}`"
+        ref="window" v-if="props.windowData.status !== 'closed'">
         <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
                 <slot name="header">header</slot>
@@ -173,8 +182,12 @@ onMounted(() => {
     position: absolute;
     top: $window-default-location-top;
     left: $window-default-location-left;
-    transition: height 0.2s ease-in-out;
+    transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
+    scale: 1;
 
+    &--closed {
+        scale: 0;
+    }
 }
 
 .draggable-window-header {

@@ -4,13 +4,15 @@ export type WindowStore = {
     [key: string]: Window
 }
 
-export type WindowHeader = {
-    title: string,
-    actions: Action[]
-}
-
 export type Window = {
     action: Action,
-    status: 'closed' | 'opened' | 'focused',
-    header?: WindowHeader,
+    status: 'closed' | 'closing' | 'opened' | 'opening' | 'focused',
+    header: {
+        componentType: string,
+        componentData?: any
+    },
+    body: {
+        componentType: string,
+        componentData?: any
+    }
 }

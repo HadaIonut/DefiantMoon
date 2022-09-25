@@ -113,6 +113,11 @@
     "@intlify/core-base" "9.2.2"
     "@intlify/shared" "9.2.2"
 
+"@lmiller1990/v-switch@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@lmiller1990/v-switch/-/v-switch-1.1.0.tgz#a4b30ec30ece12aa88556d356511248793a6e310"
+  integrity sha512-/No5r6rALcuQzbh52lPfe0+QSX2AL4NHUyLS1ZXHm+IBGyUZiQKwFnmviYiG8ho589j05Vma/CcWsyfZM4UnsA==
+
 "@nestjs/common@8.4.4":
   version "8.4.4"
   resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-8.4.4.tgz#0914c6c0540b5a344c7c8fd6072faa1a49af1158"
