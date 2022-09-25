@@ -14,6 +14,7 @@ const startWindowMove = (event: PointerEvent) => {
     }
 
     isMoving.value = true
+    if (window.value) window.value.style.userSelect = 'none'
 
     document.addEventListener('mousemove', windowMove)
 }
@@ -36,6 +37,8 @@ const windowMove = (event: MouseEvent) => {
 
 const stopWindowMove = () => {
     isMoving.value = false
+    if (window.value) window.value.style.userSelect = ''
+
     document.removeEventListener('mousemove', windowMove)
 }
 
@@ -53,6 +56,8 @@ const initDrag = (event: MouseEvent) => {
         10,
     )
 
+    window.value.style.userSelect = 'none'
+
     document.addEventListener('mousemove', doDrag)
     document.addEventListener('mouseup', stopDrag)
 }
@@ -65,6 +70,8 @@ const doDrag = (event: MouseEvent) => {
 }
 
 const stopDrag = (event: MouseEvent) => {
+    if (window.value) window.value.style.userSelect = ''
+
     document.removeEventListener('mousemove', doDrag)
     document.removeEventListener('mouseup', stopDrag)
 }
@@ -73,12 +80,16 @@ const stopDrag = (event: MouseEvent) => {
 <template>
     <div class="draggable-window" ref="window">
         <div class="draggable-window-header" @mousedown="startWindowMove" @mouseup="stopWindowMove">
-            header
+            <div class="window-header-content">
+                header
+            </div>
         </div>
-        <div class="draggable-window-content">
-            <span>
-                big content energy
-            </span>
+        <div class="draggable-window-body">
+            <div class="window-body-content">
+                <span>
+                    big content energy
+                </span>
+            </div>
             <span class="resizer-right" @mousedown="initDrag"/>
             <span class="resizer-bottom" @mousedown="initDrag"/>
             <span class="resizer-both" @mousedown="initDrag"/>
@@ -87,26 +98,39 @@ const stopDrag = (event: MouseEvent) => {
 </template>
 
 <style scoped lang="scss">
+$window-height: 30px;
+$window-default-location-top: 50%;
+$window-default-location-left: 50%;
+
 .draggable-window {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: $window-default-location-top;
+    left: $window-default-location-left;
 }
 
 .draggable-window-header {
     background-color: $tertiary;
     color: $text;
-    height: 30px;
+    height: $window-height;
     z-index: 100;
     cursor: move;
-    user-select: none;
 }
 
-.draggable-window-content {
+.draggable-window-body {
     background-color: $secondary;
     color: $text-dark;
     position: relative;
-    height: calc(100% - 30px);
+    height: calc(100% - #{$window-height});
+}
+
+.window-header-content {
+    height: 100%;
+    padding: 5px;
+}
+
+.window-body-content {
+    height: 100%;
+    padding: 5px;
 }
 
 .resizer-right {
@@ -133,7 +157,7 @@ const stopDrag = (event: MouseEvent) => {
     width: 5px;
     height: 5px;
     background: transparent;
-    z-index: 10;
+    z-index: 100;
     position: absolute;
     right: 0;
     bottom: 0;
