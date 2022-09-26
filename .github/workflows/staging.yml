@@ -32,7 +32,7 @@ jobs:
         run: docker compose down
 
       - name: Prune docker
-        run: docker system prune -y
+        run: docker system prune -f
 
       - name: Start docker
         run: docker compose up -d
