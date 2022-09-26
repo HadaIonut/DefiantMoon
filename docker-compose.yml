@@ -1,10 +1,10 @@
-version: "3.8"
+version: "3.9"
 
 services:
   mongodb:
     image: "mongo"
     ports:
-      - "27018:27017"
+      - "27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
@@ -17,7 +17,5 @@ services:
     image: deno-blog-api:dev
     container_name: deno-blog-api-dev
     restart: always
-    volumes:
-      - ./:/usr/app
     ports:
-      - 8000:8000
+      - "8000:8000"
