@@ -38,4 +38,4 @@ jobs:
         run: curl http://localhost:5000
 
       - name: Check backend
-        run: curl http://localhost:8000/api/
+        run: sleep 5 && curl http://localhost:8000/api/
