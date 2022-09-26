@@ -32,8 +32,10 @@ jobs:
         run: docker compose down
 
       - name: Start docker
-        run: docker compose up
+        run: docker compose up -d
 
-#      - name: Check running
-#        run: curl http://localhost:8000
+      - name: Check frontend
+        run: curl http://localhost:5000
 
+      - name: Check backend
+        run: curl http://localhost:8000/api/
