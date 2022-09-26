@@ -35,7 +35,7 @@ jobs:
         run: docker system prune -f
 
       - name: Start docker
-        run: docker compose up -d
+        run: docker compose up -d --build
 
       - name: Check frontend
         run: curl http://localhost:5000
