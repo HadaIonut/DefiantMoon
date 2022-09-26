@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import {onMounted, Ref, ref} from 'vue'
+import {computed, onMounted, Ref, ref} from 'vue'
 import {Window} from 'types/windows'
+import {useWindowsStore} from '../stores/windows'
 
 export interface WindowProps {
-    windowData: Window
+    windowData: Window,
+    windowKey: string
 }
 
 const props = defineProps<WindowProps>()
@@ -18,7 +20,11 @@ const window: Ref<HTMLElement | null> = ref(null)
 const windowHeader: Ref<HTMLElement | null> = ref(null)
 const isMinimized: Ref<Boolean> = ref(false)
 
+const windowStore = useWindowsStore()
+
 const initWindowMove = (event: MouseEvent) => {
+    windowStore.focusWindow(props.windowKey)
+
     let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
     let windowMoveOffset = {x: 0, y: 0}
 
@@ -91,6 +97,8 @@ const initWindowMove = (event: MouseEvent) => {
 }
 
 const initResize = (event: MouseEvent) => {
+    windowStore.focusWindow(props.windowKey)
+
     const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 
     dragWindowLocation.startX = event.clientX
@@ -153,12 +161,25 @@ onMounted(() => {
     window.value.style.height = windowSizes.y
     window.value.style.width = windowSizes.x
 })
+
+const windowClasses = computed((): string => {
+    if (props.windowData.status === 'closing' || props.windowData.status === 'opening') return 'draggable-window--closed'
+
+    if (props.windowData.status === 'focused') return 'draggable-window--focused'
+
+    return ''
+})
+
+const pullFocus = () => {
+    windowStore.focusWindow(props.windowKey)
+}
 </script>
 
 <template>
     <div
-        :class="`draggable-window ${(props.windowData.status === 'closing' || props.windowData.status === 'opening') ? 'draggable-window--closed' : ''}`"
-        ref="window" v-if="props.windowData.status !== 'closed'">
+        :class="`draggable-window ${windowClasses}`"
+        ref="window" v-if="props.windowData.status !== 'closed'"
+        @click="pullFocus">
         <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
                 <slot name="header">header</slot>
@@ -182,11 +203,16 @@ onMounted(() => {
     position: absolute;
     top: $window-default-location-top;
     left: $window-default-location-left;
+    z-index: $window-z-index;
     transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
     scale: 1;
 
     &--closed {
         scale: 0;
+    }
+
+    &--focused {
+        z-index: $window-z-index + 1;
     }
 }
 
@@ -194,7 +220,6 @@ onMounted(() => {
     background-color: $tertiary;
     color: $text;
     height: $window-header-height;
-    z-index: $window-z-index;
     cursor: move;
     display: flex;
 }
