@@ -1,16 +1,34 @@
 <script setup lang="ts">
-import {Ref, ref} from 'vue'
+import {computed, onMounted, Ref, ref, useSlots} from 'vue'
+import {Window} from 'types/windows'
+import {useWindowsStore} from '../stores/windows'
 
-const isMoving = ref(false)
-const window: Ref<HTMLElement | null> = ref(null)
-let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
-const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
-let windowMoveOffset = {x: 0, y: 0}
+export interface WindowProps {
+    windowData: Window,
+    windowKey: string
+}
+
+const props = defineProps<WindowProps>()
 
 const RIGHT_MARGIN_OFFSET = 0
+const WINDOW_HEADER_HEIGHT = '30px'
 
-const startWindowMove = (event: MouseEvent) => {
-    if (!window.value) return
+let lastHeightBeforeMinimize = '0px'
+
+const isMoving: Ref<Boolean> = ref(false)
+const window: Ref<HTMLElement | null> = ref(null)
+const windowHeader: Ref<HTMLElement | null> = ref(null)
+const isMinimized: Ref<Boolean> = ref(false)
+
+const windowStore = useWindowsStore()
+
+const initWindowMove = (event: MouseEvent) => {
+    pullFocus(event)
+
+    let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
+    let windowMoveOffset = {x: 0, y: 0}
+
+    if (!window.value || !windowHeader.value) return
     windowLocation = {
         ...windowLocation,
         startX: event.clientX,
@@ -25,59 +43,66 @@ const startWindowMove = (event: MouseEvent) => {
         y: event.pageY - window.value.offsetTop,
     }
 
-    document.addEventListener('mousemove', windowMove)
-}
+    const getLimitedXMovement = (clientX: number): number => {
+        if (!window.value) return 0
 
-const getLimitedXMovement = (clientX: number): number => {
-    if (!window.value) return 0
+        const windowX = parseInt(
+            document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
+            10,
+        )
 
-    const windowX = parseInt(
-        document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
-        10,
-    )
-
-    if (clientX - windowMoveOffset.x < 0) return 0
-    else if (clientX - windowMoveOffset.x + windowX > document.body.clientWidth) {
-        return document.body.clientWidth - windowX - RIGHT_MARGIN_OFFSET
-    } else return clientX - windowMoveOffset.x
-}
-
-const getLimitedYMovement = (clientY: number): number => {
-    if (!window.value) return 0
-
-    const windowY = parseInt(
-        document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
-        10,
-    )
-
-    if (clientY - windowMoveOffset.y < 0) return 0
-    else if (clientY - windowMoveOffset.y + windowY > document.body.clientHeight) {
-        return document.body.clientHeight - windowY - RIGHT_MARGIN_OFFSET
-    } else return clientY - windowMoveOffset.y
-}
-
-const windowMove = (event: MouseEvent) => {
-    if (!isMoving.value || !window.value) return
-
-    windowLocation = {
-        stopX: getLimitedXMovement(event.clientX),
-        stopY: getLimitedYMovement(event.clientY),
-        startX: event.clientX,
-        startY: event.clientY,
+        if (clientX - windowMoveOffset.x < 0) return 0
+        else if (clientX - windowMoveOffset.x + windowX > document.body.clientWidth) {
+            return document.body.clientWidth - windowX - RIGHT_MARGIN_OFFSET
+        } else return clientX - windowMoveOffset.x
     }
 
-    window.value.style.top = windowLocation.stopY + 'px'
-    window.value.style.left = windowLocation.stopX + 'px'
+    const getLimitedYMovement = (clientY: number): number => {
+        if (!window.value) return 0
+
+        const windowY = parseInt(
+            document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+            10,
+        )
+
+        if (clientY - windowMoveOffset.y < 0) return 0
+        else if (clientY - windowMoveOffset.y + windowY > document.body.clientHeight) {
+            return document.body.clientHeight - windowY - RIGHT_MARGIN_OFFSET
+        } else return clientY - windowMoveOffset.y
+    }
+
+    const windowMove = (event: MouseEvent) => {
+        if (!isMoving.value || !window.value) return
+
+        windowLocation = {
+            stopX: getLimitedXMovement(event.clientX),
+            stopY: getLimitedYMovement(event.clientY),
+            startX: event.clientX,
+            startY: event.clientY,
+        }
+
+        window.value.style.top = windowLocation.stopY + 'px'
+        window.value.style.left = windowLocation.stopX + 'px'
+    }
+
+    const stopWindowMove = () => {
+        isMoving.value = false
+        if (window.value) window.value.style.userSelect = ''
+
+        document.removeEventListener('mousemove', windowMove)
+    }
+
+    document.addEventListener('mousemove', windowMove)
+    windowHeader.value.addEventListener('mouseup', stopWindowMove)
 }
 
-const stopWindowMove = () => {
-    isMoving.value = false
-    if (window.value) window.value.style.userSelect = ''
+const initResize = (event: MouseEvent) => {
+    pullFocus(event)
+    const resizeType = (event.target as HTMLElement).classList.value
+    console.log(resizeType)
 
-    document.removeEventListener('mousemove', windowMove)
-}
+    const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 
-const initDrag = (event: MouseEvent) => {
     dragWindowLocation.startX = event.clientX
     dragWindowLocation.startY = event.clientY
     if (!window.value) return
@@ -92,43 +117,107 @@ const initDrag = (event: MouseEvent) => {
     )
 
     window.value.style.userSelect = 'none'
+    window.value.style.transition = 'none'
 
-    document.addEventListener('mousemove', doDrag)
-    document.addEventListener('mouseup', stopDrag)
+    const doResize = (event: MouseEvent) => {
+        if (!window.value) return
+
+        switch (resizeType) {
+        case 'resizer-both':
+            window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+            window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+            break
+        case 'resizer-bottom':
+            window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+            break
+        case 'resizer-right':
+            window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+            break
+        }
+    }
+
+    const stopResize = () => {
+        if (!window.value) return
+
+        window.value.style.userSelect = ''
+        window.value.style.transition = ''
+
+        document.removeEventListener('mousemove', doResize)
+        document.removeEventListener('mouseup', stopResize)
+    }
+
+    document.addEventListener('mousemove', doResize)
+    document.addEventListener('mouseup', stopResize)
 }
 
-const doDrag = (event: MouseEvent) => {
+const minimize = () => {
     if (!window.value) return
 
-    window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-    window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+    isMinimized.value = !isMinimized.value
+
+    if (isMinimized.value) {
+        lastHeightBeforeMinimize = window.value?.style.height
+
+        window.value.style.height = WINDOW_HEADER_HEIGHT
+    } else window.value.style.height = lastHeightBeforeMinimize
 }
 
-const stopDrag = () => {
-    if (window.value) window.value.style.userSelect = ''
+onMounted(() => {
+    if (!window.value) return
 
-    document.removeEventListener('mousemove', doDrag)
-    document.removeEventListener('mouseup', stopDrag)
+    const windowSizes = {
+        x: document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
+        y: document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+    }
+
+    window.value.style.height = windowSizes.y
+    window.value.style.width = windowSizes.x
+})
+
+const windowClasses = computed((): string => {
+    if (props.windowData.status === 'closing' || props.windowData.status === 'opening') return 'draggable-window--closed'
+
+    if (props.windowData.status === 'focused') return 'draggable-window--focused'
+
+    return ''
+})
+
+const pullFocus = (event: Event) => {
+    if ((event.target as HTMLElement).classList.contains('action')) return
+
+    windowStore.focusWindow(props.windowKey)
+}
+
+const closeWindow = (event: Event) => {
+    windowStore.closeWindow(props.windowKey)
 }
 </script>
 
 <template>
-    <div class="draggable-window" ref="window">
-        <div class="draggable-window-header" @mousedown="startWindowMove" @mouseup="stopWindowMove">
+    <div
+        :class="`draggable-window ${windowClasses}`"
+        ref="window" v-if="props.windowData.status !== 'closed'"
+        @click="pullFocus">
+        <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
-                header
+                <slot name="header">
+                    header
+                </slot>
+                <slot name="header-actions">
+                    <div class="action close-button" @click="closeWindow">X</div>
+                </slot>
             </div>
         </div>
-        <div class="draggable-window-body">
+        <div :class="`draggable-window-body ${isMinimized ? 'draggable-window-body--minimized' : ''}`">
             <div class="window-body-content">
                 <span>
-                    big content energy
+                    <slot name="body">big content energy</slot>
                 </span>
             </div>
         </div>
-        <span class="resizer-right" @mousedown="initDrag"/>
-        <span class="resizer-bottom" @mousedown="initDrag"/>
-        <span class="resizer-both" @mousedown="initDrag"/>
+        <span v-if="!isMinimized" class="resizer-right" @mousedown="initResize"/>
+        <span v-if="!isMinimized" class="resizer-bottom" @mousedown="initResize"/>
+        <span v-if="!isMinimized" class="resizer-both" @mousedown="initResize"/>
     </div>
 </template>
 
@@ -137,13 +226,23 @@ const stopDrag = () => {
     position: absolute;
     top: $window-default-location-top;
     left: $window-default-location-left;
+    z-index: $window-z-index;
+    transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
+    scale: 1;
+
+    &--closed {
+        scale: 0;
+    }
+
+    &--focused {
+        z-index: $window-z-index + 1;
+    }
 }
 
 .draggable-window-header {
     background-color: $tertiary;
     color: $text;
-    height: $window-height;
-    z-index: $window-z-index;
+    height: $window-header-height;
     cursor: move;
     display: flex;
 }
@@ -152,18 +251,29 @@ const stopDrag = () => {
     background-color: $secondary;
     color: $text-dark;
     position: relative;
-    height: calc(100% - #{$window-height});
+    height: calc(100% - #{$window-header-height});
     display: flex;
+    transition: height 0.2s ease-in-out;
+
+    &--minimized {
+        height: 0;
+    }
 }
 
 .window-header-content {
     flex: 1;
     padding: 5px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .window-body-content {
     flex: 1;
     padding: 5px;
+}
+
+.close-button {
+    cursor: pointer;
 }
 
 .resizer-right {

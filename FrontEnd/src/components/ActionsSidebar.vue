@@ -5,7 +5,7 @@ import {WindowStore} from 'types/windows'
 const windowStore = useWindowsStore()
 const windowObject:WindowStore = windowStore.$state
 
-const actionClick = (windowKey: string) => windowStore.handleActionBarClick(windowKey)
+const actionClick = (windowKey: string) => windowStore.openWindow(windowKey)
 
 </script>
 
