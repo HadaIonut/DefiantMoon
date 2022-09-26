@@ -56,6 +56,7 @@ export const useWindowsStore = defineStore('counter', {
                 if (this[key].status === 'focused') this[key].status = 'opened'
             })
             this[key].status = 'focused'
+            console.log('focused', key)
         },
     },
 })

@@ -23,7 +23,7 @@ const isMinimized: Ref<Boolean> = ref(false)
 const windowStore = useWindowsStore()
 
 const initWindowMove = (event: MouseEvent) => {
-    windowStore.focusWindow(props.windowKey)
+    pullFocus(event)
 
     let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
     let windowMoveOffset = {x: 0, y: 0}
@@ -97,7 +97,9 @@ const initWindowMove = (event: MouseEvent) => {
 }
 
 const initResize = (event: MouseEvent) => {
-    windowStore.focusWindow(props.windowKey)
+    pullFocus(event)
+    const resizeType = (event.target as HTMLElement).classList.value
+    console.log(resizeType)
 
     const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 
@@ -120,8 +122,18 @@ const initResize = (event: MouseEvent) => {
     const doResize = (event: MouseEvent) => {
         if (!window.value) return
 
-        window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-        window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+        switch (resizeType) {
+        case 'resizer-both':
+            window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+            window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+            break
+        case 'resizer-bottom':
+            window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+            break
+        case 'resizer-right':
+            window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+            break
+        }
     }
 
     const stopResize = () => {
@@ -170,8 +182,14 @@ const windowClasses = computed((): string => {
     return ''
 })
 
-const pullFocus = () => {
+const pullFocus = (event: Event) => {
+    if ((event.target as HTMLElement).classList.contains('action')) return
+
     windowStore.focusWindow(props.windowKey)
+}
+
+const closeWindow = (event: Event) => {
+    windowStore.closeWindow(props.windowKey)
 }
 </script>
 
@@ -183,6 +201,8 @@ const pullFocus = () => {
         <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
                 <slot name="header">header</slot>
+
+                <div class="action close-button" @click="closeWindow">X</div>
             </div>
         </div>
         <div :class="`draggable-window-body ${isMinimized ? 'draggable-window-body--minimized' : ''}`">
@@ -240,11 +260,17 @@ const pullFocus = () => {
 .window-header-content {
     flex: 1;
     padding: 5px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .window-body-content {
     flex: 1;
     padding: 5px;
+}
+
+.close-button {
+    cursor: pointer;
 }
 
 .resizer-right {
