@@ -6,7 +6,7 @@
   "proxy": "http://localhost:8000",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "api-generate": "npx openapi-generator-cli generate -g typescript-axios -i src/api/DefiantMoon.yaml -o src/api/generated"
   },
