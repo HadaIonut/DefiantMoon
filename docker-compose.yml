@@ -15,7 +15,14 @@ services:
       context: ./BackEnd
       dockerfile: Dockerfile
     image: deno-blog-api:dev
-    container_name: deno-blog-api-dev
+    container_name: api-staging
     restart: always
     ports:
       - "8000:8000"
+  frontend:
+    container_name: frontend-staging
+    build:
+      context: ./FrontEnd
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"

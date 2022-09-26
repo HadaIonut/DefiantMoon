@@ -4,49 +4,37 @@ on:
   push:
     branches:
       - staging
-    paths:
-      - BackEnd/**
-      - .github/workflows/staging.yml
   pull_request:
     branches:
       - staging
-    paths:
-      - BackEnd/**
-      - .github/workflows/staging.yml
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup repo
-        uses: actions/checkout@v3
-
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
-
-      - name: Deno lint
-        run: deno lint BackEnd
+#  test:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Setup repo
+#        uses: actions/checkout@v3
+#
+#      - name: Setup Deno
+#        uses: denoland/setup-deno@v1
+#        with:
+#          deno-version: v1.x
+#
+#      - name: Deno lint
+#        run: deno lint BackEnd
   deploy:
     runs-on: self-hosted
     needs:
       - test
     steps:
-      - name: Stop previous
-        run: fuser -n tcp -k 8000 &
-
       - name: Setup repo
         uses: actions/checkout@v3
 
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
+      - name: Stop docker
+        run: docker-compose down
 
-      - name: Start server
-        run: RUNNER_TRACKING_ID="" && deno run --allow-net BackEnd/main.ts &
+      - name: Start docker
+        run: docker-compose up
 
 #      - name: Check running
 #        run: curl http://localhost:8000
-
