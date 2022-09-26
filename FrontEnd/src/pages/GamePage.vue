@@ -20,11 +20,11 @@ const stuff = []
         <ActionsSidebar/>
 
         <WindowComponent v-for="(window, key) in windowStore.$state" :key="key" :windowData="window" :windowKey="key">
-            <template v-slot:header>
+            <template #header>
                 <WindowHeaderRenderer :componentToRender="window.header.componentType"
                                       :headerData="window.header.componentData"/>
             </template>
-            <template v-slot:body>
+            <template #body>
                 <WindowBodyRenderer :componentToRender="window.body.componentType"/>
             </template>
         </WindowComponent>

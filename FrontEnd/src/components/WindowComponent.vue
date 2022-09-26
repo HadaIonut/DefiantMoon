@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, Ref, ref} from 'vue'
+import {computed, onMounted, Ref, ref, useSlots} from 'vue'
 import {Window} from 'types/windows'
 import {useWindowsStore} from '../stores/windows'
 
@@ -200,9 +200,12 @@ const closeWindow = (event: Event) => {
         @click="pullFocus">
         <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
-                <slot name="header">header</slot>
-
-                <div class="action close-button" @click="closeWindow">X</div>
+                <slot name="header">
+                    header
+                </slot>
+                <slot name="header-actions">
+                    <div class="action close-button" @click="closeWindow">X</div>
+                </slot>
             </div>
         </div>
         <div :class="`draggable-window-body ${isMinimized ? 'draggable-window-body--minimized' : ''}`">
