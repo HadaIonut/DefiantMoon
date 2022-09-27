@@ -14,6 +14,7 @@ export const useWindowsStore = defineStore('counter', {
                 body: {
                     componentType: 'Chat',
                 },
+                display: {},
             },
             'actorList': {
                 action: {icon: 'users', actionName: 'Actor list'},
@@ -25,6 +26,7 @@ export const useWindowsStore = defineStore('counter', {
                 body: {
                     componentType: 'ActorList',
                 },
+                display: {},
             },
             'itemList': {
                 action: {icon: 'shirt', actionName: 'Item list'},
@@ -36,6 +38,7 @@ export const useWindowsStore = defineStore('counter', {
                 body: {
                     componentType: 'ItemList',
                 },
+                display: {},
             },
         }
     },
@@ -56,7 +59,15 @@ export const useWindowsStore = defineStore('counter', {
                 if (this[key].status === 'focused') this[key].status = 'opened'
             })
             this[key].status = 'focused'
-            console.log('focused', key)
+        },
+        setWindowLocation(key: string, top: string, left: string) {
+            this[key].display.top = top
+            this[key].display.left = left
+        },
+        setWindowSize(key: string, width: string, height: string) {
+            this[key].display.width = width
+            this[key].display.height = height
         },
     },
+    persist: true,
 })

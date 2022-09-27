@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, Ref, ref, useSlots} from 'vue'
+import {computed, onActivated, onMounted, Ref, ref, watch} from 'vue'
 import {Window} from 'types/windows'
 import {useWindowsStore} from '../stores/windows'
 
@@ -87,9 +87,16 @@ const initWindowMove = (event: MouseEvent) => {
 
     const stopWindowMove = () => {
         isMoving.value = false
-        if (window.value) window.value.style.userSelect = ''
+        if (!window.value) return
+        const windowLocation = {
+            top: window.value?.style.top,
+            left: window.value?.style.left,
+        }
+
+        window.value.style.userSelect = ''
 
         document.removeEventListener('mousemove', windowMove)
+        windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
     }
 
     document.addEventListener('mousemove', windowMove)
@@ -99,7 +106,6 @@ const initWindowMove = (event: MouseEvent) => {
 const initResize = (event: MouseEvent) => {
     pullFocus(event)
     const resizeType = (event.target as HTMLElement).classList.value
-    console.log(resizeType)
 
     const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 
@@ -138,12 +144,18 @@ const initResize = (event: MouseEvent) => {
 
     const stopResize = () => {
         if (!window.value) return
+        const windowSize = {
+            width: window.value?.style.width,
+            height: window.value?.style.height,
+        }
 
         window.value.style.userSelect = ''
         window.value.style.transition = ''
 
         document.removeEventListener('mousemove', doResize)
         document.removeEventListener('mouseup', stopResize)
+
+        windowStore.setWindowSize(props.windowKey, windowSize.width, windowSize.height)
     }
 
     document.addEventListener('mousemove', doResize)
@@ -164,14 +176,25 @@ const minimize = () => {
 
 onMounted(() => {
     if (!window.value) return
+    const storeData = windowStore[props.windowKey].display
 
     const windowSizes = {
-        x: document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
-        y: document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+        width: storeData.width ?? document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
+        height: storeData.height ?? document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+        top: storeData.top ?? '',
+        left: storeData.left ?? '',
     }
 
-    window.value.style.height = windowSizes.y
-    window.value.style.width = windowSizes.x
+    window.value.style.height = windowSizes.height
+    window.value.style.width = windowSizes.width
+    window.value.style.top = windowSizes.top
+    window.value.style.left = windowSizes.left
+})
+
+const windowPosition = computed(() => {
+    const storeData = windowStore[props.windowKey].display
+
+    return `width: ${storeData.width}; height: ${storeData.height}; top: ${storeData.top}; left: ${storeData.left}`
 })
 
 const windowClasses = computed((): string => {
@@ -188,7 +211,7 @@ const pullFocus = (event: Event) => {
     windowStore.focusWindow(props.windowKey)
 }
 
-const closeWindow = (event: Event) => {
+const closeWindow = () => {
     windowStore.closeWindow(props.windowKey)
 }
 </script>
@@ -197,7 +220,8 @@ const closeWindow = (event: Event) => {
     <div
         :class="`draggable-window ${windowClasses}`"
         ref="window" v-if="props.windowData.status !== 'closed'"
-        @click="pullFocus">
+        @click="pullFocus"
+        :style="windowPosition">
         <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
                 <slot name="header">
