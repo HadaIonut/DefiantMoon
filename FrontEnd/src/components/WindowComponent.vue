@@ -218,7 +218,9 @@ const closeWindow = () => {
                     header
                 </slot>
                 <slot name="header-actions">
-                    <div class="action close-button" @click="closeWindow">X</div>
+                    <div class="action close-button" @click="closeWindow">
+                        <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </div>
                 </slot>
             </div>
         </div>
@@ -243,6 +245,10 @@ const closeWindow = () => {
     z-index: $window-z-index;
     transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
     scale: 1;
+    border-radius: 6px;
+    box-shadow: -2px 5px 10px $background;
+    border: 1px solid $accent;
+
 
     &--closed {
         scale: 0;
@@ -254,20 +260,25 @@ const closeWindow = () => {
 }
 
 .draggable-window-header {
-    background-color: $tertiary;
+    background-color: rgba($tertiary, 1);
+    backdrop-filter: blur(6px);
     color: $text;
     height: $window-header-height;
     cursor: move;
     display: flex;
+    border-radius: 6px 6px 0 0;
+
 }
 
 .draggable-window-body {
-    background-color: $secondary;
+    background-color: rgba($secondary, 1);
+    backdrop-filter: blur(6px);
     color: $text-dark;
     position: relative;
     height: calc(100% - #{$window-header-height});
     display: flex;
     transition: height 0.2s ease-in-out;
+    border-radius: 0 0 6px 6px;
 
     &--minimized {
         height: 0;
@@ -288,6 +299,11 @@ const closeWindow = () => {
 
 .close-button {
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-right: 5px;
 }
 
 .resizer-right {
