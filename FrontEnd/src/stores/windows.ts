@@ -15,6 +15,7 @@ export const useWindowsStore = defineStore('counter', {
                     componentType: 'Chat',
                 },
                 display: {},
+                isMinimized: false,
             },
             'actorList': {
                 action: {icon: 'users', actionName: 'Actor list'},
@@ -27,6 +28,7 @@ export const useWindowsStore = defineStore('counter', {
                     componentType: 'ActorList',
                 },
                 display: {},
+                isMinimized: false,
             },
             'itemList': {
                 action: {icon: 'shirt', actionName: 'Item list'},
@@ -39,6 +41,7 @@ export const useWindowsStore = defineStore('counter', {
                     componentType: 'ItemList',
                 },
                 display: {},
+                isMinimized: false,
             },
         }
     },
@@ -67,6 +70,9 @@ export const useWindowsStore = defineStore('counter', {
         setWindowSize(key: string, width: string, height: string) {
             this[key].display.width = width
             this[key].display.height = height
+        },
+        toggleMinimize(key: string) {
+            this[key].isMinimized = !this[key].isMinimized
         },
     },
     persist: true,

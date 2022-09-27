@@ -15,12 +15,11 @@ const WINDOW_HEADER_HEIGHT = '30px'
 
 let lastHeightBeforeMinimize = '0px'
 
-const isMoving: Ref<Boolean> = ref(false)
+const windowStore = useWindowsStore()
+
+const isMoving: Ref<boolean> = ref(false)
 const window: Ref<HTMLElement | null> = ref(null)
 const windowHeader: Ref<HTMLElement | null> = ref(null)
-const isMinimized: Ref<Boolean> = ref(false)
-
-const windowStore = useWindowsStore()
 
 const initWindowMove = (event: MouseEvent) => {
     pullFocus(event)
@@ -165,9 +164,11 @@ const initResize = (event: MouseEvent) => {
 const minimize = () => {
     if (!window.value) return
 
-    isMinimized.value = !isMinimized.value
+    windowStore.toggleMinimize(props.windowKey)
+    console.log(lastHeightBeforeMinimize)
+    console.log()
 
-    if (isMinimized.value) {
+    if (windowStore[props.windowKey].isMinimized) {
         lastHeightBeforeMinimize = window.value?.style.height
 
         window.value.style.height = WINDOW_HEADER_HEIGHT
@@ -175,20 +176,9 @@ const minimize = () => {
 }
 
 onMounted(() => {
-    if (!window.value) return
-    const storeData = windowStore[props.windowKey].display
-
-    const windowSizes = {
-        width: storeData.width ?? document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
-        height: storeData.height ?? document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
-        top: storeData.top ?? '',
-        left: storeData.left ?? '',
+    if (lastHeightBeforeMinimize === '0px') {
+        lastHeightBeforeMinimize = windowStore.$state[props.windowKey].display.height ?? '0px'
     }
-
-    window.value.style.height = windowSizes.height
-    window.value.style.width = windowSizes.width
-    window.value.style.top = windowSizes.top
-    window.value.style.left = windowSizes.left
 })
 
 const windowPosition = computed(() => {
@@ -232,16 +222,16 @@ const closeWindow = () => {
                 </slot>
             </div>
         </div>
-        <div :class="`draggable-window-body ${isMinimized ? 'draggable-window-body--minimized' : ''}`">
+        <div :class="`draggable-window-body ${windowStore[props.windowKey].isMinimized ? 'draggable-window-body--minimized' : ''}`">
             <div class="window-body-content">
                 <span>
                     <slot name="body">big content energy</slot>
                 </span>
             </div>
         </div>
-        <span v-if="!isMinimized" class="resizer-right" @mousedown="initResize"/>
-        <span v-if="!isMinimized" class="resizer-bottom" @mousedown="initResize"/>
-        <span v-if="!isMinimized" class="resizer-both" @mousedown="initResize"/>
+        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
+        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
+        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
     </div>
 </template>
 

@@ -20,5 +20,6 @@ export type Window = {
         left?: string | null,
         width?: string | null,
         height?: string | null
-    }
+    },
+    isMinimized: boolean
 }
