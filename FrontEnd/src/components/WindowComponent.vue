@@ -219,16 +219,15 @@ const closeWindow = () => {
                 </slot>
                 <slot name="header-actions">
                     <div class="action close-button" @click="closeWindow">
-                        <font-awesome-icon icon="fa-solid fa-xmark" />
+                        <font-awesome-icon icon="fa-solid fa-xmark"/>
                     </div>
                 </slot>
             </div>
         </div>
-        <div :class="`draggable-window-body ${windowStore[props.windowKey].isMinimized ? 'draggable-window-body--minimized' : ''}`">
+        <div
+            :class="`draggable-window-body ${windowStore[props.windowKey].isMinimized ? 'draggable-window-body--minimized' : ''}`">
             <div class="window-body-content">
-                <span>
-                    <slot name="body">big content energy</slot>
-                </span>
+                <slot name="body">big content energy</slot>
             </div>
         </div>
         <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
@@ -248,7 +247,8 @@ const closeWindow = () => {
     border-radius: 6px;
     box-shadow: -2px 5px 10px $background;
     border: 1px solid $accent;
-
+    display: flex;
+    flex-direction: column;
 
     &--closed {
         scale: 0;
@@ -267,7 +267,7 @@ const closeWindow = () => {
     cursor: move;
     display: flex;
     border-radius: 6px 6px 0 0;
-
+    flex: 0 0 30px;
 }
 
 .draggable-window-body {
@@ -276,9 +276,11 @@ const closeWindow = () => {
     color: $text-dark;
     position: relative;
     height: calc(100% - #{$window-header-height});
-    display: flex;
     transition: height 0.2s ease-in-out;
     border-radius: 0 0 6px 6px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
     &--minimized {
         height: 0;
@@ -293,8 +295,10 @@ const closeWindow = () => {
 }
 
 .window-body-content {
-    flex: 1;
     padding: 5px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .close-button {
