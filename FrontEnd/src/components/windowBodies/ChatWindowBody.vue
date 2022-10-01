@@ -22,19 +22,19 @@ const diceButton = (diceType: string) => {
     const containsThisDiceType: boolean = !!currentContent.match(currentDiceRegex)?.[1]
 
     if (append) {
-        if (hasRollFormula && containsThisDiceType) {
-            const diceRegex = new RegExp('([0-9]+)' + diceType)
+        let newChatValue: string = ''
 
-            chatEditor.value.setHTML(currentContent.replace(diceRegex, (_: string, diceCount: string) => {
-                return (Number(diceCount) + 1) + diceType
-            }))
+        if (hasRollFormula && containsThisDiceType) {
+            const diceRegex = new RegExp(`([0-9]+)${diceType}`)
+
+            newChatValue = currentContent.replace(diceRegex, (_: string, diceCount: string) => (Number(diceCount) + 1) + diceType)
         } else if (hasRollFormula) {
             const rollFormula = new RegExp('/r((?: ?\\dd\\d+ ?\\+?)+)')
 
-            chatEditor.value.setHTML(currentContent.replace(rollFormula, (_:string, formula:string) => {
-                return '/r' + formula + ' + 1' + diceType
-            }))
-        } else chatEditor.value.setHTML(chatEditor.value.getHTML() + `<p>/r 1${diceType}</p>`)
+            newChatValue = currentContent.replace(rollFormula, (_:string, formula:string) => `/r${formula} + 1${diceType}`)
+        } else newChatValue = `${chatEditor.value.getHTML()}<p>/r 1${diceType}</p>`
+
+        chatEditor.value.setHTML(newChatValue)
     } else chatEditor.value.setHTML(`<p>/r 1${diceType}</p>`)
 }
 
