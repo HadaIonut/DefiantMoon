@@ -165,8 +165,6 @@ const minimize = () => {
     if (!window.value) return
 
     windowStore.toggleMinimize(props.windowKey)
-    console.log(lastHeightBeforeMinimize)
-    console.log()
 
     if (windowStore[props.windowKey].isMinimized) {
         lastHeightBeforeMinimize = window.value?.style.height
@@ -183,8 +181,9 @@ onMounted(() => {
 
 const windowPosition = computed(() => {
     const storeData = windowStore[props.windowKey].display
+    const height = windowStore[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
 
-    return `width: ${storeData.width}; height: ${storeData.height}; top: ${storeData.top}; left: ${storeData.left}`
+    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}`
 })
 
 const windowClasses = computed((): string => {

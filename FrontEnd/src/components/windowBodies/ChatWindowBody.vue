@@ -8,6 +8,9 @@ import DiceD10Icon from '../customIcons/DiceD10Icon.vue'
 import DiceD12Icon from '../customIcons/DiceD12Icon.vue'
 import DiceD20Icon from '../customIcons/DiceD20Icon.vue'
 import {onMounted, ref, Ref} from 'vue'
+import {Window} from 'types/windows'
+
+const props = defineProps<{ windowData: Window }>()
 
 const chatEditor: Ref<Quill> = ref('')
 const uploadedImages: Ref<string[]> = ref([])
@@ -84,7 +87,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="chat">
+    <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
         <div class="chat-content">
 
         </div>
@@ -127,6 +130,10 @@ $parent-padding: 5px;
 
 .chat {
     height: 100%;
+    transition: height 0.2s ease-in-out;
+}
+.minimized {
+    display: none;
 }
 .chat-content {
     border: 1px solid $background;

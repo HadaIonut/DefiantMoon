@@ -25,7 +25,7 @@ const stuff = []
                                       :headerData="window.header.componentData"/>
             </template>
             <template #body>
-                <WindowBodyRenderer :componentToRender="window.body.componentType"/>
+                <WindowBodyRenderer :componentToRender="window.body.componentType" :windowData="window"/>
             </template>
         </WindowComponent>
     </div>
