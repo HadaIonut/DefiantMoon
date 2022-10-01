@@ -7,9 +7,10 @@ import DiceD8Icon from '../customIcons/DiceD8Icon.vue'
 import DiceD10Icon from '../customIcons/DiceD10Icon.vue'
 import DiceD12Icon from '../customIcons/DiceD12Icon.vue'
 import DiceD20Icon from '../customIcons/DiceD20Icon.vue'
-import {ref, Ref} from 'vue'
+import {onMounted, ref, Ref} from 'vue'
 
 const chatEditor: Ref<Quill> = ref('')
+const uploadedImages: Ref<string[]> = ref([])
 
 const diceButton = (diceType: string) => {
     const currentContent = chatEditor.value.getHTML()
@@ -37,6 +38,48 @@ const diceButton = (diceType: string) => {
         chatEditor.value.setHTML(newChatValue)
     } else chatEditor.value.setHTML(`<p>/r 1${diceType}</p>`)
 }
+
+const isImageUrl = (text: string): boolean => {
+    return new RegExp('(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)').test(text)
+}
+
+const handleImagePaste = (items: DataTransferItemList | undefined, event: ClipboardEvent) => {
+    let blob = null
+
+    Array.from(items as DataTransferItemList).forEach((item: DataTransferItem) => {
+        if (item.type.indexOf('image') === 0) blob = item.getAsFile()
+    })
+
+    if (blob) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        const reader = new FileReader()
+        reader.onload = (event: ProgressEvent) => {
+            const result = (event?.target as FileReader)?.result
+            if (result) uploadedImages.value.push(result.toString())
+        }
+        reader.readAsDataURL(blob)
+    }
+}
+
+const handleTextPaste = (text: string, event: ClipboardEvent) => {
+    if (isImageUrl(text)) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        uploadedImages.value.push(text)
+    }
+}
+
+onMounted(() => {
+    chatEditor.value.getQuill().root.addEventListener('paste', (event: ClipboardEvent) => {
+        const eventData = event?.clipboardData
+
+        handleImagePaste(eventData?.items, event)
+        handleTextPaste(eventData?.getData?.('Text') ?? '', event)
+    })
+})
 
 </script>
 
@@ -70,7 +113,7 @@ const diceButton = (diceType: string) => {
                 </div>
             </div>
             <div class="chat-input">
-                <QuillEditor theme="bubble" ref="chatEditor"/>
+                <QuillEditor theme="bubble" ref="chatEditor" />
             </div>
         </div>
     </div>
