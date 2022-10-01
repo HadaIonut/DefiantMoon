@@ -3,6 +3,7 @@ $primary: #814934;
 $brighter-primary: #9d5940;
 $secondary: #b3a69a;
 $darker-secondary: darken(#b3a69a, 5%);
+$darker2-secondary: darken($darker-secondary, 5%);
 $accent: #DAA520;
 $tertiary: #2f362e;
 $background: #212124;
