@@ -9,6 +9,7 @@ import DiceD12Icon from '../customIcons/DiceD12Icon.vue'
 import DiceD20Icon from '../customIcons/DiceD20Icon.vue'
 import {onMounted, ref, Ref} from 'vue'
 import {Window} from 'types/windows'
+import {getRandomString} from '../../utils/utils'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -75,12 +76,50 @@ const handleTextPaste = (text: string, event: ClipboardEvent) => {
     }
 }
 
+const urlToFile = async (url: string, filename: string, mimeType: string): Promise<File> => {
+    const res = await fetch(url)
+    const buf = await res.arrayBuffer()
+    return new File([buf], filename, {type: mimeType})
+}
+
+const getImages = async (): Promise<File[]> => {
+    const out: File[] = []
+
+    for (const image of uploadedImages.value) {
+        const isBase64: boolean = image.includes('base64')
+        const baseImageType: string = image.match(/data:([\w/]+);/)?.[1] ?? 'image/png'
+        const urlImageType: string = image.match(/(http(s?):)([/|.|\w|\s|-])*\.(jpg|gif|png)/)?.[4] ?? 'png'
+        const formattedUrlImageType: string = `image/${urlImageType}`
+
+        out.push(await urlToFile(image, getRandomString(), isBase64 ? baseImageType : formattedUrlImageType))
+    }
+
+    return out
+}
+
+const sendMessage = async () => {
+    const currentContent = chatEditor.value.getText()
+    const images: File[] = await getImages()
+
+    console.log(currentContent)
+}
+
 onMounted(() => {
+    const keyboardModule = chatEditor.value.getQuill().getModule('keyboard')
+    delete keyboardModule.bindings[13]
+
     chatEditor.value.getQuill().root.addEventListener('paste', (event: ClipboardEvent) => {
         const eventData = event?.clipboardData
 
         handleImagePaste(eventData?.items, event)
         handleTextPaste(eventData?.getData?.('Text') ?? '', event)
+    })
+    chatEditor.value.getQuill().root.addEventListener('keydown', (event: KeyboardEvent) => {
+        if (event.code === 'Enter' && !event.shiftKey) {
+            event.preventDefault()
+            event.stopPropagation()
+            sendMessage()
+        }
     })
 })
 
@@ -94,7 +133,7 @@ onMounted(() => {
         <div class="chat-input-container">
             <div class="image-send-gallery">
                 <perfect-scrollbar>
-                <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt="" class="uploaded-image">
+                    <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt="" class="uploaded-image">
                 </perfect-scrollbar>
             </div>
             <div class="chat-toolbar">
