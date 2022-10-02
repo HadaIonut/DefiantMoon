@@ -92,6 +92,11 @@ onMounted(() => {
 
         </div>
         <div class="chat-input-container">
+            <div class="image-send-gallery">
+                <perfect-scrollbar>
+                <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt="" class="uploaded-image">
+                </perfect-scrollbar>
+            </div>
             <div class="chat-toolbar">
                 <div class="dice d4 toolbar-action" @click="() => diceButton('d4')">
                     <DiceD4Icon size="28px"/>
@@ -132,14 +137,17 @@ $parent-padding: 5px;
     height: 100%;
     transition: height 0.2s ease-in-out;
 }
+
 .minimized {
     display: none;
 }
+
 .chat-content {
     border: 1px solid $background;
     margin-bottom: $content-margin-bottom;
     height: calc(100% - #{$chat-input-height} - #{$content-margin-bottom} - #{$parent-padding});
 }
+
 .chat-toolbar {
     display: flex;
     height: $chat-toolbar-height;
@@ -148,15 +156,19 @@ $parent-padding: 5px;
     padding-right: 10px;
     border-bottom: 1px dashed $background;
 }
+
 .chat-input-container {
     border: 1px solid $background;
     background: $darker-secondary;
     border-radius: 10px;
     height: $chat-input-height;
+    position: relative;
 }
+
 .chat-input {
     height: calc(100% - #{$chat-toolbar-height});
 }
+
 .toolbar-action {
     cursor: pointer;
     background: $darker-secondary;
@@ -184,5 +196,24 @@ $parent-padding: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.image-send-gallery {
+    position: absolute;
+    top: -93px;
+    left: 0;
+    width: 100%;
+}
+
+.ps {
+    width: 100%;
+    display: flex;
+    grid-gap: 5px;
+}
+
+.uploaded-image {
+    height: 80px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
 }
 </style>
