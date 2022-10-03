@@ -3,10 +3,12 @@ import VSwitch from '@lmiller1990/v-switch'
 import ActorListWindowBody from './ActorListWindowBody.vue'
 import ItemListWindowBody from './ItemListWindowBody.vue'
 import ChatWindowBody from './ChatWindowBody.vue'
+import {Window} from 'types/windows'
 
 export interface WindowBodyRendererProps {
     componentToRender: string,
-    bodyData?: any
+    bodyData?: any,
+    windowData?: Window
 }
 const props = defineProps<WindowBodyRendererProps>()
 </script>
@@ -14,7 +16,7 @@ const props = defineProps<WindowBodyRendererProps>()
 <template>
     <v-switch :case="props.componentToRender">
         <template #Chat>
-            <ChatWindowBody/>
+            <ChatWindowBody :windowData="props.windowData"/>
         </template>
         <template #ActorList>
             <ActorListWindowBody/>
