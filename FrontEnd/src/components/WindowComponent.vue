@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, Ref, ref, useSlots} from 'vue'
+import {computed, onActivated, onMounted, Ref, ref, watch} from 'vue'
 import {Window} from 'types/windows'
 import {useWindowsStore} from '../stores/windows'
 
@@ -15,12 +15,11 @@ const WINDOW_HEADER_HEIGHT = '30px'
 
 let lastHeightBeforeMinimize = '0px'
 
-const isMoving: Ref<Boolean> = ref(false)
+const windowStore = useWindowsStore()
+
+const isMoving: Ref<boolean> = ref(false)
 const window: Ref<HTMLElement | null> = ref(null)
 const windowHeader: Ref<HTMLElement | null> = ref(null)
-const isMinimized: Ref<Boolean> = ref(false)
-
-const windowStore = useWindowsStore()
 
 const initWindowMove = (event: MouseEvent) => {
     pullFocus(event)
@@ -87,9 +86,16 @@ const initWindowMove = (event: MouseEvent) => {
 
     const stopWindowMove = () => {
         isMoving.value = false
-        if (window.value) window.value.style.userSelect = ''
+        if (!window.value) return
+        const windowLocation = {
+            top: window.value?.style.top,
+            left: window.value?.style.left,
+        }
+
+        window.value.style.userSelect = ''
 
         document.removeEventListener('mousemove', windowMove)
+        windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
     }
 
     document.addEventListener('mousemove', windowMove)
@@ -99,7 +105,6 @@ const initWindowMove = (event: MouseEvent) => {
 const initResize = (event: MouseEvent) => {
     pullFocus(event)
     const resizeType = (event.target as HTMLElement).classList.value
-    console.log(resizeType)
 
     const dragWindowLocation = {startX: 0, startY: 0, startWidth: 0, startHeight: 0}
 
@@ -138,12 +143,18 @@ const initResize = (event: MouseEvent) => {
 
     const stopResize = () => {
         if (!window.value) return
+        const windowSize = {
+            width: window.value?.style.width,
+            height: window.value?.style.height,
+        }
 
         window.value.style.userSelect = ''
         window.value.style.transition = ''
 
         document.removeEventListener('mousemove', doResize)
         document.removeEventListener('mouseup', stopResize)
+
+        windowStore.setWindowSize(props.windowKey, windowSize.width, windowSize.height)
     }
 
     document.addEventListener('mousemove', doResize)
@@ -153,9 +164,11 @@ const initResize = (event: MouseEvent) => {
 const minimize = () => {
     if (!window.value) return
 
-    isMinimized.value = !isMinimized.value
+    windowStore.toggleMinimize(props.windowKey)
+    console.log(lastHeightBeforeMinimize)
+    console.log()
 
-    if (isMinimized.value) {
+    if (windowStore[props.windowKey].isMinimized) {
         lastHeightBeforeMinimize = window.value?.style.height
 
         window.value.style.height = WINDOW_HEADER_HEIGHT
@@ -163,15 +176,15 @@ const minimize = () => {
 }
 
 onMounted(() => {
-    if (!window.value) return
-
-    const windowSizes = {
-        x: document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
-        y: document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+    if (lastHeightBeforeMinimize === '0px') {
+        lastHeightBeforeMinimize = windowStore.$state[props.windowKey].display.height ?? '0px'
     }
+})
 
-    window.value.style.height = windowSizes.y
-    window.value.style.width = windowSizes.x
+const windowPosition = computed(() => {
+    const storeData = windowStore[props.windowKey].display
+
+    return `width: ${storeData.width}; height: ${storeData.height}; top: ${storeData.top}; left: ${storeData.left}`
 })
 
 const windowClasses = computed((): string => {
@@ -188,7 +201,7 @@ const pullFocus = (event: Event) => {
     windowStore.focusWindow(props.windowKey)
 }
 
-const closeWindow = (event: Event) => {
+const closeWindow = () => {
     windowStore.closeWindow(props.windowKey)
 }
 </script>
@@ -197,27 +210,30 @@ const closeWindow = (event: Event) => {
     <div
         :class="`draggable-window ${windowClasses}`"
         ref="window" v-if="props.windowData.status !== 'closed'"
-        @click="pullFocus">
+        @click="pullFocus"
+        :style="windowPosition">
         <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
                 <slot name="header">
                     header
                 </slot>
                 <slot name="header-actions">
-                    <div class="action close-button" @click="closeWindow">X</div>
+                    <div class="action close-button" @click="closeWindow">
+                        <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </div>
                 </slot>
             </div>
         </div>
-        <div :class="`draggable-window-body ${isMinimized ? 'draggable-window-body--minimized' : ''}`">
+        <div :class="`draggable-window-body ${windowStore[props.windowKey].isMinimized ? 'draggable-window-body--minimized' : ''}`">
             <div class="window-body-content">
                 <span>
                     <slot name="body">big content energy</slot>
                 </span>
             </div>
         </div>
-        <span v-if="!isMinimized" class="resizer-right" @mousedown="initResize"/>
-        <span v-if="!isMinimized" class="resizer-bottom" @mousedown="initResize"/>
-        <span v-if="!isMinimized" class="resizer-both" @mousedown="initResize"/>
+        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
+        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
+        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
     </div>
 </template>
 
@@ -229,6 +245,10 @@ const closeWindow = (event: Event) => {
     z-index: $window-z-index;
     transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
     scale: 1;
+    border-radius: 6px;
+    box-shadow: -2px 5px 10px $background;
+    border: 1px solid $accent;
+
 
     &--closed {
         scale: 0;
@@ -240,20 +260,25 @@ const closeWindow = (event: Event) => {
 }
 
 .draggable-window-header {
-    background-color: $tertiary;
+    background-color: rgba($tertiary, 1);
+    backdrop-filter: blur(6px);
     color: $text;
     height: $window-header-height;
     cursor: move;
     display: flex;
+    border-radius: 6px 6px 0 0;
+
 }
 
 .draggable-window-body {
-    background-color: $secondary;
+    background-color: rgba($secondary, 1);
+    backdrop-filter: blur(6px);
     color: $text-dark;
     position: relative;
     height: calc(100% - #{$window-header-height});
     display: flex;
     transition: height 0.2s ease-in-out;
+    border-radius: 0 0 6px 6px;
 
     &--minimized {
         height: 0;
@@ -274,6 +299,11 @@ const closeWindow = (event: Event) => {
 
 .close-button {
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-right: 5px;
 }
 
 .resizer-right {

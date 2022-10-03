@@ -14,5 +14,12 @@ export type Window = {
     body: {
         componentType: string,
         componentData?: any
-    }
+    },
+    display: {
+        top?: string | null,
+        left?: string | null,
+        width?: string | null,
+        height?: string | null
+    },
+    isMinimized: boolean
 }
