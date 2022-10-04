@@ -10,10 +10,20 @@ import DiceD20Icon from '../customIcons/DiceD20Icon.vue'
 import {onMounted, ref, Ref} from 'vue'
 import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
+import {WEBSOCKET_EMITABLE_EVENTS, WEBSOCKET_RECEIVABLE_EVENTS} from "../../websocket/events.ts";
+import {websocket} from "../../websocket/websocket.ts";
+
+type ChatMessage = {
+    from: string;
+    text: string,
+    images: string[],
+    timestamp: Date,
+}
 
 const props = defineProps<{ windowData: Window }>()
 
 const chatEditor: Ref<Quill> = ref('')
+const chatMessages: Ref<ChatMessage[]> = ref([]);
 const uploadedImages: Ref<string[]> = ref([])
 
 const diceButton = (diceType: string) => {
@@ -36,7 +46,7 @@ const diceButton = (diceType: string) => {
         } else if (hasRollFormula) {
             const rollFormula = new RegExp('/r((?: ?\\dd\\d+ ?\\+?)+)')
 
-            newChatValue = currentContent.replace(rollFormula, (_:string, formula:string) => `/r${formula} + 1${diceType}`)
+            newChatValue = currentContent.replace(rollFormula, (_: string, formula: string) => `/r${formula} + 1${diceType}`)
         } else newChatValue = `${chatEditor.value.getHTML()}<p>/r 1${diceType}</p>`
 
         chatEditor.value.setHTML(newChatValue)
@@ -97,11 +107,26 @@ const getImages = async (): Promise<File[]> => {
     return out
 }
 
+const blobToBase64 = (blob: Blob) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    return new Promise(resolve => {
+        reader.onloadend = () => {
+            resolve(reader.result);
+        };
+    });
+};
+
 const sendMessage = async () => {
-    const currentContent = chatEditor.value.getText()
+    const currentContent = (chatEditor.value.getText() as string).trimEnd()
     const images: File[] = await getImages()
 
-    console.log(currentContent)
+    const imagesBlobs = await Promise.all(images.map(blobToBase64));
+    console.log(JSON.stringify(imagesBlobs))
+
+    websocket.sendMessage(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, {text: currentContent, images: imagesBlobs})
+    chatEditor.value.setText("")
+    uploadedImages.value = [];
 }
 
 onMounted(() => {
@@ -123,17 +148,46 @@ onMounted(() => {
     })
 })
 
+const pushToChat = (message: ChatMessage) => {
+    chatMessages.value.unshift(message)
+}
+
+const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
+    console.log(onmessage);
+    pushToChat(chatMessage)
+};
+
+const onPLayerJoin: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
+    pushToChat({text: `${playerId} joined the chat`, images: [], timestamp: new Date(), from: playerId})
+};
+
+const onPlayerLeft: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
+    pushToChat({text: `${playerId} left the chat`, images: [], timestamp: new Date(), from: playerId})
+};
+
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage);
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin);
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlayerLeft);
+
+const getFormattedTextMessage = (chatMessage: ChatMessage) => {
+    return `${chatMessage.from}: ${chatMessage.text}`
+}
+
 </script>
 
 <template>
     <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
         <div class="chat-content">
-
+            <div v-for="message in chatMessages" class="message-row">
+                {{ getFormattedTextMessage(message) }}
+                <img class="chat-image" v-for="image in message.images" :src="image">
+            </div>
         </div>
         <div class="chat-input-container">
             <div class="image-send-gallery">
                 <perfect-scrollbar>
-                    <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt="" class="uploaded-image">
+                    <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt=""
+                         class="uploaded-image">
                 </perfect-scrollbar>
             </div>
             <div class="chat-toolbar">
@@ -156,11 +210,12 @@ onMounted(() => {
                     <DiceD20Icon size="28px"/>
                 </div>
                 <div class="send-message toolbar-action">
-                    Send <font-awesome-icon icon="fa-solid fa-paper-plane" />
+                    Send
+                    <font-awesome-icon icon="fa-solid fa-paper-plane"/>
                 </div>
             </div>
             <div class="chat-input">
-                <QuillEditor theme="bubble" ref="chatEditor" />
+                <QuillEditor theme="bubble" ref="chatEditor"/>
             </div>
         </div>
     </div>
@@ -177,14 +232,27 @@ $parent-padding: 5px;
     transition: height 0.2s ease-in-out;
 }
 
+.chat-image {
+    width: 50%;
+    aspect-ratio: 1;
+}
+
 .minimized {
     display: none;
 }
 
 .chat-content {
     border: 1px solid $background;
-    margin-bottom: $content-margin-bottom;
-    height: calc(100% - #{$chat-input-height} - #{$content-margin-bottom} - #{$parent-padding});
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    display: flex;
+    flex: 1;
+    flex-direction: column-reverse;
+    //justify-content: flex-end;
+    overflow: auto;
 }
 
 .chat-toolbar {
@@ -202,6 +270,7 @@ $parent-padding: 5px;
     border-radius: 10px;
     height: $chat-input-height;
     position: relative;
+    margin-top: -150px;
 }
 
 .chat-input {

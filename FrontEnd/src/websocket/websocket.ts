@@ -1,16 +1,33 @@
-const ws = new WebSocket(`ws://${window.location.origin}/api/websocket`);
+const ws = new WebSocket(`ws://127.0.0.1:8000/api/websocket`);
 
-const sendMessage = (event: string, message: Object | string) => {
-    ws.send(JSON.stringify({event, message}));
+const WEBSOCKET_DEBUG = true;
+const ws_log = (...message: any) => {
+    if(WEBSOCKET_DEBUG) {
+        console.log(...message)
+    }
+}
+
+ws.onopen = () => {
+    ws_log("[WS]: socket connected")
+}
+
+ws.onclose = () => {
+    ws_log("[WS]: socket disconnected")
+}
+
+const sendMessage = (event: string, payload: Object | string) => {
+    ws_log(`[WS]: sending event "${event}" payload "${payload}"`)
+    ws.send(JSON.stringify({event, payload}));
 };
 
 const eventsMap: WebsocketEvents = {};
 
 
 ws.onmessage = (messageEvent: MessageEvent) => {
-    const {event, message} = JSON.parse(messageEvent.data);
+    const {event, payload} = JSON.parse(messageEvent.data);
+    ws_log(`[WS]: event received event: "${event}" payload: ${JSON.stringify(payload)}`)
     if (eventsMap[event]) {
-        eventsMap[event].forEach((cb) => cb(message));
+        eventsMap[event].forEach((cb) => cb(payload));
     }
 };
 
@@ -26,7 +43,7 @@ const removeEventListener = (event: string, callback: WebsocketMessageCallback) 
     if (!eventsMap[event]) {
         return
     }
-    eventsMap[event].filter((cb) => cb !== callback);
+    eventsMap[event] = eventsMap[event].filter((cb) => cb !== callback);
 };
 
 const removeEventListeners = (event: string) => {

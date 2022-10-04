@@ -1,4 +1,4 @@
-type WebsocketMessageCallback = (message: object | string) => any
+type WebsocketMessageCallback = (payload: any) => any
 
 type WebsocketEvents = {
     [key: string]: MessageCallback[]

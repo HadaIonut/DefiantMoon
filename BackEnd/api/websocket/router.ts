@@ -2,10 +2,10 @@ import { onChatMessage } from "./chat/events.ts";
 import { WEBSOCKET_EVENTS } from "./events.ts";
 
 const eventsMap = {
-    [WEBSOCKET_EVENTS.CHAT]: onChatMessage,
+    [WEBSOCKET_EVENTS.CHAT_MESSAGE]: onChatMessage,
 }
 
 export const getSocketHandler = (websocket: WebSocket) => (messageEvent: MessageEvent) => {
-    const { event, message } = JSON.parse(messageEvent.data);
-    eventsMap[event as WEBSOCKET_EVENTS]?.(websocket, message)
+    const { event, payload } = JSON.parse(messageEvent.data);
+    eventsMap[event as WEBSOCKET_EVENTS]?.(websocket, payload)
 };
