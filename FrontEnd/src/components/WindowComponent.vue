@@ -283,6 +283,10 @@ const closeWindow = () => {
 
     &--minimized {
         height: 0;
+
+        & > .window-body-content {
+            display: none;
+        }
     }
 }
 
@@ -298,6 +302,7 @@ const closeWindow = () => {
     display: flex;
     flex-direction: column;
     flex: 1;
+    height: 100%;
 }
 
 .close-button {

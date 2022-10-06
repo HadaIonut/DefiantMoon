@@ -1,3 +1,3 @@
-import {DefaultApi} from "./generated/index";
+import {DefaultApi} from './generated/index'
 
-export const apiClient = new DefaultApi(undefined, "http://defiant-moon-staging.xeosmarthome.com/api");
+export const apiClient = new DefaultApi(undefined, 'http://localhost:8000/api')

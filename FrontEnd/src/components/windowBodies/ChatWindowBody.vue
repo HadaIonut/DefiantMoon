@@ -10,8 +10,8 @@ import DiceD20Icon from '../customIcons/DiceD20Icon.vue'
 import {onMounted, ref, Ref} from 'vue'
 import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
-import {WEBSOCKET_EMITABLE_EVENTS, WEBSOCKET_RECEIVABLE_EVENTS} from "../../websocket/events.ts";
-import {websocket} from "../../websocket/websocket.ts";
+import {WEBSOCKET_EMITABLE_EVENTS, WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
+import {websocket} from '../../websocket/websocket'
 
 type ChatMessage = {
     from: string;
@@ -23,7 +23,7 @@ type ChatMessage = {
 const props = defineProps<{ windowData: Window }>()
 
 const chatEditor: Ref<Quill> = ref('')
-const chatMessages: Ref<ChatMessage[]> = ref([]);
+const chatMessages: Ref<ChatMessage[]> = ref([])
 const uploadedImages: Ref<string[]> = ref([])
 
 const diceButton = (diceType: string) => {
@@ -108,25 +108,25 @@ const getImages = async (): Promise<File[]> => {
 }
 
 const blobToBase64 = (blob: Blob) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    return new Promise(resolve => {
+    const reader = new FileReader()
+    reader.readAsDataURL(blob)
+    return new Promise((resolve) => {
         reader.onloadend = () => {
-            resolve(reader.result);
-        };
-    });
-};
+            resolve(reader.result)
+        }
+    })
+}
 
 const sendMessage = async () => {
     const currentContent = (chatEditor.value.getText() as string).trimEnd()
     const images: File[] = await getImages()
 
-    const imagesBlobs = await Promise.all(images.map(blobToBase64));
+    const imagesBlobs = await Promise.all(images.map(blobToBase64))
     console.log(JSON.stringify(imagesBlobs))
 
     websocket.sendMessage(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, {text: currentContent, images: imagesBlobs})
-    chatEditor.value.setText("")
-    uploadedImages.value = [];
+    chatEditor.value.setText('')
+    uploadedImages.value = []
 }
 
 onMounted(() => {
@@ -153,21 +153,21 @@ const pushToChat = (message: ChatMessage) => {
 }
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
-    console.log(onmessage);
+    console.log(onmessage)
     pushToChat(chatMessage)
-};
+}
 
 const onPLayerJoin: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
     pushToChat({text: `${playerId} joined the chat`, images: [], timestamp: new Date(), from: playerId})
-};
+}
 
 const onPlayerLeft: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
     pushToChat({text: `${playerId} left the chat`, images: [], timestamp: new Date(), from: playerId})
-};
+}
 
-websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage);
-websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin);
-websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlayerLeft);
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin)
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlayerLeft)
 
 const getFormattedTextMessage = (chatMessage: ChatMessage) => {
     return `${chatMessage.from}: ${chatMessage.text}`
@@ -178,10 +178,12 @@ const getFormattedTextMessage = (chatMessage: ChatMessage) => {
 <template>
     <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
         <div class="chat-content">
-            <div v-for="message in chatMessages" class="message-row">
-                {{ getFormattedTextMessage(message) }}
-                <img class="chat-image" v-for="image in message.images" :src="image">
-            </div>
+            <perfect-scrollbar>
+                <div v-for="message in chatMessages" class="message-row">
+                    {{ getFormattedTextMessage(message) }}
+                    <img class="chat-image" v-for="image in message.images" :src="image">
+                </div>
+            </perfect-scrollbar>
         </div>
         <div class="chat-input-container">
             <div class="image-send-gallery">
@@ -228,8 +230,11 @@ $content-margin-bottom: 15px;
 $parent-padding: 5px;
 
 .chat {
-    height: 100%;
+    height: calc(100% - 2 * #{$parent-padding});
     transition: height 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .chat-image {
@@ -242,17 +247,14 @@ $parent-padding: 5px;
 }
 
 .chat-content {
-    border: 1px solid $background;
-    position: absolute;
-    top: 10px;
-    bottom: 10px;
-    right: 10px;
-    left: 10px;
     display: flex;
-    flex: 1;
+    height: calc(100% - #{$chat-input-height} - 8px - 2 * #{$parent-padding});
     flex-direction: column-reverse;
-    //justify-content: flex-end;
     overflow: auto;
+}
+
+.chat-content > .ps {
+    width: 100%;
 }
 
 .chat-toolbar {
@@ -270,7 +272,6 @@ $parent-padding: 5px;
     border-radius: 10px;
     height: $chat-input-height;
     position: relative;
-    margin-top: -150px;
 }
 
 .chat-input {
@@ -313,7 +314,7 @@ $parent-padding: 5px;
     width: 100%;
 }
 
-.ps {
+.image-send-gallery > .ps {
     width: 100%;
     display: flex;
     grid-gap: 5px;
@@ -324,4 +325,18 @@ $parent-padding: 5px;
     aspect-ratio: 1/1;
     object-fit: cover;
 }
+</style>
+
+<style lang="scss">
+
+.chat-content > .ps > .ps__rail-y > .ps__thumb-y {
+    background-color: $tertiary;
+    border: $accent 1px solid;
+}
+
+.image-send-gallery > .ps > .ps__rail-x > .ps__thumb-x {
+    background-color: $tertiary;
+    border: $accent 1px solid;
+}
+
 </style>
