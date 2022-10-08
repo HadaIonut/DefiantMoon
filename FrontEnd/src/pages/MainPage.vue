@@ -26,7 +26,12 @@ const onInputChange = (newValue: string) => loginData.value.password = newValue
 const login = async () => {
     if (loginData.value.username === '') return toast.error(t('notifications.noUser'))
     const loginResult = await usersStore.loginUser(loginData.value)
-    console.log(await apiClient.getUserProfile())
+
+    try {
+        console.log(await apiClient.getUserProfile())
+    } catch (e) {
+        console.log(e)
+    }
 
     if (loginResult) return await router.push('/game')
     toast.error(t('notifications.wrongPassword'))

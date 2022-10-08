@@ -4,7 +4,6 @@ import {useWindowsStore} from '../stores/windows'
 
 const usersStore = useUsersStore()
 const windowStore = useWindowsStore()
-const stuff = []
 </script>
 
 <template>
