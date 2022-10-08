@@ -1,11 +1,5 @@
 <script setup lang="ts">
 import {Quill} from '@vueup/vue-quill'
-import DiceD4Icon from '../customIcons/DiceD4Icon.vue'
-import DiceD6Icon from '../customIcons/DiceD6Icon.vue'
-import DiceD8Icon from '../customIcons/DiceD8Icon.vue'
-import DiceD10Icon from '../customIcons/DiceD10Icon.vue'
-import DiceD12Icon from '../customIcons/DiceD12Icon.vue'
-import DiceD20Icon from '../customIcons/DiceD20Icon.vue'
 
 const props = defineProps<{
     chatEditor: Quill

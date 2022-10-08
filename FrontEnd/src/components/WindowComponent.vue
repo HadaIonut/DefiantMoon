@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onActivated, onMounted, Ref, ref, watch} from 'vue'
+import {computed, onMounted, Ref, ref} from 'vue'
 import {Window} from 'types/windows'
 import {useWindowsStore} from '../stores/windows'
 

@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import {useUsersStore} from '../stores/users'
-import ActionsSidebar from '../components/ActionsSidebar.vue'
-import WindowComponent from '../components/WindowComponent.vue'
-import WebsocketComponent from '../components/WebsocketComponent.vue';
 import {useWindowsStore} from '../stores/windows'
-import WindowHeaderRenderer from '../components/windowHeaders/WindowHeaderRender.vue'
-import WindowBodyRenderer from '../components/windowBodies/WindowBodyRenderer.vue'
 
 const usersStore = useUsersStore()
 const windowStore = useWindowsStore()

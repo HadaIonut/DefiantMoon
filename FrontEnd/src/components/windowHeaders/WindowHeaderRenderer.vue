@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import VSwitch from '@lmiller1990/v-switch'
-import SimpleWindowHeader from './SimpleWindowHeader.vue'
 
 export interface WindowHeaderRendererProps {
     componentToRender: string,

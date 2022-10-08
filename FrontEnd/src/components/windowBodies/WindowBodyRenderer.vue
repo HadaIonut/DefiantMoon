@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import VSwitch from '@lmiller1990/v-switch'
-import ActorListWindowBody from './ActorListWindowBody.vue'
-import ItemListWindowBody from './ItemListWindowBody.vue'
-import ChatWindowBody from './ChatWindowBody.vue'
 import {Window} from 'types/windows'
 
 export interface WindowBodyRendererProps {

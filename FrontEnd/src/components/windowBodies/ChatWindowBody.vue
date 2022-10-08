@@ -6,14 +6,7 @@ import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
 import {WEBSOCKET_EMITABLE_EVENTS, WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
-import ChatToolbar from '../chatComponents/ChatToolbar.vue'
-
-type ChatMessage = {
-    from: string;
-    text: string,
-    images: string[],
-    timestamp: Date,
-}
+import {ChatMessage} from 'types/ChatMessage'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -145,6 +138,7 @@ const getFormattedTextMessage = (chatMessage: ChatMessage) => {
     <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
         <div class="chat-content">
             <perfect-scrollbar>
+                <ChatMessageComponent/>
                 <div v-for="message in chatMessages" class="message-row" :key="message.timestamp">
                     <span :key="message.timestamp">
                         {{ getFormattedTextMessage(message) }}
