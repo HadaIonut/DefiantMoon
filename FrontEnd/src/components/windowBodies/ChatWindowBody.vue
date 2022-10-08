@@ -109,7 +109,7 @@ onMounted(() => {
 })
 
 const pushToChat = (message: ChatMessage) => {
-    chatMessages.value.unshift(message)
+    chatMessages.value.push(message)
 }
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
@@ -128,23 +128,13 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessa
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin)
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlayerLeft)
 
-const getFormattedTextMessage = (chatMessage: ChatMessage) => {
-    return `${chatMessage.from}: ${chatMessage.text}`
-}
-
 </script>
 
 <template>
     <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
         <div class="chat-content">
             <perfect-scrollbar>
-                <ChatMessageComponent/>
-                <div v-for="message in chatMessages" class="message-row" :key="message.timestamp">
-                    <span :key="message.timestamp">
-                        {{ getFormattedTextMessage(message) }}
-                        <img class="chat-image" v-for="image in message.images" :src="image" alt="">
-                    </span>
-                </div>
+                <ChatMessageComponent v-for="message in chatMessages" :key="message.timestamp" :message="message"/>
             </perfect-scrollbar>
         </div>
         <div class="chat-input-container">
@@ -174,11 +164,6 @@ $parent-padding: 5px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-}
-
-.chat-image {
-    width: 50%;
-    aspect-ratio: 1;
 }
 
 .minimized {

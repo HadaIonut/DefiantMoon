@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import DropdownComponent from '../components/DropdownComponent.vue'
-import InputComponent from '../components/InputComponent.vue'
-import ButtonComponent from '../components/ButtonComponent.vue'
 import {computed, onMounted, ref} from 'vue'
 import {apiClient} from '../api/index'
 import {DropdownOption} from 'types/Dropdown'
@@ -10,7 +7,6 @@ import {useUsersStore} from '../stores/users'
 import {useRouter} from 'vue-router'
 import {useToast} from 'vue-toastification'
 import {useI18n} from 'vue-i18n'
-import FormOptionComponent from '../components/FormOptionComponent.vue'
 
 const players = ref<DropdownOption[]>([])
 const loginData = ref<LoginRequest>({username: '', password: ''})
