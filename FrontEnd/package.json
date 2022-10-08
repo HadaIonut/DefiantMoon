@@ -11,6 +11,7 @@
     "api-generate": "npx openapi-generator-cli generate -g typescript-axios -i src/api/DefiantMoon.yaml -o src/api/generated"
   },
   "dependencies": {
+    "@formkit/auto-animate": "^1.0.0-beta.3",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
     "@fortawesome/free-solid-svg-icons": "^6.2.0",
     "@fortawesome/vue-fontawesome": "^3.0.1",

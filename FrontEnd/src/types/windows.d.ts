@@ -6,7 +6,7 @@ export type WindowStore = {
 
 export type Window = {
     action: Action,
-    status: 'closed' | 'closing' | 'opened' | 'opening' | 'focused',
+    status: 'closed' | 'opened' | 'focused',
     header: {
         componentType: string,
         componentData?: any

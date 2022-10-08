@@ -47,15 +47,11 @@ export const useWindowsStore = defineStore('counter', {
     },
     actions: {
         openWindow(key: string) {
-            this[key].status = 'opening'
-            setTimeout(() => {
-                this[key].status = 'opened'
-                this.focusWindow(key)
-            })
+            this[key].status = 'opened'
+            this.focusWindow(key)
         },
         closeWindow(key: string) {
-            this[key].status = 'closing'
-            setTimeout(() => this[key].status = 'closed', 201)
+            this[key].status = 'closed'
         },
         focusWindow(key: string) {
             Object.keys(this.$state).forEach((key) => {

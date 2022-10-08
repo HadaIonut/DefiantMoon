@@ -13,6 +13,7 @@ import {createI18n} from 'vue-i18n'
 import {translations} from './translations/translations'
 import PerfectScrollbar from 'vue3-perfect-scrollbar'
 import 'vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css'
+import {autoAnimatePlugin} from '@formkit/auto-animate/vue'
 import {QuillEditor} from '@vueup/vue-quill'
 
 const MainPage = () => import('./pages/MainPage.vue')
@@ -52,6 +53,7 @@ app.use(VueClickAwayPlugin)
 app.use(Toast, toastOptions)
 app.use(i18n)
 app.use(PerfectScrollbar)
+app.use(autoAnimatePlugin)
 app.component('QuillEditor', QuillEditor)
 app.component('FontAwesomeIcon', FontAwesomeIcon)
 app.mount('#app')

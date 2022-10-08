@@ -195,7 +195,7 @@ const windowClasses = computed((): string => {
 })
 
 const pullFocus = (event: Event) => {
-    if ((event.target as HTMLElement).classList.contains('action')) return
+    if ((event.target as HTMLElement).closest('.action')) return
 
     windowStore.focusWindow(props.windowKey)
 }
@@ -242,16 +242,11 @@ const closeWindow = () => {
     left: $window-default-location-left;
     z-index: $window-z-index;
     transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
-    scale: 1;
     border-radius: 6px;
     box-shadow: -2px 5px 10px $background;
     border: 1px solid $accent;
     display: flex;
     flex-direction: column;
-
-    &--closed {
-        scale: 0;
-    }
 
     &--focused {
         z-index: $window-z-index + 1;
