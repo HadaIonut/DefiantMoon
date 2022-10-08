@@ -120,7 +120,6 @@ const pushToChat = (message: ChatMessage) => {
 }
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
-    console.log(onmessage)
     pushToChat(chatMessage)
 }
 
