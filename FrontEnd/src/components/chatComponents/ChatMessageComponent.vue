@@ -8,7 +8,6 @@ import 'swiper/css/pagination'
 import {Navigation, Pagination} from 'swiper'
 import {ChatMessage} from 'api/generated/index'
 
-
 const props = defineProps<{
     message: ChatMessage
 }>()
@@ -20,13 +19,17 @@ const messageClasses = computed(() => {
     else return 'message'
 })
 
+const findCurrentUsername = (currentUserId: string): string => {
+    return usersStore.allUsers.find((user) => user.id === currentUserId)?.name ?? ''
+}
+
 </script>
 
 <template>
     <div class="message-row" :key="message.timestamp">
         <div :class="messageClasses">
             <div class="message-sender">
-                {{props.message.from ?? 'undefined'}}
+                {{findCurrentUsername(props.message.from)}}
             </div>
 
             <div class="message-content " v-html="props.message.content[0]"></div>
