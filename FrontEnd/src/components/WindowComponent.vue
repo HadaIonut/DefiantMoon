@@ -2,6 +2,7 @@
 import {computed, onMounted, Ref, ref} from 'vue'
 import {Window} from 'types/windows'
 import {useWindowsStore} from '../stores/windows'
+import {Motion} from 'motion/vue'
 
 export interface WindowProps {
     windowData: Window,
@@ -187,8 +188,6 @@ const windowPosition = computed(() => {
 })
 
 const windowClasses = computed((): string => {
-    if (props.windowData.status === 'closing' || props.windowData.status === 'opening') return 'draggable-window--closed'
-
     if (props.windowData.status === 'focused') return 'draggable-window--focused'
 
     return ''
@@ -223,11 +222,12 @@ const closeWindow = () => {
                 </slot>
             </div>
         </div>
-        <div
-            :class="`draggable-window-body ${windowStore[props.windowKey].isMinimized ? 'draggable-window-body--minimized' : ''}`">
-            <div class="window-body-content">
-                <slot name="body">big content energy</slot>
-            </div>
+        <div class="draggable-window-body">
+            <Motion v-show="!windowStore[props.windowKey].isMinimized" style="height: 100%" :animate="{scaleY: 1}" :exit="{scaleY: 0}" >
+                <div class="window-body-content">
+                    <slot name="body">big content energy</slot>
+                </div>
+            </Motion>
         </div>
         <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
         <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
@@ -270,14 +270,12 @@ const closeWindow = () => {
     color: $text-dark;
     position: relative;
     height: calc(100% - #{$window-header-height});
-    transition: height 0.2s ease-in-out;
     border-radius: 0 0 6px 6px;
     flex: 1;
     display: flex;
     flex-direction: column;
 
     &--minimized {
-        height: 0;
 
         & > .window-body-content {
             display: none;
