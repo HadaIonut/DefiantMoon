@@ -5,20 +5,17 @@ const props = defineProps<{
     message: ChatMessage
 }>()
 
-const getFormattedTextMessage = (chatMessage: ChatMessage) => {
-    return `${chatMessage.from}: ${chatMessage.text}`
-}
-
 </script>
 
 <template>
     <div class="message-row" :key="message.timestamp">
-        <div class="message">
-            <span>{{props.message.from ?? 'undefined'}} </span>
-
-            <div style="display:flex; align-items: center">
-                <span class="message-content" v-html="props.message.text"></span>
+        <div class="message message-right">
+            <div class="message-sender">
+                {{props.message.from ?? 'undefined'}}
             </div>
+
+            <div class="message-content " v-html="props.message.text"></div>
+
             <img class="chat-image" v-for="image in message.images" :src="image" alt="">
         </div>
     </div>
@@ -27,7 +24,6 @@ const getFormattedTextMessage = (chatMessage: ChatMessage) => {
 <style scoped lang="scss">
 .chat-image {
     width: 50%;
-    aspect-ratio: 1;
 }
 
 .message-row {
@@ -38,12 +34,21 @@ const getFormattedTextMessage = (chatMessage: ChatMessage) => {
 
 .message {
     background-color: $lighter-secondary;
-    width: 70%;
+    max-width: 70%;
     padding: 10px;
+    border-radius: 12px;
 }
 
 .message-right {
-    justify-self: end;
+    align-self: end;
+    background-color: $primary;
+    color: $secondary;
+}
+
+.message-sender {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 .message-content {

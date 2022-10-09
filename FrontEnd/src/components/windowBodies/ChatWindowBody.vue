@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {Quill, QuillEditor} from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css'
-import {onMounted, ref, Ref} from 'vue'
+import {nextTick, onMounted, ref, Ref} from 'vue'
 import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
 import {WEBSOCKET_EMITABLE_EVENTS, WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
@@ -93,8 +93,6 @@ const sendMessage = async () => {
     websocket.sendMessage(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, {text: currentContent, images: imagesBlobs})
     chatEditor.value.setHTML('<p></p>')
     uploadedImages.value = []
-
-    scrollToBottom(messageDisplayArea)
 }
 
 const catchImagePasteEvent = () => {
@@ -130,6 +128,7 @@ const pushToChat = (message: ChatMessage) => {
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
     pushToChat(chatMessage)
+    nextTick().then(() => scrollToBottom(messageDisplayArea))
 }
 
 const onPLayerJoin: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
