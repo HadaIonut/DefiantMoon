@@ -84,13 +84,14 @@ const scrollToBottom = (area: Ref<any>) => {
 }
 
 const sendMessage = async () => {
-    const currentContent = (chatEditor.value.getText() as string).trimEnd()
+    let currentContent = (chatEditor.value.getHTML() as string).trimEnd()
+    currentContent = currentContent.replaceAll(/\n/g, '<br>')
     const images: File[] = await getImages()
 
     const imagesBlobs = await Promise.all(images.map(blobToBase64))
 
     websocket.sendMessage(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, {text: currentContent, images: imagesBlobs})
-    chatEditor.value.setText('')
+    chatEditor.value.setHTML('<p></p>')
     uploadedImages.value = []
 
     scrollToBottom(messageDisplayArea)
@@ -132,11 +133,11 @@ const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
 }
 
 const onPLayerJoin: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
-    pushToChat({text: `${playerId} joined the chat`, images: [], timestamp: new Date(), from: playerId})
+    pushToChat({text: `${playerId} joined the chat`, images: [], timestamp: new Date(), from: 'System'})
 }
 
 const onPlayerLeft: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
-    pushToChat({text: `${playerId} left the chat`, images: [], timestamp: new Date(), from: playerId})
+    pushToChat({text: `${playerId} left the chat`, images: [], timestamp: new Date(), from: 'System'})
 }
 
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)
