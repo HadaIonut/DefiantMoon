@@ -43,6 +43,49 @@ export interface AvailableUser {
 /**
  * 
  * @export
+ * @interface ChatMessage
+ */
+export interface ChatMessage {
+    /**
+     * 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'id'?: string;
+    /**
+     * 
+     * @type {Array<ChatMessageContentInner>}
+     * @memberof ChatMessage
+     */
+    'content'?: Array<ChatMessageContentInner>;
+    /**
+     * 
+     * @type {number}
+     * @memberof ChatMessage
+     */
+    'timestamp'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ChatMessage
+     */
+    'from'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ChatMessage
+     */
+    'images'?: Array<string>;
+}
+/**
+ * @type ChatMessageContentInner
+ * @export
+ */
+export type ChatMessageContentInner = number | string;
+
+/**
+ * 
+ * @export
  * @interface GetAvailableUsers200Response
  */
 export interface GetAvailableUsers200Response {
@@ -96,6 +139,42 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} [timestamp] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getChatMessages: async (timestamp?: number, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/chat/messages`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication cookieAuth required
+
+            if (timestamp !== undefined) {
+                localVarQueryParameter['timestamp'] = timestamp;
+            }
 
 
     
@@ -184,7 +263,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             assertParamExists('sendChatMessage', 'message', message)
             // verify required parameter 'images' is not null or undefined
             assertParamExists('sendChatMessage', 'images', images)
-            const localVarPath = `/chat/message`;
+            const localVarPath = `/chat/messages`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -244,6 +323,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {number} [timestamp] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getChatMessages(timestamp?: number, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ChatMessage>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getChatMessages(timestamp, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -292,6 +381,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
+         * @param {number} [timestamp] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getChatMessages(timestamp?: number, options?: any): AxiosPromise<Array<ChatMessage>> {
+            return localVarFp.getChatMessages(timestamp, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -335,6 +433,17 @@ export class DefaultApi extends BaseAPI {
      */
     public getAvailableUsers(options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getAvailableUsers(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} [timestamp] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getChatMessages(timestamp?: number, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getChatMessages(timestamp, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

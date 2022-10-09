@@ -61,7 +61,26 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/AvailableUser'
-  /chat/message:
+  /chat/messages:
+    get:
+      operationId: getChatMessages
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - in: query
+          name: timestamp
+          schema:
+            type: integer
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                nullable: false
+                items:
+                  $ref: '#/components/schemas/ChatMessage'
     post:
       operationId: sendChatMessage
       security:
@@ -101,3 +120,22 @@ components:
       required:
         - id
         - username
+
+    ChatMessage:
+      properties:
+        id:
+          type: string
+        content:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: number
+        timestamp:
+          type: number
+        from:
+          type: string
+        images:
+          type: array
+          items:
+            type: string

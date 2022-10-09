@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import {ChatMessage} from 'types/ChatMessage'
 import {computed} from 'vue'
 import {useUsersStore} from '../../stores/users'
 import {Swiper, SwiperSlide} from 'swiper/vue'
@@ -7,6 +6,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import {Navigation, Pagination} from 'swiper'
+import {ChatMessage} from 'api/generated/index'
 
 
 const props = defineProps<{
@@ -16,7 +16,7 @@ const props = defineProps<{
 const usersStore = useUsersStore()
 
 const messageClasses = computed(() => {
-    if (props.message.userId === usersStore.currentUser.id) return 'message message-right'
+    if (props.message.from === usersStore.currentUser.id) return 'message message-right'
     else return 'message'
 })
 
@@ -26,10 +26,10 @@ const messageClasses = computed(() => {
     <div class="message-row" :key="message.timestamp">
         <div :class="messageClasses">
             <div class="message-sender">
-                {{props.message.username ?? 'undefined'}}
+                {{props.message.from ?? 'undefined'}}
             </div>
 
-            <div class="message-content " v-html="props.message.text"></div>
+            <div class="message-content " v-html="props.message.content[0]"></div>
 
             <img :src="message.images[0]" alt="" v-if="message.images.length === 1" class="chat-image">
 

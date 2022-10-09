@@ -26,6 +26,11 @@ export default defineConfig({
                 secure: false,
                 ws: true,
             },
+            '/cdn': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+                secure: false,
+            },
         },
     },
 })

@@ -6,8 +6,8 @@ import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
 import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
-import {ChatMessage} from 'types/ChatMessage'
 import {apiClient} from '../../api/index'
+import {ChatMessage} from '../../api/generated/index'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -109,6 +109,12 @@ onMounted(() => {
 
     catchImagePasteEvent()
     catchEnterEvent()
+    apiClient.getChatMessages(Date.now()).then(({data}) => {
+        chatMessages.value = data
+        nextTick().then(() => {
+            scrollToBottom(messageDisplayArea)
+        })
+    })
 })
 
 const pushToChat = (message: ChatMessage) => {
@@ -116,6 +122,7 @@ const pushToChat = (message: ChatMessage) => {
 }
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
+    console.log(chatMessage)
     pushToChat(chatMessage)
     nextTick().then(() => scrollToBottom(messageDisplayArea))
 }
@@ -129,21 +136,19 @@ type UserJoinOrLeftParams = {
 
 const onPLayerJoin: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) => {
     pushToChat({
-        text: `${user.username} joined the chat`,
+        content: [`${user.username} joined the chat`],
         images: [],
-        timestamp: new Date(),
-        username: 'System',
-        userId: '0',
+        timestamp: Date.now(),
+        from: '0',
     })
 }
 
 const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) => {
     pushToChat({
-        text: `${user.username} left the chat`,
+        content: [`${user.username} left the chat`],
         images: [],
-        timestamp: new Date(),
-        username: 'System',
-        userId: '0',
+        timestamp: Date.now(),
+        from: '0',
     })
 }
 
