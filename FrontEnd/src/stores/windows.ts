@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {WindowStore} from 'types/windows'
 
-export const useWindowsStore = defineStore('counter', {
+export const useWindowsStore = defineStore('windows', {
     state: (): WindowStore => {
         return {
             'chat': {
@@ -15,6 +15,12 @@ export const useWindowsStore = defineStore('counter', {
                     componentType: 'Chat',
                 },
                 display: {},
+                startingDisplay: {
+                    top: '20px',
+                    left: '20px',
+                    width: '400px',
+                    height: '500px',
+                },
                 isMinimized: false,
             },
             'actorList': {
@@ -69,6 +75,15 @@ export const useWindowsStore = defineStore('counter', {
         },
         toggleMinimize(key: string) {
             this[key].isMinimized = !this[key].isMinimized
+        },
+        applyWindowStartingData(key: string) {
+            this[key].display = {...this[key].startingDisplay}
+        },
+    },
+    getters: {
+        hasDisplaySet: (state: WindowStore) => (key: string): boolean => {
+            const display = state[key].display
+            return !(!display.top && !display.left && !display.height && !display.width)
         },
     },
     persist: true,

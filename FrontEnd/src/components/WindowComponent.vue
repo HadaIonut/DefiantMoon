@@ -178,6 +178,10 @@ onMounted(() => {
     if (lastHeightBeforeMinimize === '0px') {
         lastHeightBeforeMinimize = windowStore.$state[props.windowKey].display.height ?? '0px'
     }
+
+    if (!windowStore.hasDisplaySet(props.windowKey)) {
+        windowStore.applyWindowStartingData(props.windowKey)
+    }
 })
 
 const windowPosition = computed(() => {
