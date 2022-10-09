@@ -2,7 +2,7 @@ import { websocketClients } from "./clients.ts"
 import { WEBSOCKET_EMITABLE_EVENTS } from "./events.ts";
 
 export const broadcastEvent = (event: WEBSOCKET_EMITABLE_EVENTS, payload: string | Record<string, unknown>) => {
-    websocketClients.forEach((ws) => {
+    Object.values(websocketClients).forEach((ws) => {
         ws.send(
             JSON.stringify({
                 event,

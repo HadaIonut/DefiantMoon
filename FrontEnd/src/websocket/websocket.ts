@@ -1,4 +1,4 @@
-const ws = new WebSocket(`ws://127.0.0.1:8000/api/websocket`)
+const ws = new WebSocket(`ws://localhost:5173/api/websocket`)
 
 const WEBSOCKET_DEBUG = true
 

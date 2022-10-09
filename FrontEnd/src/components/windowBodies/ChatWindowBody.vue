@@ -132,12 +132,31 @@ const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
     pushToChat(chatMessage)
 }
 
-const onPLayerJoin: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
-    pushToChat({text: `${playerId} joined the chat`, images: [], timestamp: new Date(), from: 'System'})
+type UserJoinOrLeftParams = {
+    user: {
+        username: string,
+        id: string
+    }
 }
 
-const onPlayerLeft: WebsocketMessageCallback = ({playerId}: { playerId: string }) => {
-    pushToChat({text: `${playerId} left the chat`, images: [], timestamp: new Date(), from: 'System'})
+const onPLayerJoin: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) => {
+    pushToChat({
+        text: `${user.username} joined the chat`,
+        images: [],
+        timestamp: new Date(),
+        username: 'System',
+        userId: '0',
+    })
+}
+
+const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) => {
+    pushToChat({
+        text: `${user.username} left the chat`,
+        images: [],
+        timestamp: new Date(),
+        username: 'System',
+        userId: '0',
+    })
 }
 
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)

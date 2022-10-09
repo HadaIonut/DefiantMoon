@@ -67,3 +67,7 @@ export const authMiddleWare: Middleware = async (context: Context, next: () => P
         return
     }
 };
+
+export const getCurrentUserId = (context: Context): string => {
+    return context.state.userId;
+}

@@ -5,16 +5,12 @@ const props = defineProps<{
     message: ChatMessage
 }>()
 
-const getFormattedTextMessage = (chatMessage: ChatMessage) => {
-    return `${chatMessage.from}: ${chatMessage.text}`
-}
-
 </script>
 
 <template>
     <div class="message-row" :key="message.timestamp">
         <div class="message">
-            <span>{{props.message.from ?? 'undefined'}} </span>
+            <span>{{props.message.username ?? 'undefined'}} </span>
 
             <div style="display:flex; align-items: center">
                 <span class="message-content" v-html="props.message.text"></span>
