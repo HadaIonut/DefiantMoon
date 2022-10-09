@@ -172,6 +172,57 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {string} message 
+         * @param {Array<File>} images 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        sendChatMessage: async (message: string, images: Array<File>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'message' is not null or undefined
+            assertParamExists('sendChatMessage', 'message', message)
+            // verify required parameter 'images' is not null or undefined
+            assertParamExists('sendChatMessage', 'images', images)
+            const localVarPath = `/chat/message`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+            // authentication cookieAuth required
+
+
+            if (message !== undefined) { 
+                localVarFormParams.append('message', message as any);
+            }
+                if (images) {
+                images.forEach((element) => {
+                    localVarFormParams.append('images', element as any);
+                })
+            }
+
+    
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -210,6 +261,17 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.login(loginRequest, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @param {string} message 
+         * @param {Array<File>} images 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async sendChatMessage(message: string, images: Array<File>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.sendChatMessage(message, images, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -244,6 +306,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         login(loginRequest?: LoginRequest, options?: any): AxiosPromise<void> {
             return localVarFp.login(loginRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} message 
+         * @param {Array<File>} images 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        sendChatMessage(message: string, images: Array<File>, options?: any): AxiosPromise<void> {
+            return localVarFp.sendChatMessage(message, images, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -284,6 +356,18 @@ export class DefaultApi extends BaseAPI {
      */
     public login(loginRequest?: LoginRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).login(loginRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} message 
+     * @param {Array<File>} images 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public sendChatMessage(message: string, images: Array<File>, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).sendChatMessage(message, images, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

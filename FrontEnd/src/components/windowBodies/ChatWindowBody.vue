@@ -4,9 +4,10 @@ import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import {onMounted, ref, Ref} from 'vue'
 import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
-import {WEBSOCKET_EMITABLE_EVENTS, WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
+import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
 import {ChatMessage} from 'types/ChatMessage'
+import {apiClient} from '../../api/index'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -69,16 +70,6 @@ const getImages = async (): Promise<File[]> => {
     return out
 }
 
-const blobToBase64 = (blob: Blob) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(blob)
-    return new Promise((resolve) => {
-        reader.onloadend = () => {
-            resolve(reader.result)
-        }
-    })
-}
-
 const scrollToBottom = (area: Ref<any>) => {
     area.value.ps.element.scrollTo(0, area.value.ps.element.scrollHeight)
 }
@@ -88,9 +79,7 @@ const sendMessage = async () => {
     currentContent = currentContent.replaceAll(/\n/g, '<br>')
     const images: File[] = await getImages()
 
-    const imagesBlobs = await Promise.all(images.map(blobToBase64))
-
-    websocket.sendMessage(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, {text: currentContent, images: imagesBlobs})
+    await apiClient.sendChatMessage(currentContent, images)
     chatEditor.value.setHTML('<p></p>')
     uploadedImages.value = []
 

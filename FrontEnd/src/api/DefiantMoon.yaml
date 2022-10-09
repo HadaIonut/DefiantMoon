@@ -61,6 +61,30 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/AvailableUser'
+  /chat/message:
+    post:
+      operationId: sendChatMessage
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - message
+                - images
+      responses:
+        200:
+          description: "success"
 components:
   securitySchemes:
     cookieAuth: # arbitrary name for the security scheme; will be used in the "security" key later
