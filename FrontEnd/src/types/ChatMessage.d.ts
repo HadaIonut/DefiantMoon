@@ -1,5 +1,6 @@
 export type ChatMessage = {
-    from: string;
+    username: string,
+    userId: string,
     text: string,
     images: string[],
     timestamp: Date,

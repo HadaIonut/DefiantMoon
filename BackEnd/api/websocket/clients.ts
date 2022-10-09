@@ -1,1 +1,1 @@
-export const websocketClients: WebSocket[] = [];
+export const websocketClients: { [key: string]: WebSocket } = {};

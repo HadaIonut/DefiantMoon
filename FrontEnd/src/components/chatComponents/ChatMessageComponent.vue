@@ -11,7 +11,7 @@ const props = defineProps<{
     <div class="message-row" :key="message.timestamp">
         <div class="message message-right">
             <div class="message-sender">
-                {{props.message.from ?? 'undefined'}}
+                {{props.message.username ?? 'undefined'}}
             </div>
 
             <div class="message-content " v-html="props.message.text"></div>
