@@ -21,6 +21,7 @@
     "pinia": "^2.0.22",
     "pinia-plugin-persistedstate": "^2.2.0",
     "sass": "^1.54.9",
+    "swiper": "^8.4.3",
     "vue": "^3.2.37",
     "vue-i18n": "9",
     "vue-router": "4",
