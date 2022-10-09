@@ -13,6 +13,7 @@ const props = defineProps<{ windowData: Window }>()
 const chatEditor: Ref<Quill> = ref('')
 const chatMessages: Ref<ChatMessage[]> = ref([])
 const uploadedImages: Ref<string[]> = ref([])
+const messageDisplayArea: Ref<any | null> = ref(null)
 
 const isImageUrl = (text: string): boolean => {
     return new RegExp('(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)').test(text)
@@ -78,6 +79,10 @@ const blobToBase64 = (blob: Blob) => {
     })
 }
 
+const scrollToBottom = (area: Ref<any>) => {
+    area.value.ps.element.scrollTo(0, area.value.ps.element.scrollHeight)
+}
+
 const sendMessage = async () => {
     const currentContent = (chatEditor.value.getText() as string).trimEnd()
     const images: File[] = await getImages()
@@ -87,18 +92,20 @@ const sendMessage = async () => {
     websocket.sendMessage(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, {text: currentContent, images: imagesBlobs})
     chatEditor.value.setText('')
     uploadedImages.value = []
+
+    scrollToBottom(messageDisplayArea)
 }
 
-onMounted(() => {
-    const keyboardModule = chatEditor.value.getQuill().getModule('keyboard')
-    delete keyboardModule.bindings[13]
-
+const catchImagePasteEvent = () => {
     chatEditor.value.getQuill().root.addEventListener('paste', (event: ClipboardEvent) => {
         const eventData = event?.clipboardData
 
         handleImagePaste(eventData?.items, event)
         handleTextPaste(eventData?.getData?.('Text') ?? '', event)
     })
+}
+
+const catchEnterEvent = () => {
     chatEditor.value.getQuill().root.addEventListener('keydown', (event: KeyboardEvent) => {
         if (event.code === 'Enter' && !event.shiftKey) {
             event.preventDefault()
@@ -106,6 +113,14 @@ onMounted(() => {
             sendMessage()
         }
     })
+}
+
+onMounted(() => {
+    const keyboardModule = chatEditor.value.getQuill().getModule('keyboard')
+    delete keyboardModule.bindings[13]
+
+    catchImagePasteEvent()
+    catchEnterEvent()
 })
 
 const pushToChat = (message: ChatMessage) => {
@@ -133,7 +148,7 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlaye
 <template>
     <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
         <div class="chat-content">
-            <perfect-scrollbar>
+            <perfect-scrollbar ref="messageDisplayArea">
                 <ChatMessageComponent v-for="message in chatMessages" :key="message.timestamp" :message="message"/>
             </perfect-scrollbar>
         </div>
@@ -173,7 +188,6 @@ $parent-padding: 5px;
 .chat-content {
     display: flex;
     height: calc(100% - #{$chat-input-height} - 8px - 2 * #{$parent-padding});
-    flex-direction: column-reverse;
     overflow: auto;
 }
 
@@ -191,14 +205,6 @@ $parent-padding: 5px;
 
 .chat-input {
     height: calc(100% - #{$chat-toolbar-height});
-}
-
-.dice {
-    height: 26px;
-    width: 26px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 .image-send-gallery {
