@@ -156,18 +156,17 @@ useInfiniteScroll(
     messageDisplayArea,
     () => {
         const lastTimeStamp = chatMessages.value[0].timestamp
-        console.log(chatMessages.value)
-        console.log(Date.now())
-        console.log(lastTimeStamp)
+        const scrollHeightBeforeAdd = messageDisplayArea.value.ps.element.scrollHeight
 
         apiClient.getChatMessages(Number(lastTimeStamp)).then(({data}) => {
-            console.log(data)
             chatMessages.value.unshift(...data)
+            nextTick().then(() => {
+                const element = messageDisplayArea.value.ps.element
+                element.scrollTop += (element.scrollHeight - scrollHeightBeforeAdd)
+            })
         })
-
-        console.log('load MOARE')
     },
-    {distance: 300, direction: 'top'},
+    {distance: 200, direction: 'top'},
 )
 
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)
