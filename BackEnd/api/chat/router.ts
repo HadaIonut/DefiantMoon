@@ -20,7 +20,7 @@ const chatMessageMapper = (chatMessage: ChatMessageSchema) => {
 
 chatRouter.get("/messages", async (context) => {
     const timestamp = Number(context.request.url.searchParams.get("timestamp"));
-    const chatMessages = await getChatMessages(Timestamp.fromNumber(timestamp));
+    const chatMessages = await getChatMessages(timestamp);
     context.response.body = chatMessages.map(chatMessageMapper);
     context.response.status = 200;
 })

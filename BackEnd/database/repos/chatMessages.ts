@@ -12,14 +12,14 @@ export const saveChatMessage = (content: ChatMessageSchema["content"], images: C
         content,
         images,
         from: from,
-        timestamp: new Timestamp(),
+        timestamp: Date.now(),
     })
 };
 
-
-export const getChatMessages = async (timestamp: Timestamp = new Timestamp()) => {
+export const getChatMessages = async (timestamp: number = Date.now()) => {
+    console.log(timestamp)
     return (await chatMessagesCollection.find({
-        timestamp: { $gt: timestamp }
+        timestamp: { $lt: timestamp }
     }).sort({
         timestamp: -1
     }).limit(CHAT_MESSAGES_BLOCK_SIZE).toArray()).reverse()

@@ -8,6 +8,7 @@ import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
 import {apiClient} from '../../api/index'
 import {ChatMessage} from '../../api/generated/index'
+import {useInfiniteScroll} from '@vueuse/core'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -15,6 +16,13 @@ const chatEditor: Ref<Quill> = ref('')
 const chatMessages: Ref<ChatMessage[]> = ref([])
 const uploadedImages: Ref<string[]> = ref([])
 const messageDisplayArea: Ref<any | null> = ref(null)
+
+type UserJoinOrLeftParams = {
+    user: {
+        username: string,
+        id: string
+    }
+}
 
 const isImageUrl = (text: string): boolean => {
     return new RegExp('(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)').test(text)
@@ -109,11 +117,10 @@ onMounted(() => {
 
     catchImagePasteEvent()
     catchEnterEvent()
+
     apiClient.getChatMessages(Date.now()).then(({data}) => {
         chatMessages.value = data
-        nextTick().then(() => {
-            scrollToBottom(messageDisplayArea)
-        })
+        nextTick().then(() => scrollToBottom(messageDisplayArea))
     })
 })
 
@@ -125,13 +132,6 @@ const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
     console.log(chatMessage)
     pushToChat(chatMessage)
     nextTick().then(() => scrollToBottom(messageDisplayArea))
-}
-
-type UserJoinOrLeftParams = {
-    user: {
-        username: string,
-        id: string
-    }
 }
 
 const onPLayerJoin: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) => {
@@ -151,6 +151,24 @@ const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) =>
         from: '0',
     })
 }
+
+useInfiniteScroll(
+    messageDisplayArea,
+    () => {
+        const lastTimeStamp = chatMessages.value[0].timestamp
+        console.log(chatMessages.value)
+        console.log(Date.now())
+        console.log(lastTimeStamp)
+
+        apiClient.getChatMessages(Number(lastTimeStamp)).then(({data}) => {
+            console.log(data)
+            chatMessages.value.unshift(...data)
+        })
+
+        console.log('load MOARE')
+    },
+    {distance: 300, direction: 'top'},
+)
 
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin)
