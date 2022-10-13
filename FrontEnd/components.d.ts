@@ -29,6 +29,7 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SimpleWindowHeader: typeof import('./src/components/windowHeaders/SimpleWindowHeader.vue')['default']
+    UploadedImage: typeof import('./src/components/chatComponents/UploadedImage.vue')['default']
     WebsocketComponent: typeof import('./src/components/WebsocketComponent.vue')['default']
     WindowBodyRenderer: typeof import('./src/components/windowBodies/WindowBodyRenderer.vue')['default']
     WindowComponent: typeof import('./src/components/WindowComponent.vue')['default']

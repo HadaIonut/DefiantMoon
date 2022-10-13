@@ -169,6 +169,10 @@ useInfiniteScroll(
     {distance: 200, direction: 'top'},
 )
 
+const removeImage = (removeItem: string, removeIndex: number) => {
+    uploadedImages.value = uploadedImages.value.filter((item, index) => index !== removeIndex)
+}
+
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin)
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlayerLeft)
@@ -185,8 +189,9 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlaye
         <div class="chat-input-container">
             <div class="image-send-gallery">
                 <perfect-scrollbar>
-                    <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt=""
-                         class="uploaded-image">
+                    <div class="image-wrapper" v-for="(image, index) in uploadedImages" :key="index">
+                        <UploadedImage :image="image" :imageIndex="index" :removeFunction="removeImage"/>
+                    </div>
                 </perfect-scrollbar>
             </div>
             <ChatToolbar :chatEditor="chatEditor"/>
@@ -250,11 +255,10 @@ $parent-padding: 5px;
     grid-gap: 5px;
 }
 
-.uploaded-image {
-    height: 80px;
-    aspect-ratio: 1/1;
-    object-fit: cover;
+.image-wrapper {
+    position: relative;
 }
+
 </style>
 
 <style lang="scss">
