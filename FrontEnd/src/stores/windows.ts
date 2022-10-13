@@ -22,6 +22,10 @@ export const useWindowsStore = defineStore('windows', {
                     height: '500px',
                 },
                 isMinimized: false,
+                minimumSize: {
+                    width: '280px',
+                    height: '240px',
+                },
             },
             'actorList': {
                 action: {icon: 'users', actionName: 'Actor list'},
@@ -35,6 +39,10 @@ export const useWindowsStore = defineStore('windows', {
                 },
                 display: {},
                 isMinimized: false,
+                minimumSize: {
+                    width: '10px',
+                    height: '10px',
+                },
             },
             'itemList': {
                 action: {icon: 'shirt', actionName: 'Item list'},
@@ -48,6 +56,10 @@ export const useWindowsStore = defineStore('windows', {
                 },
                 display: {},
                 isMinimized: false,
+                minimumSize: {
+                    width: '10px',
+                    height: '10px',
+                },
             },
         }
     },

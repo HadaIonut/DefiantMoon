@@ -186,9 +186,10 @@ onMounted(() => {
 
 const windowPosition = computed(() => {
     const storeData = windowStore[props.windowKey].display
+    const minStoreData = windowStore[props.windowKey].minimumSize
     const height = windowStore[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
 
-    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}`
+    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}; min-width: ${minStoreData.width}; min-height: ${minStoreData.height}`
 })
 
 const windowClasses = computed((): string => {

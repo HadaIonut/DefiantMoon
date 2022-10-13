@@ -27,5 +27,9 @@ export type Window = {
         left: string,
         width: string,
         height: string
+    },
+    minimumSize: {
+        width: string,
+        height: string
     }
 }
