@@ -178,13 +178,19 @@ onMounted(() => {
     if (lastHeightBeforeMinimize === '0px') {
         lastHeightBeforeMinimize = windowStore.$state[props.windowKey].display.height ?? '0px'
     }
+
+    if (!windowStore.hasDisplaySet(props.windowKey)) {
+        windowStore.applyWindowStartingData(props.windowKey)
+    }
 })
 
 const windowPosition = computed(() => {
     const storeData = windowStore[props.windowKey].display
+    const minStoreData = windowStore[props.windowKey].minimumSize
     const height = windowStore[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
+    const minText = `min-width: ${minStoreData.width}; min-height: ${minStoreData.height}`
 
-    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}`
+    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}; ${!windowStore[props.windowKey].isMinimized ? minText : ''}`
 })
 
 const windowClasses = computed((): string => {

@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import {useUsersStore} from '../stores/users'
 import {useWindowsStore} from '../stores/windows'
+import {onMounted} from 'vue'
 
 const usersStore = useUsersStore()
 const windowStore = useWindowsStore()
+
+onMounted(() => {
+    usersStore.getWorldUsers()
+})
 </script>
 
 <template>

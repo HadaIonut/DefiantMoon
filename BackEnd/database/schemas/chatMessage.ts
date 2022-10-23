@@ -1,4 +1,4 @@
-import { ObjectId, Timestamp } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
+import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 
 type Roll = {
     original: string;
@@ -10,5 +10,5 @@ export type ChatMessageSchema = {
     from: ObjectId;
     content: (string | Roll)[];
     images: string[];
-    timestamp: Timestamp;
+    timestamp: number;
 };

@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {WindowStore} from 'types/windows'
 
-export const useWindowsStore = defineStore('counter', {
+export const useWindowsStore = defineStore('windows', {
     state: (): WindowStore => {
         return {
             'chat': {
@@ -15,7 +15,17 @@ export const useWindowsStore = defineStore('counter', {
                     componentType: 'Chat',
                 },
                 display: {},
+                startingDisplay: {
+                    top: '20px',
+                    left: '20px',
+                    width: '400px',
+                    height: '500px',
+                },
                 isMinimized: false,
+                minimumSize: {
+                    width: '280px',
+                    height: '240px',
+                },
             },
             'actorList': {
                 action: {icon: 'users', actionName: 'Actor list'},
@@ -29,6 +39,10 @@ export const useWindowsStore = defineStore('counter', {
                 },
                 display: {},
                 isMinimized: false,
+                minimumSize: {
+                    width: '10px',
+                    height: '10px',
+                },
             },
             'itemList': {
                 action: {icon: 'shirt', actionName: 'Item list'},
@@ -42,6 +56,10 @@ export const useWindowsStore = defineStore('counter', {
                 },
                 display: {},
                 isMinimized: false,
+                minimumSize: {
+                    width: '10px',
+                    height: '10px',
+                },
             },
         }
     },
@@ -69,6 +87,15 @@ export const useWindowsStore = defineStore('counter', {
         },
         toggleMinimize(key: string) {
             this[key].isMinimized = !this[key].isMinimized
+        },
+        applyWindowStartingData(key: string) {
+            this[key].display = {...this[key].startingDisplay}
+        },
+    },
+    getters: {
+        hasDisplaySet: (state: WindowStore) => (key: string): boolean => {
+            const display = state[key].display
+            return !(!display.top && !display.left && !display.height && !display.width)
         },
     },
     persist: true,

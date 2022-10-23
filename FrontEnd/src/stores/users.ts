@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {LoginRequest} from 'api/generated'
+import {AvailableUser, LoginRequest} from 'api/generated'
 import {apiClient} from '../api/index'
 import {User, UsersStore} from 'types/users'
 
@@ -31,6 +31,10 @@ export const useUsersStore = defineStore('users', {
         clearUser() {
             this.currentUser.name = ''
             this.currentUser.id = ''
+        },
+        async getWorldUsers() {
+            const users = (await apiClient.getAvailableUsers()).data.users ?? []
+            this.allUsers = users.map((user: AvailableUser) => ({id: user.id, name: user.username}))
         },
     },
     persist: true,

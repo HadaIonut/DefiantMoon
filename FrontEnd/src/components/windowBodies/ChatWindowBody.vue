@@ -8,6 +8,7 @@ import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
 import {apiClient} from '../../api/index'
 import {ChatMessage} from '../../api/generated/index'
+import {useInfiniteScroll} from '@vueuse/core'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -15,6 +16,13 @@ const chatEditor: Ref<Quill> = ref('')
 const chatMessages: Ref<ChatMessage[]> = ref([])
 const uploadedImages: Ref<string[]> = ref([])
 const messageDisplayArea: Ref<any | null> = ref(null)
+
+type UserJoinOrLeftParams = {
+    user: {
+        username: string,
+        id: string
+    }
+}
 
 const isImageUrl = (text: string): boolean => {
     return new RegExp('(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)').test(text)
@@ -109,11 +117,10 @@ onMounted(() => {
 
     catchImagePasteEvent()
     catchEnterEvent()
+
     apiClient.getChatMessages(Date.now()).then(({data}) => {
         chatMessages.value = data
-        nextTick().then(() => {
-            scrollToBottom(messageDisplayArea)
-        })
+        nextTick().then(() => scrollToBottom(messageDisplayArea))
     })
 })
 
@@ -125,13 +132,6 @@ const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
     console.log(chatMessage)
     pushToChat(chatMessage)
     nextTick().then(() => scrollToBottom(messageDisplayArea))
-}
-
-type UserJoinOrLeftParams = {
-    user: {
-        username: string,
-        id: string
-    }
 }
 
 const onPLayerJoin: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) => {
@@ -152,6 +152,27 @@ const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) =>
     })
 }
 
+useInfiniteScroll(
+    messageDisplayArea,
+    () => {
+        const lastTimeStamp = chatMessages.value[0].timestamp
+        const scrollHeightBeforeAdd = messageDisplayArea.value.ps.element.scrollHeight
+
+        apiClient.getChatMessages(Number(lastTimeStamp)).then(({data}) => {
+            chatMessages.value.unshift(...data)
+            nextTick().then(() => {
+                const element = messageDisplayArea.value.ps.element
+                element.scrollTop += (element.scrollHeight - scrollHeightBeforeAdd)
+            })
+        })
+    },
+    {distance: 200, direction: 'top'},
+)
+
+const removeImage = (removeItem: string, removeIndex: number) => {
+    uploadedImages.value = uploadedImages.value.filter((item, index) => index !== removeIndex)
+}
+
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_MESSAGE, onChatMessage)
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_JOIN, onPLayerJoin)
 websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlayerLeft)
@@ -168,8 +189,9 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlaye
         <div class="chat-input-container">
             <div class="image-send-gallery">
                 <perfect-scrollbar>
-                    <img v-for="(image, index) in uploadedImages" :key="index" :src="image" alt=""
-                         class="uploaded-image">
+                    <div class="image-wrapper" v-for="(image, index) in uploadedImages" :key="index">
+                        <UploadedImage :image="image" :imageIndex="index" :removeFunction="removeImage"/>
+                    </div>
                 </perfect-scrollbar>
             </div>
             <ChatToolbar :chatEditor="chatEditor"/>
@@ -233,11 +255,10 @@ $parent-padding: 5px;
     grid-gap: 5px;
 }
 
-.uploaded-image {
-    height: 80px;
-    aspect-ratio: 1/1;
-    object-fit: cover;
+.image-wrapper {
+    position: relative;
 }
+
 </style>
 
 <style lang="scss">
