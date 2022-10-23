@@ -11,9 +11,8 @@ for await (const file of bestiaryDir) {
     monsterList.monster.forEach(element => {
         if (!element?.spellcasting) return
 
-        // console.log(element.spellcasting?.daily)
         element.spellcasting.forEach(spellcasting => {
-            if (spellcasting?.hidden) console.log(element.name)
+            if (spellcasting?.chargesItem) console.log(element.name)
         })
     });
 }
