@@ -11,6 +11,7 @@ export type OriginalSpeedWithCondition = {
     condition: string,
 }
 
+
 export type OriginalSpeed = {
     walk?: number | OriginalSpeedWithCondition,
     fly?: number | OriginalSpeedWithCondition,
@@ -82,10 +83,28 @@ export type OriginalLegendaryAction = {
 
 export type OriginalSpellcasting = {
     name: string,
-    headerEntries: string[],
-    will?: string[],
-    daily?: {},
-    ability: string,
+    headerEntries?: string[],
+    will?: string[], // For creatures with at will casting
+    daily?: { // For creatures with innate spellcasting
+        [recharge: string]: string[] // recharge period, spell list
+    },
+    spells?: {
+        [slotLevel: string]: {
+            slots?: number,
+            spells: string[],
+        }
+    },
+    footerEntries?: string[],
+    hidden?: string[], // not sure
+    rest?: { // i think it's same as daily
+        [key: string]: string[]
+    },
+    charges?: { // wand spellcasting
+        [key: string]: string[]
+    },
+    chargesItem?: string, // source of wand spellcasting
+    ritual?: string[], // monsters with ritual casting
+    ability?: string,
 }
 
 export type OriginalMonster = {
@@ -117,14 +136,26 @@ export type OriginalMonster = {
     cr: string | number,
     trait?: OriginalTrait[],
     action?: OriginalAction[],
-    reaction?: OriginalAction[]
+    reaction?: OriginalAction[],
     legendary?: OriginalLegendaryAction[],
-    spellcasting?: OriginalSpellcasting[]
+    spellcasting?: OriginalSpellcasting[],
     hasToken: boolean,
     hasFluff: boolean,
     hasFluffImages: boolean,
 }
 
-export type Monster = {
+export type OriginalMonsterFluffImage = {
+    type: string,
+    href: {
+        type: string,
+        path: string
+    }
+}
 
+export type OriginalMonsterFluff = {
+    name: string,
+    source?: string,
+    type?: string,
+    entries: (string | OriginalMonsterFluff)[],
+    images: OriginalMonsterFluffImage[]
 }
