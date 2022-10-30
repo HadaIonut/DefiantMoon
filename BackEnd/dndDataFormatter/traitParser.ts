@@ -1,10 +1,10 @@
 import { attackShortHandMap, boldText } from "./constants/constants.ts"
 import { LimitedUsage, limitedUsageRechargeAtDiceRoll, limitedUsageRechargeInTime, multiRange, shapeRange, shapeTypes, simpleRange, Trait } from "./types/Items.d.ts"
 import { OriginalAttackType, OriginalMonster, OriginalTrait } from "./types/OriginalMonster.d.ts"
+import { generateRandomString } from "./utils.ts"
 
 const getToHitRoll = (modifier: string): string => `/r 1d20 + ${modifier}`
 const getDamageRoll = (roll: string): string => `/r ${roll}`
-
 
 const parseRange = (entries: string[]): simpleRange | multiRange | shapeRange | null => {
     const mergedEntries = entries.join("\n")
@@ -22,7 +22,7 @@ const parseRange = (entries: string[]): simpleRange | multiRange | shapeRange | 
 
         return {
             low: Number(splitted[0]),
-            heigh: Number(splitted[1]),
+            high: Number(splitted[1]),
             unit: unit
         } as multiRange
     }
@@ -93,7 +93,7 @@ const extractDataFromTraitName = (name: string): [string, LimitedUsage | null] =
     ]
 }
 
-const extractAction = (entries: string[]): string => {
+export const extractAction = (entries: string[]): string => {
     const mergedEntries = entries.join('\n')
     let actionText = ''
     const toHitRolls = mergedEntries.match(/{@hit (\d+)}/)
@@ -114,7 +114,7 @@ const extractAction = (entries: string[]): string => {
     return actionText
 }
 
-const parseDescription = (entries: string[]): string => {
+export const parseDescription = (entries: string[]): string => {
     return entries.join("\n")
         .replace(/{@atk (\w+)}/g, (_, attackType: OriginalAttackType): string => attackShortHandMap[attackType] || attackType)
         .replace(/{@hit (\d+)}/g, (_, averageRoll: string): string => averageRoll)
@@ -128,6 +128,7 @@ const createTraitObject = (trait: OriginalTrait, isAction: boolean, isLegendary:
     const [traitName, limitedUsage] = extractDataFromTraitName(trait.name ?? '')
 
     return {
+        id: generateRandomString(),
         name: traitName,
         limitedUsage,
         description: parseDescription(trait.entries),
@@ -136,7 +137,7 @@ const createTraitObject = (trait: OriginalTrait, isAction: boolean, isLegendary:
         image: null,
         isAction,
         isLegendary,
-        isReaction
+        isReaction,
     }
 }
 

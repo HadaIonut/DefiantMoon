@@ -1,12 +1,14 @@
-import { skillToAbilityMap, getEmptySkillsObject} from "./constants/constants.ts"
-import { parseMonsterTrait } from "./traitParser.ts"
+import { skillToAbilityMap, getEmptySkillsObject, damageTypeConversionMap} from "./constants/constants.ts"
+import { createItemAction, extractDamage, extractItemRange, parseAbilityModifiers, parseAttunementRequirements, parseItemArmor, parseItemBonuses, parseItemDescription, parseItemProperties } from "./itemParser.ts"
+import { parseDescription, parseMonsterTrait } from "./traitParser.ts"
+import { Item} from "./types/Items.d.ts"
 import { Monster, MonsterAC, MonsterHP, MonsterResistance, MonsterSave, MonsterSkill, MonsterSpeed, MonsterSpeedValue } from "./types/Monster.d.ts"
-import { OriginalAC, OriginalAction, OriginalImmunity, OriginalLegendaryAction, OriginalMonster, OriginalResistance, OriginalSave, OriginalSkill, OriginalSpeed, OriginalSpeedWithCondition, OriginalTrait } from "./types/OriginalMonster.d.ts"
+import { OrigianlItem} from "./types/OriginalItems.d.ts"
+import { OriginalAC, OriginalImmunity, OriginalMonster, OriginalResistance, OriginalSave, OriginalSkill, OriginalSpeed, OriginalSpeedWithCondition } from "./types/OriginalMonster.d.ts"
+import { generateRandomString } from "./utils.ts"
 
 const bestiaryDir = Deno.readDir('./data/bestiary')
-let types = new Set()
-let mods = new Set()
-let everything: [] = []
+const itemsDir = Deno.readDir("./data/items")
 
 const parseMonsterAC = (originalAc: (OriginalAC | number)[]): MonsterAC[] => {
     const out: MonsterAC[] = []
@@ -118,54 +120,55 @@ const parseMonsterResistance = (originalResistance?: (string | OriginalResistanc
     return out
 }
 
-const extractTraitDebug = (monster: OriginalMonster) => {
-    let debugText = ''
-    const rextractEverything = false
+for await (const file of itemsDir) {
+    if (!file.isFile) continue
 
-    if (rextractEverything) {
-        monster.trait?.forEach((trait: OriginalTrait) => {
-            trait.entries.forEach((entry: string) => {
-                if (entry?.includes?.("{@")) {
-                    debugText += `\n${entry}`
-                }
-            })
-        })
-    
-        monster.action?.forEach((action: OriginalAction) => {
-            action.entries.forEach((entry: string) => {
-                if (entry?.includes?.("{@")) {
-                    debugText += `\n${entry}`
-                }
-            })
-        })
-    
-        monster.legendary?.forEach((legendary: OriginalLegendaryAction) => {
-            legendary.entries.forEach((entry: string) => {
-                if (entry?.includes?.("{@")) {
-                    debugText += `\n${entry}`
-                }
-            })
-        })
-    
-        let text = Deno.readTextFileSync('./debug.txt')
-        Deno.writeTextFileSync(`./debug.txt`, text + debugText)
-    }
+    const itemsList = JSON.parse(await Deno.readTextFile(`./data/items/${file.name}`))
 
-    const toIterate = [...monster?.trait ?? [], ...monster.action ?? [], ...monster.legendary ?? []]
-    toIterate.forEach((trait) => {
-        trait?.entries?.forEach?.(entry => {
-            if (typeof entry !== 'string') return
+    const parsedItemList: Item[] = []
 
-            let matched = [...entry?.matchAll?.(/{@([a-z0-9A-z]+)([a-z0-9A-z ]+)?}/g)][0]
-            
-            if(!matched) return
+    if (!itemsList.baseitem) continue
 
-            types.add(matched[1])
-            mods.add(matched[2])
-            // @ts-ignore: this is debug stuff, it doesn't matter
-            everything.push({value: matched[0], source: monster.name})
-        })
+    itemsList.baseitem.forEach((item: OrigianlItem) => {
+        const parsedItem: Item  = {
+            id: generateRandomString(),
+            name: item.name,
+            description: parseDescription([parseItemDescription(item?.entries ?? [])]),
+            image: null,
+            limitedUsage: null,
+            action: '',
+            range: extractItemRange(item),
+            isLegendary: false,
+            isAction: false,
+            isReaction: false,
+            quantity: 1,
+            weight: item.weight,
+            damage: extractDamage(item),
+            damageType: item?.dmgType ? damageTypeConversionMap[item.dmgType] : null,
+            isWeapon: item?.weapon ?? false,
+            isArmor: !!item?.ac,
+            usesAmmunition: !!item?.ammunition,
+            relatedSpells: [],
+            hasCharges: !!item?.charges,
+            totalCharges: item?.charges ?? 0,
+            availableCharges: item?.charges ?? 0,
+            rechargeCharges: item?.recharge ?? null,
+            requiresAttunement: !!item?.reqAttune,
+            attunementConditions: parseAttunementRequirements(item?.reqAttune ?? ''),
+            armorAC: parseItemArmor(item),
+            stealthDisatvantage: !!item?.stealth,
+            bonuses: parseItemBonuses(item),
+            ...parseAbilityModifiers(item?.ability ?? {}),
+            weaponProprieties: parseItemProperties(item?.property ?? []),
+            isEquipped: false,
+        }
+
+        parsedItem.action = createItemAction(parsedItem)
+
+        parsedItemList.push(parsedItem)
     })
+
+    await Deno.writeTextFile(`./parsedItems/${file.name}`, JSON.stringify(parsedItemList))
 }
 
 for await (const file of bestiaryDir) {
@@ -182,6 +185,7 @@ for await (const file of bestiaryDir) {
         // extractTraitDebug(element)
 
         const parsedMonster: Monster = {
+            id: generateRandomString(),
             name: element.name,
             source: element.source,
             size: element.size,
@@ -218,10 +222,4 @@ for await (const file of bestiaryDir) {
     });
 
     await Deno.writeTextFile(`./parsedMonsters/${file.name}`, JSON.stringify(parsedMonsterList))
-
-    // everything.sort((a,b) => a.value.localeCompare(b.value))
-
-    // Deno.writeTextFileSync(`./debugTypes.json`, JSON.stringify([...types]))
-    // Deno.writeTextFileSync(`./debugMods.json`, JSON.stringify([...mods]))
-    // Deno.writeTextFileSync(`./debugEverything.json`, JSON.stringify(everything))
 }

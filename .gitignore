@@ -26,3 +26,5 @@ FrontEnd/.vscode/extensions.json
 /BackEnd/cdn/images
 
 /BackEnd/dndDataFormatter/data
+/BackEnd/dndDataFormatter/parsedMonsters
+/BackEnd/dndDataFormatter/parsedItems

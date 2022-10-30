@@ -19,7 +19,7 @@ export type LimitedUsage = {
 
 export type multiRange = {
     low: number,
-    heigh: number,
+    high: number,
     unit: string
 }
 
@@ -39,6 +39,7 @@ export type simpleRange = {
 }
 
 export type Trait = {
+    id: string,
     name: string,
     description: string,
     action: string,
@@ -63,11 +64,27 @@ export type abilityModifiers = {
     wis: number | null,
 }
 
+export type armorAC = {
+    value: number,
+    condtion: string | null,
+    value2: number | null,
+}
+
+export type itemBonuses = {
+    ac: string,
+    weaponAll: string,
+    weaponAttack: string,
+    weaponDamage: string,
+    spellAttack: string,
+    spellDamage: string,
+    savingThrow: string,
+}
+
 export type Item = Trait & {
     quantity: number,
     weight: number,
     damage: string[] | null,
-    damageType: damageType,
+    damageType: damageType | null,
     isWeapon: boolean,
     isArmor: boolean
     usesAmmunition: boolean,
@@ -75,27 +92,15 @@ export type Item = Trait & {
     hasCharges: boolean,
     totalCharges: number,
     availableCharges: number,
-    rechargeCharges: OriginalRechargeOptions,
+    rechargeCharges: OriginalRechargeOptions | null,
     requiresAttunement: boolean,
     attunementConditions: string[],
-    armorAC: {
-        value: number,
-        condtion: string,
-        value2: number,
-    } | null,
+    armorAC: armorAC | null,
     stealthDisatvantage: boolean,
-    bonuses: {
-        ac: string,
-        weaponAll: string,
-        weaponAttack: string,
-        weaponDamage: string,
-        spellAttack: string,
-        spellDamage: string,
-        savingThrow: string,
-    } | null,
+    bonuses: itemBonuses,
     abilityModifiers: abilityModifiers,
     abilityOverrides: abilityModifiers,
-    weaponProprieties: weaponProprieties,
+    weaponProprieties: weaponProprieties[],
     isEquipped: boolean,
 }
 

@@ -124,6 +124,7 @@ export type MonsterSkillOverride = {
 
 
 export type Monster = {
+    id: string,
     name: string,
     source: string,
     size: string[],

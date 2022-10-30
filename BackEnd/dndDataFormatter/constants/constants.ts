@@ -1,4 +1,6 @@
+import { abilityModifiers, damageType, weaponProprieties } from "../types/Items.d.ts"
 import { MonsterSkill } from "../types/Monster.d.ts"
+import { OriginalDmgType, OriginalPropertiesType } from "../types/OriginalItems.d.ts"
 import { AttackType, OriginalAttackType } from "../types/OriginalMonster.d.ts"
 
 export const attackShortHandMap: {[key in OriginalAttackType]: AttackType} = {
@@ -55,3 +57,48 @@ export const getEmptySkillsObject = (): MonsterSkill => {
         other: 0,
     }
 }
+
+export const getEmptyAbilityMap = ():abilityModifiers => {
+    return {
+        str: null,
+        dex: null,
+        con: null,
+        int: null,
+        wis: null,
+        cha: null,
+    }
+}
+
+export const damageTypeConversionMap: {[key in OriginalDmgType]: damageType } = {
+    "A": "Acid",
+    "B": "Bludgeoning",
+    "C": "Cold",
+    "F": "Fire",
+    "O": "Force",
+    "L": "Lightning",
+    "N": "Necrotic",
+    "P": "Piercing",
+    "I": "Poison",
+    "Y": "Psychic",
+    "R": "Radiant",
+    "S": "Slashing",
+    "T": "Thunder",
+}
+
+export const propertyTypeConversionMap: {[key in OriginalPropertiesType]: weaponProprieties} = {
+    "T": 'Thrown',
+    "V": 'Versatile',
+    "H": 'Heavy',
+    "2H": 'Two-Handed',
+    "F": 'Finesse', 
+    "L": 'Light',
+    "R": 'Reach', 
+    "A": 'Ammunition',
+    "LD": 'Loading',
+    "S": 'Special',
+    "AF": 'Ammunition (futuristic)', 
+    "RLD": 'Reload', 
+    "BF": 'Burst Fire'
+}
+
+export const classes = ['barbarian', 'bard', 'cleric', 'druid', 'fighter', 'monk', 'paladin', 'rogue', 'ranger', 'sorcerer', 'warlock', 'wizard']

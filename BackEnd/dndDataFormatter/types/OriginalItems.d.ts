@@ -40,12 +40,18 @@ export type OriginalDmgType = "A" | "B" | "C" | "F" | "O" | "L" | "N" | "P" | "I
 
 export type OriginalPropertiesType = "T" | "V" | "H" | "2H" | "F" | "F" | "L" | "R" | "A" | "LD" | "S" | "AF" | "RLD" | "BF"
 
+export type OriginalEntries = {
+    type: string,
+    name: string,
+    entries: (OriginalEntries | string)[]
+}
+
 export type OrigianlItem = {
     name: string,
     type?: string,
     rarity: OriginalRarity,
     source?: string,
-    entries: string[],
+    entries?: OriginalEntries[],
     weight: number,
     weaponCategory?: string,
     property?: OriginalPropertiesType[],
