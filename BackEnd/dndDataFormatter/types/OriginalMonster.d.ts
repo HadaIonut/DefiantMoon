@@ -159,3 +159,6 @@ export type OriginalMonsterFluff = {
     entries: (string | OriginalMonsterFluff)[],
     images: OriginalMonsterFluffImage[]
 }
+
+export type OriginalAttackType = 'm' | 'mw' | 'ms' | 'rw' | 'rs'
+export type AttackType = 'Melee Weapon Attack' | 'Melee Spell Attack' | 'Ranged Weapon Attack' | 'Ranged Spell Attack'
