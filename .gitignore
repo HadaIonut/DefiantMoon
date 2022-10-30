@@ -24,3 +24,5 @@ FrontEnd/.vscode/extensions.json
 *.sw?
 /FrontEnd/yarn.lock
 /BackEnd/cdn/images
+
+/BackEnd/dndDataFormatter/data

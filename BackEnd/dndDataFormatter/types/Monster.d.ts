@@ -1,7 +1,9 @@
+import { Item, Spell, Trait } from "./Items.d.ts"
+
 export type MonsterAC = {
     value: number,
     source: string[],
-    condition: string
+    condition: string // TODO could be an item, update when that is ready
 }
 
 export type MonsterHP = {
@@ -11,8 +13,7 @@ export type MonsterHP = {
 
 export type MonsterSpeedValue = {
     value: number,
-    condition: string,
-
+    condition: string, // TODO could be an item, update when that is ready
 }
 
 export type MonsterSpeed = {
@@ -65,23 +66,8 @@ export type MonsterSkill = {
 
 export type MonsterResistance = {
     value: string[],
-    note: string,
-    condition: string
+    condition: string //TODO could be an item, update when that is ready
 }
-
-export type MonsterTrait = {
-    name: string,
-    descriptions: string[],
-    action: string,
-}
-
-export type MonsterAction = {
-    name: string,
-    descriptions: string[],
-    action: string,
-}
-
-export type Spell = {}
 
 export type MonsterSpellcasting = {
     name: string,
@@ -104,6 +90,38 @@ export type MonsterSpellcasting = {
     },
     spellcastingAbility: string,
 }
+
+export type MonsterSaveOverride = {
+    str?: number,
+    dex?: number,
+    con?: number,
+    int?: number,
+    wis?: number,
+    cha?: number,
+}
+
+export type MonsterSkillOverride = {
+    perception?: number,
+    stealth?: number,
+    athletics?: number,
+    arcana?: number,
+    persuasion?: number,
+    survival?:number,
+    deception?: number,
+    history?: number,
+    intimidation?: number,
+    insight?: number,
+    medicine?: number,
+    religion?: number,
+    nature?: number,
+    investigation?: number,
+    performance?: number,
+    acrobatics?: number,
+    other?: number,
+    "sleight of hand"?: number,
+    "animal handling"?: number,
+}
+
 
 export type Monster = {
     name: string,
@@ -130,12 +148,15 @@ export type Monster = {
     conditionImmunity: string[],
     languages: string[],
     cr: number,
-    trait: MonsterTrait[],
-    actions: MonsterAction[],
-    legendaryActions: MonsterAction[],
+    trait: Trait[],
     hasLegendaryActions: boolean,
     hasLegendaryResistance: boolean,
     legendaryResistanceCount: number,
     legendaryActionCount: number,
-    spellcasting: MonsterSpellcasting[]
+    spellcasting: MonsterSpellcasting[] | null,
+    overrides: {
+        saves: MonsterSaveOverride,
+        skills: MonsterSkillOverride
+    } | null,
+    items: Item[],
 }

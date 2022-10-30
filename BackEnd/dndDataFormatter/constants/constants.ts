@@ -1,4 +1,15 @@
 import { MonsterSkill } from "../types/Monster.d.ts"
+import { AttackType, OriginalAttackType } from "../types/OriginalMonster.d.ts"
+
+export const attackShortHandMap: {[key in OriginalAttackType]: AttackType} = {
+    m: 'Melee Weapon Attack',
+    mw: 'Melee Weapon Attack',
+    ms: 'Melee Spell Attack',
+    rw: 'Ranged Weapon Attack',
+    rs: 'Ranged Spell Attack'
+}
+
+export const boldText = (text: string): string => `<b>${text}</b>`
 
 export const skillToAbilityMap = {
     perception: 'wis',
