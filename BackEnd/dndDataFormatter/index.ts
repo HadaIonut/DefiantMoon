@@ -11,17 +11,8 @@ import {
     parseItemProperties,
 } from "./itemParser.ts";
 import { parseDescription, parseMonsterTrait } from "./traitParser.ts";
-import { Item } from "./types/Items.d.ts";
-import {
-    Monster,
-    MonsterAC,
-    MonsterHP,
-    MonsterResistance,
-    MonsterSave,
-    MonsterSkill,
-    MonsterSpeed,
-    MonsterSpeedValue,
-} from "./types/Monster.d.ts";
+import { Item, ItemTransport } from "../database/schemas/Items.ts";
+import { ActorTransport, MonsterAC, MonsterHP, MonsterResistance, Save, Skill, Speed, SpeedValue } from "../database/schemas/Actors.ts";
 import { OrigianlItem } from "./types/OriginalItems.d.ts";
 import {
     OriginalAC,
@@ -34,6 +25,8 @@ import {
     OriginalSpeedWithCondition,
 } from "./types/OriginalMonster.d.ts";
 import { generateRandomString } from "./utils.ts";
+import { saveActor } from "../database/repos/actors.ts";
+import { saveItem } from "../database/repos/items.ts";
 
 const bestiaryDir = Deno.readDir("./data/bestiary");
 const itemsDir = Deno.readDir("./data/items");
@@ -67,10 +60,10 @@ const parseMonsterHP = (originalHp: { average: number | string; formula: string 
     };
 };
 
-const parseMonsterSpeed = (originalSpeed?: OriginalSpeed): MonsterSpeed => {
+const parseMonsterSpeed = (originalSpeed?: OriginalSpeed): Speed => {
     const speedTypes = ["walk", "fly", "climb", "swim", "borrow"];
     const out: {
-        [key: string]: MonsterSpeedValue | boolean;
+        [key: string]: SpeedValue | boolean;
     } = {};
 
     speedTypes.forEach((type) => {
@@ -84,10 +77,10 @@ const parseMonsterSpeed = (originalSpeed?: OriginalSpeed): MonsterSpeed => {
 
     out.canHover = originalSpeed?.canHover ?? false;
 
-    return out as MonsterSpeed;
+    return out as Speed;
 };
 
-const parseMonsterSave = (originalSave: OriginalSave = {}): MonsterSave => {
+const parseMonsterSave = (originalSave: OriginalSave = {}): Save => {
     return {
         str: !!originalSave?.str,
         dex: !!originalSave?.dex,
@@ -111,7 +104,7 @@ const getProficiencyScore = (monster: OriginalMonster): number => {
     return Math.abs(Number(saveSkillValue) - statModifier);
 };
 
-const parseMonsterSkills = (originalSkill: OriginalSkill | undefined, proficiency: number, monster: OriginalMonster): MonsterSkill => {
+const parseMonsterSkills = (originalSkill: OriginalSkill | undefined, proficiency: number, monster: OriginalMonster): Skill => {
     const out = getEmptySkillsObject();
 
     Object.entries(originalSkill ?? {}).forEach(([skill, value]) => {
@@ -119,10 +112,10 @@ const parseMonsterSkills = (originalSkill: OriginalSkill | undefined, proficienc
         const abilityValue = statToModifier(monster[skillAbility as keyof OriginalMonster] as number);
         const profMultiplier = (Number(value) - abilityValue) / proficiency;
 
-        if (profMultiplier == 0.5) out[skill as keyof MonsterSkill] = 1;
-        else if (profMultiplier == 1) out[skill as keyof MonsterSkill] = 2;
-        else if (profMultiplier == 2) out[skill as keyof MonsterSkill] = 3;
-        else out[skill as keyof MonsterSkill] = 0;
+        if (profMultiplier == 0.5) out[skill as keyof Skill] = 1;
+        else if (profMultiplier == 1) out[skill as keyof Skill] = 2;
+        else if (profMultiplier == 2) out[skill as keyof Skill] = 3;
+        else out[skill as keyof Skill] = 0;
     });
 
     return out;
@@ -153,13 +146,10 @@ for await (const file of itemsDir) {
 
     const itemsList = JSON.parse(await Deno.readTextFile(`./data/items/${file.name}`));
 
-    const parsedItemList: Item[] = [];
-
     if (!itemsList.baseitem && !itemsList.item) continue;
 
     (itemsList.baseitem || itemsList.item).forEach((item: OrigianlItem) => {
-        const parsedItem: Item = {
-            id: generateRandomString(),
+        const parsedItem: ItemTransport = {
             name: item.name,
             description: parseDescription([parseItemDescription(item?.entries ?? [])]),
             image: null,
@@ -193,10 +183,8 @@ for await (const file of itemsDir) {
 
         parsedItem.action = createItemAction(parsedItem);
 
-        parsedItemList.push(parsedItem);
+        saveItem(parsedItem);
     });
-
-    await Deno.writeTextFile(`./parsedItems/${file.name}`, JSON.stringify(parsedItemList));
 }
 
 for await (const file of bestiaryDir) {
@@ -206,14 +194,10 @@ for await (const file of bestiaryDir) {
 
     if (!monsterList?.monster) continue;
 
-    const parsedMonsterList: Monster[] = [];
-
     monsterList.monster.forEach((element: OriginalMonster) => {
         const proficiency = getProficiencyScore(element);
-        // extractTraitDebug(element)
 
-        const parsedMonster: Monster = {
-            id: generateRandomString(),
+        const parsedMonster: ActorTransport = {
             name: element.name,
             source: element.source,
             size: element.size,
@@ -246,10 +230,9 @@ for await (const file of bestiaryDir) {
             overrides: null,
             spellcasting: null,
             items: [],
+            isPlayer: false,
         };
 
-        parsedMonsterList.push(parsedMonster);
+        saveActor(parsedMonster);
     });
-
-    await Deno.writeTextFile(`./parsedMonsters/${file.name}`, JSON.stringify(parsedMonsterList));
 }

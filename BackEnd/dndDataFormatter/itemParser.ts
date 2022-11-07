@@ -1,5 +1,5 @@
 import { classes, getEmptyAbilityMap, propertyTypeConversionMap } from "./constants/constants.ts";
-import { abilityModifiers, armorAC, Item, itemBonuses, multiRange, shapeRange, simpleRange, weaponProprieties } from "./types/Items.d.ts";
+import { abilityModifiers, armorAC, Item, itemBonuses, ItemTransport, multiRange, shapeRange, simpleRange, weaponProprieties } from "../database/schemas/Items.ts";
 import { OrigianlItem, OriginalEntries, OriginalItemAbilityModifier, OriginalPropertiesType } from "./types/OriginalItems.d.ts";
 
 export const parseItemDescription = (entries: OriginalEntries[]): string => {
@@ -116,11 +116,11 @@ export const parseAbilityModifiers = (
     };
 };
 
-export const isDexWeapon = (item: Item): boolean => {
+export const isDexWeapon = (item: ItemTransport): boolean => {
     return !!((item.range as multiRange)?.low && (item.range as multiRange)?.high);
 };
 
-export const createItemAction = (item: Item): string => {
+export const createItemAction = (item: ItemTransport): string => {
     if (!item.isWeapon) return "";
     let actionText = "";
     const isDex = isDexWeapon(item);

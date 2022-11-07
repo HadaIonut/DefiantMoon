@@ -1,5 +1,5 @@
-import { abilityModifiers, damageType, weaponProprieties } from "../types/Items.d.ts"
-import { MonsterSkill } from "../types/Monster.d.ts"
+import { abilityModifiers, damageType, weaponProprieties } from "../../database/schemas/Items.ts"
+import { Skill } from "../../database/schemas/Actors.ts"
 import { OriginalDmgType, OriginalPropertiesType } from "../types/OriginalItems.d.ts"
 import { AttackType, OriginalAttackType } from "../types/OriginalMonster.d.ts"
 
@@ -34,7 +34,7 @@ export const skillToAbilityMap = {
     "animal handling": 'wis',
 }
 
-export const getEmptySkillsObject = (): MonsterSkill => {
+export const getEmptySkillsObject = (): Skill => {
     return {
         perception: 0,
         stealth: 0,
