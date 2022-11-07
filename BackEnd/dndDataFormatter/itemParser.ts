@@ -1,5 +1,5 @@
 import { classes, getEmptyAbilityMap, propertyTypeConversionMap } from "./constants/constants.ts";
-import { abilityModifiers, armorAC, Item, itemBonuses, ItemTransport, multiRange, shapeRange, simpleRange, weaponProprieties } from "../database/schemas/Items.ts";
+import { abilityModifiers, armorAC, itemBonuses, ItemTransport, multiRange, shapeRange, simpleRange, weaponProprieties } from "../database/schemas/Items.ts";
 import { OrigianlItem, OriginalEntries, OriginalItemAbilityModifier, OriginalPropertiesType } from "./types/OriginalItems.d.ts";
 
 export const parseItemDescription = (entries: OriginalEntries[]): string => {

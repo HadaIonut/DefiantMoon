@@ -11,7 +11,7 @@ import {
     parseItemProperties,
 } from "./itemParser.ts";
 import { parseDescription, parseMonsterTrait } from "./traitParser.ts";
-import { Item, ItemTransport } from "../database/schemas/Items.ts";
+import { ItemTransport } from "../database/schemas/Items.ts";
 import { ActorTransport, MonsterAC, MonsterHP, MonsterResistance, Save, Skill, Speed, SpeedValue } from "../database/schemas/Actors.ts";
 import { OrigianlItem } from "./types/OriginalItems.d.ts";
 import {
@@ -24,7 +24,6 @@ import {
     OriginalSpeed,
     OriginalSpeedWithCondition,
 } from "./types/OriginalMonster.d.ts";
-import { generateRandomString } from "./utils.ts";
 import { saveActor } from "../database/repos/actors.ts";
 import { saveItem } from "../database/repos/items.ts";
 
