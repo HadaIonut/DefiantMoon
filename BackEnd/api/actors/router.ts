@@ -1,15 +1,12 @@
-import { Context } from "https://deno.land/x/oak@v11.1.0/context.ts";
 import { Router } from "https://deno.land/x/oak@v11.1.0/router.ts";
-import { getActorPaginatedByName } from "../../database/repos/actors.ts";
+import { getActors } from "../../database/repos/actors.ts";
 
 const actorsRouter = new Router();
 
-actorsRouter.get("/actors", async (context) => {
-    const name = context.request.url.searchParams.get("name") || "";
-
-    const actors = await getActorPaginatedByName(name);
+actorsRouter.get("/all", async (context) => {
+    const actors = await getActors();
 
     context.response.body = { actors };
-})
+});
 
 export default actorsRouter;

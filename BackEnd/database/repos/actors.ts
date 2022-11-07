@@ -1,5 +1,5 @@
 import { db } from "../connection.ts";
-import { ActorSchema, ActorTransport } from "../schemas/Actors.ts";
+import { Actor, ActorSchema, ActorTransport } from "../schemas/Actors.ts";
 
 const actorsCollection = db.collection<ActorSchema>("Actors");
 
@@ -7,16 +7,12 @@ export const saveActor = (actor: ActorTransport) => {
     actorsCollection.insertOne(actor);
 };
 
-export const getActorPaginatedByName = async (name: string) => {
-    return (await actorsCollection.aggregate([
-        {
-            $group: {
-                "_id": {
-                    "_id": "$_id",
-                    "name": "$name"
-                }
-            }
-        },
-        { $sort: { "_id.name": 1 } },
-    ]).toArray())
-}
+const actorsMapper = (actor: ActorSchema) => {
+    return {
+        ...actor,
+        id: actor._id.toString(),
+        _id: undefined,
+    };
+};
+
+export const getActors = async () => (await actorsCollection.find().sort({ name: 1 }).toArray()).map(actorsMapper);

@@ -104,6 +104,15 @@ paths:
       responses:
         200:
           description: "success"
+  /actors/all:
+    get:
+      operationId: getActors
+      security:
+        - cookieAuth: [ ]
+      responses:
+        200:
+          description: success
+
 components:
   securitySchemes:
     cookieAuth: # arbitrary name for the security scheme; will be used in the "security" key later
