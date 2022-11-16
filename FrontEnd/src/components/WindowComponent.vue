@@ -4,7 +4,7 @@ import {Window} from 'types/windows'
 import {useWindowsStore} from '../stores/windows'
 import {Motion} from 'motion/vue'
 
-export interface WindowProps {
+interface WindowProps {
     windowData: Window,
     windowKey: string
 }

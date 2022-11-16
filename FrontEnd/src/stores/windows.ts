@@ -38,6 +38,12 @@ export const useWindowsStore = defineStore('windows', {
                     componentType: 'ActorList',
                 },
                 display: {},
+                startingDisplay: {
+                    top: '20px',
+                    left: '20px',
+                    width: '400px',
+                    height: '500px',
+                },
                 isMinimized: false,
                 minimumSize: {
                     width: '10px',
