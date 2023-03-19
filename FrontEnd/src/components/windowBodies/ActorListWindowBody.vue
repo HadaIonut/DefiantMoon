@@ -7,10 +7,10 @@ import {useVirtualList} from '@vueuse/core'
 
 const actors = ref<Actor[]>([])
 
-const {list, containerProps, wrapperProps, scrollTo} = useVirtualList(
+const {list, containerProps, wrapperProps} = useVirtualList(
     actors,
     {
-        itemHeight: 30,
+        itemHeight: 70,
     },
 )
 
@@ -22,25 +22,46 @@ onMounted(async () => {
 </script>
 
 <template>
-    <perfect-scrollbar>
-        <div class="list-wrapper" v-bind="containerProps">
-            <div class="list-container" v-bind="wrapperProps">
-                <div class="actor" v-for="actor in list" :key="actor.data.id" style="height: 30px">
-                    {{ actor.data.name }}
+    <div class="list-wrapper" v-bind="containerProps">
+        <div class="list-container" v-bind="wrapperProps">
+            <div class="actor clickable" v-for="actor in list" :key="actor.data.id">
+                <div class="actorRow">
+                    <img src="../../assets/externalIcons/defaultIcon.svg" class="portrait">
+                    <div style="height: fit-content">
+                        {{ actor.data.name }}
+                    </div>
                 </div>
             </div>
         </div>
-    </perfect-scrollbar>
+    </div>
 </template>
 
 <style scoped lang="scss">
-.ps {
-    height: 100%;
+.list-wrapper {
+    height: 99%;
+}
+
+.portrait {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    margin-right: 5px;
+}
+
+.actorRow {
+    display: flex;
+    align-items: center;
+    height: 70px;
+
+    &:hover {
+        background: $darker-secondary;
+        padding-left: 5px;
+        transition: background-color 90ms ease-in-out, padding-left 100ms ease-in;
+    }
 }
 </style>
 
 <style lang="scss">
-
 .ps > .ps__rail-y > .ps__thumb-y {
     background-color: $tertiary;
     border: $accent 1px solid;

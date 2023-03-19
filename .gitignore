@@ -25,6 +25,8 @@ FrontEnd/.vscode/extensions.json
 /FrontEnd/yarn.lock
 /BackEnd/cdn/images
 
+/FrontEnd/styles/*.css
+
 /BackEnd/dndDataFormatter/data
 /BackEnd/dndDataFormatter/parsedMonsters
 /BackEnd/dndDataFormatter/parsedItems

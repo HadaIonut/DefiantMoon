@@ -1,9 +1,9 @@
 * {
-    font-family: 'PT Mono', monospace;
+  font-family: 'PT Mono', monospace;
 }
 
 body {
-    margin: 0;
+  margin: 0;
 }
 
 .ps .ps__rail-x:hover,
@@ -12,6 +12,23 @@ body {
 .ps .ps__rail-y:focus,
 .ps .ps__rail-x.ps--clicking,
 .ps .ps__rail-y.ps--clicking {
-    background-color: transparent !important;
-    opacity: 0.9;
+  background-color: transparent !important;
+  opacity: 0.9;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  width: 20px;
+  background-color: $tertiary-transparent;
+  border: $accent 1px solid;
+  border-radius: 6px;
 }
