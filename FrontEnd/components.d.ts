@@ -36,6 +36,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SimpleCloseActions: typeof import('./src/components/windowHeaderActions/SimpleCloseActions.vue')['default']
     SimpleWindowHeader: typeof import('./src/components/windowHeaders/SimpleWindowHeader.vue')['default']
+    TraitsDisplay: typeof import('./src/components/TraitsDisplay.vue')['default']
     UploadedImage: typeof import('./src/components/chatComponents/UploadedImage.vue')['default']
     WebsocketComponent: typeof import('./src/components/WebsocketComponent.vue')['default']
     WindowActionsRender: typeof import('./src/components/windowHeaderActions/WindowActionsRender.vue')['default']

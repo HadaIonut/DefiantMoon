@@ -78,6 +78,27 @@ export type Skill = {
     'animal handling': 0 | 1 | 2 | 3;
 };
 
+export type Resistance = {
+    value: string[];
+};
+
+export type MonsterResistance = {
+    value: string[];
+    condition: string; // TODO could be an item, update when that is ready
+};
+
+export type Trait = {
+    name: string;
+    description: string;
+    action: string;
+    image: string | null;
+    limitedUsage: LimitedUsage | null;
+    range: simpleRange | multiRange | shapeRange | null;
+    isLegendary: boolean;
+    isAction: boolean;
+    isReaction: boolean;
+};
+
 export type Actor = {
     id: string;
     name: string;

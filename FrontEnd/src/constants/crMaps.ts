@@ -35,3 +35,32 @@ export const CrToXpMap: Record<string, string> = {
   '30': '155000',
   'unknown': 'unknown',
 }
+
+export const skillToAbilityMap = {
+  'perception': 'wis',
+  'stealth': 'dex',
+  'athletics': 'str',
+  'arcana': 'int',
+  'persuasion': 'cha',
+  'survival': 'wis',
+  'deception': 'cha',
+  'history': 'int',
+  'intimidation': 'cha',
+  'insight': 'wis',
+  'medicine': 'int',
+  'religion': 'int',
+  'nature': 'wis',
+  'investigation': 'int',
+  'performance': 'cha',
+  'acrobatics': 'dex',
+  'other': 'str',
+  'sleight of hand': 'dex',
+  'animal handling': 'wis',
+}
+
+export const skillModifierMap = {
+  0: 0,
+  1: 0.5,
+  2: 1,
+  3: 2,
+}
