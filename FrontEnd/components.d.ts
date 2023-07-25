@@ -7,6 +7,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AbilitiesDisplay: typeof import('./src/components/AbilitiesDisplay.vue')['default']
     ActionsSidebar: typeof import('./src/components/ActionsSidebar.vue')['default']
     ActorListWindowBody: typeof import('./src/components/windowBodies/ActorListWindowBody.vue')['default']
     App: typeof import('./src/App.vue')['default']

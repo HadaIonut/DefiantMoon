@@ -22,6 +22,6 @@ module.exports = {
     'max-len': 'off',
     'guard-for-in': 'off',
     'linebreak-style': 'off',
-    'indent': ['warn', 4]
+    'indent': ['warn', 2]
   },
 };

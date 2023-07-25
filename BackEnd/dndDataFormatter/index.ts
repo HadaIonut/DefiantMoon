@@ -220,7 +220,7 @@ for await (const file of bestiaryDir) {
             immunity: parseMonsterResistance(element?.immune),
             conditionImmunity: element?.conditionImmune ?? [],
             languages: element?.languages ?? [],
-            cr: Number(element.cr),
+            cr: element?.cr ?? 'unknown',
             trait: parseMonsterTrait(element ?? []),
             hasLegendaryActions: (element?.legendary?.length ?? 0) > 0,
             hasLegendaryResistance: (element?.legendary?.length ?? 0) > 0,
