@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {apiClient} from '../../api/index'
 import {Actor} from 'types/Actors'
-import {ref} from 'vue'
+import {ref, Ref} from 'vue'
 import {onMounted} from 'vue'
-import {useVirtualList} from '@vueuse/core'
+import {useVirtualList, UseVirtualListItem} from '@vueuse/core'
+import {useWindowsStore} from '../../stores/windows'
 
 const actors = ref<Actor[]>([])
+const windowStore = useWindowsStore()
 
 const {list, containerProps, wrapperProps} = useVirtualList(
     actors,
@@ -19,13 +21,29 @@ onMounted(async () => {
     actors.value = (await apiClient.getActors()).data.actors
 })
 
+const actorClickHandler = (clickedObject: UseVirtualListItem<Actor>, event:MouseEvent) => {
+    windowStore.addNewWindow(`monsterWindow-${clickedObject.data.id}`,
+        {
+            componentType: 'SimpleHeader',
+            componentData: clickedObject.data.name,
+        },
+        {
+            componentType: 'MonsterWindow',
+            componentData: clickedObject.data,
+        },
+        {
+            icon: 'shirt', actionName: 'MonsterWindow',
+        },
+        {top: `${event.screenY}px`, left: `${event.screenX}px`, width: `500px`, height: `500px`})
+}
+
 </script>
 
 <template>
     <div class="list-wrapper" v-bind="containerProps">
         <div class="list-container" v-bind="wrapperProps">
             <div class="actor clickable" v-for="actor in list" :key="actor.data.id">
-                <div class="actorRow">
+                <div class="actorRow" @click="(event) => actorClickHandler(actor, event)">
                     <img src="../../assets/externalIcons/defaultIcon.svg" class="portrait">
                     <div style="height: fit-content">
                         {{ actor.data.name }}

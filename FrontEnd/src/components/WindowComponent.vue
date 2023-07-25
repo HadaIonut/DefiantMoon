@@ -17,6 +17,7 @@ const WINDOW_HEADER_HEIGHT = '30px'
 let lastHeightBeforeMinimize = '0px'
 
 const windowStore = useWindowsStore()
+const windowObject = windowStore.$state
 
 const isMoving: Ref<boolean> = ref(false)
 const window: Ref<HTMLElement | null> = ref(null)
@@ -167,7 +168,7 @@ const minimize = () => {
 
     windowStore.toggleMinimize(props.windowKey)
 
-    if (windowStore[props.windowKey].isMinimized) {
+    if (windowObject[props.windowKey].isMinimized) {
         lastHeightBeforeMinimize = window.value?.style.height
 
         window.value.style.height = WINDOW_HEADER_HEIGHT
@@ -176,7 +177,7 @@ const minimize = () => {
 
 onMounted(() => {
     if (lastHeightBeforeMinimize === '0px') {
-        lastHeightBeforeMinimize = windowStore.$state[props.windowKey].display.height ?? '0px'
+        lastHeightBeforeMinimize = windowObject[props.windowKey].display.height ?? '0px'
     }
 
     if (!windowStore.hasDisplaySet(props.windowKey)) {
@@ -185,12 +186,12 @@ onMounted(() => {
 })
 
 const windowPosition = computed(() => {
-    const storeData = windowStore[props.windowKey].display
-    const minStoreData = windowStore[props.windowKey].minimumSize
-    const height = windowStore[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
+    const storeData = windowObject[props.windowKey].display
+    const minStoreData = windowObject[props.windowKey].minimumSize
+    const height = windowObject[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
     const minText = `min-width: ${minStoreData.width}; min-height: ${minStoreData.height}`
 
-    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}; ${!windowStore[props.windowKey].isMinimized ? minText : ''}`
+    return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}; ${!windowObject[props.windowKey].isMinimized ? minText : ''}`
 })
 
 const windowClasses = computed((): string => {
@@ -229,15 +230,15 @@ const closeWindow = () => {
             </div>
         </div>
         <div class="draggable-window-body">
-            <Motion v-show="!windowStore[props.windowKey].isMinimized" style="height: 100%" :animate="{scaleY: 1}" :exit="{scaleY: 0}" >
+            <Motion v-show="!windowObject[props.windowKey].isMinimized" style="height: 100%" :animate="{scaleY: 1}" :exit="{scaleY: 0}" >
                 <div class="window-body-content">
                     <slot name="body">big content energy</slot>
                 </div>
             </Motion>
         </div>
-        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
-        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
-        <span v-if="!windowStore[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
+        <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
+        <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
+        <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
     </div>
 </template>
 

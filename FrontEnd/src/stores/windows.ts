@@ -1,5 +1,6 @@
-import {defineStore} from 'pinia'
-import {WindowStore} from 'types/windows'
+import {defineStore, PiniaCustomStateProperties} from 'pinia'
+import {WindowStore, WindowHeader, WindowBody, WindowDisplay} from 'types/windows'
+import {Action} from '../types/actions'
 
 export const useWindowsStore = defineStore('windows', {
     state: (): WindowStore => {
@@ -10,6 +11,9 @@ export const useWindowsStore = defineStore('windows', {
                 header: {
                     componentType: 'SimpleHeader',
                     componentData: 'Chat',
+                },
+                headerActions: {
+                    componentType: 'SimpleClose',
                 },
                 body: {
                     componentType: 'Chat',
@@ -34,6 +38,9 @@ export const useWindowsStore = defineStore('windows', {
                     componentType: 'SimpleHeader',
                     componentData: 'Actors',
                 },
+                headerActions: {
+                    componentType: 'SimpleClose',
+                },
                 body: {
                     componentType: 'ActorList',
                 },
@@ -57,8 +64,17 @@ export const useWindowsStore = defineStore('windows', {
                     componentType: 'SimpleHeader',
                     componentData: 'Items',
                 },
+                headerActions: {
+                    componentType: 'SimpleClose',
+                },
                 body: {
                     componentType: 'ItemList',
+                },
+                startingDisplay: {
+                    top: '20px',
+                    left: '20px',
+                    width: '400px',
+                    height: '500px',
                 },
                 display: {},
                 isMinimized: false,
@@ -70,37 +86,67 @@ export const useWindowsStore = defineStore('windows', {
         }
     },
     actions: {
+        addNewWindow(id: string, header:WindowHeader, body:WindowBody, action:Action, display: WindowDisplay ) {
+            this.$patch({
+                [id]: {
+                    status: 'focused',
+                    header,
+                    headerActions: {
+                        componentType: 'RemoveClose',
+                    },
+                    body,
+                    action,
+                    isMinimized: false,
+                    minimumSize: {
+                        width: '10px',
+                        height: '10px',
+                    },
+                    startingDisplay: {
+                        top: '20px',
+                        left: '20px',
+                        width: '400px',
+                        height: '500px',
+                    },
+                    display,
+                },
+            })
+        },
         openWindow(key: string) {
-            this[key].status = 'opened'
+            this.$state[key].status = 'opened'
             this.focusWindow(key)
         },
         closeWindow(key: string) {
-            this[key].status = 'closed'
+            this.$state[key].status = 'closed'
+        },
+        removeWindow(key: string) {
+            this.$patch((state) => {
+                delete state[key]
+            })
         },
         focusWindow(key: string) {
             Object.keys(this.$state).forEach((key) => {
-                if (this[key].status === 'focused') this[key].status = 'opened'
+                if (this.$state[key].status === 'focused') this.$state[key].status = 'opened'
             })
-            this[key].status = 'focused'
+            this.$state[key].status = 'focused'
         },
         setWindowLocation(key: string, top: string, left: string) {
-            this[key].display.top = top
-            this[key].display.left = left
+            this.$state[key].display.top = top
+            this.$state[key].display.left = left
         },
         setWindowSize(key: string, width: string, height: string) {
-            this[key].display.width = width
-            this[key].display.height = height
+            this.$state[key].display.width = width
+            this.$state[key].display.height = height
         },
         toggleMinimize(key: string) {
-            this[key].isMinimized = !this[key].isMinimized
+            this.$state[key].isMinimized = !this[key].isMinimized
         },
         applyWindowStartingData(key: string) {
-            this[key].display = {...this[key].startingDisplay}
+            this.$state[key].display = {...this[key].startingDisplay}
         },
     },
     getters: {
-        hasDisplaySet: (state: WindowStore) => (key: string): boolean => {
-            const display = state[key].display
+        hasDisplaySet: (state: any) => (key: string): boolean => {
+            const display = (state.$state as WindowStore)[key].display
             return !(!display.top && !display.left && !display.height && !display.width)
         },
     },

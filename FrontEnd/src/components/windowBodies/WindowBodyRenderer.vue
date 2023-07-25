@@ -21,6 +21,9 @@ const props = defineProps<WindowBodyRendererProps>()
         <template #ItemList>
             <ItemListWindowBody/>
         </template>
+        <template #MonsterWindow>
+            <MonsterWindowBody :bodyData="props.bodyData"/>
+        </template>
     </v-switch>
 </template>
 

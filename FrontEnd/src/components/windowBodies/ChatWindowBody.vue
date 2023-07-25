@@ -129,7 +129,6 @@ const pushToChat = (message: ChatMessage) => {
 }
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
-    console.log(chatMessage)
     pushToChat(chatMessage)
     nextTick().then(() => scrollToBottom(messageDisplayArea))
 }

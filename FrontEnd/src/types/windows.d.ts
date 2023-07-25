@@ -4,23 +4,35 @@ export type WindowStore = {
     [key: string]: Window
 }
 
+export type WindowHeader = {
+    componentType: string,
+    componentData?: any
+}
+
+export type WindowHeaderActions = {
+    componentType: string,
+    componentData?: any
+}
+
+export type WindowBody = {
+    componentType: string,
+    componentData?: any
+}
+
+export type WindowDisplay = {
+    top?: string | null,
+    left?: string | null,
+    width?: string | null,
+    height?: string | null
+}
+
 export type Window = {
     action: Action,
     status: 'closed' | 'opened' | 'focused',
-    header: {
-        componentType: string,
-        componentData?: any
-    },
-    body: {
-        componentType: string,
-        componentData?: any
-    },
-    display: {
-        top?: string | null,
-        left?: string | null,
-        width?: string | null,
-        height?: string | null
-    },
+    header: WindowHeader,
+    headerActions: WindowHeaderActions,
+    body: WindowBody,
+    display: WindowDisplay,
     isMinimized: boolean,
     startingDisplay?: {
         top: string,

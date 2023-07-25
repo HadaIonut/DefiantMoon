@@ -9,7 +9,6 @@ export const authRouter = new Router();
 
 authRouter.post("/login", async ({ request, response, cookies }) => {
     const { username, password } = await request.body().value;
-    console.log(username, password);
 
     if (username === undefined || password === undefined) {
         return thowBadRequest(response, "MissingParams")
