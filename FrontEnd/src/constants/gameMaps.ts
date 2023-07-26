@@ -64,3 +64,12 @@ export const skillModifierMap = {
   2: 1,
   3: 2,
 }
+
+export const sizeToNameMap = {
+  'S': 'Small',
+  'M': 'Medium',
+  'T': 'Titanic',
+  'H': 'Huge',
+  'G': 'Gigantic',
+  'L': 'Large',
+}

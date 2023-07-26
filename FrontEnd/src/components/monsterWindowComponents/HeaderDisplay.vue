@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {CrToXpMap} from '../../constants/crMaps'
+import {CrToXpMap, sizeToNameMap} from '../../constants/gameMaps'
 import {Actor} from '../../types/Actors'
 
 export interface HeaderDisplayProps {
@@ -24,13 +24,14 @@ const getMonsterXp = (cr: string | Record<string, string>) => {
   return CrToXpMap[cr.cr]
 }
 
+
 </script>
 
 <template>
   <div class="header">
     <div class="name-container">
       <div class="monster-name">{{ props.actor.name }}</div>
-      <div>{{ props.actor.size?.[0] }} {{ monsterType }}</div>
+      <div>{{ sizeToNameMap[props.actor.size?.[0]] }} {{ monsterType }}</div>
     </div>
     <div>
       <div>Challange {{ getMonsterCr(props.actor.cr) }}</div>

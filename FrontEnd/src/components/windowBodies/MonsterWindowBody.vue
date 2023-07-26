@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import {Actor, Speed, Save, Skill, Resistance, MonsterResistance} from '../../types/Actors'
-import {CrToXpMap, skillModifierMap, skillToAbilityMap} from '../../constants/crMaps'
+import {CrToXpMap, skillModifierMap, skillToAbilityMap} from '../../constants/gameMaps'
 
 export interface MonsterWindowProps {
   bodyData: Actor
