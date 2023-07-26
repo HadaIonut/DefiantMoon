@@ -2,6 +2,7 @@
 
 import {Actor, Speed, Save, Skill, Resistance, MonsterResistance} from '../../types/Actors'
 import {CrToXpMap, skillModifierMap, skillToAbilityMap} from '../../constants/gameMaps'
+import {getSignedNumber} from '../../utils/utils'
 
 export interface MonsterWindowProps {
   bodyData: Actor
@@ -42,9 +43,9 @@ const getSkills = (skills: Skill, actor: Actor) => {
     const skillValue = skills[cur as keyof Skill]
     const skillModifier = skillModifierMap[skillValue]
     const skillAbility = skillToAbilityMap[cur as keyof typeof skillToAbilityMap]
-    const abilityValue = actor[skillAbility as keyof Actor] as number
+    const abilityValue = (actor[skillAbility as keyof Actor] as number - 10) / 2
 
-    return `${acc} ${cur} +${abilityValue + skillModifier * actor.proficiency}, `
+    return `${acc} ${cur} ${getSignedNumber(abilityValue + skillModifier * actor.proficiency)}, `
   }, '')
 }
 
@@ -70,7 +71,6 @@ const getResistance = (resistances: Resistance[] | MonsterResistance[]) => {
 
     <div class="abilityGroup">
       <AbilityEntry title="Proficiency" :description="props.bodyData.proficiency"/>
-      <AbilityEntry title="Saving Throws" :description="getSavingThrows(props.bodyData.save, props.bodyData)"/>
       <AbilityEntry title="Skills" :description="getSkills(props.bodyData.skill, props.bodyData)"/>
       <AbilityEntry title="Damage Resistances" :description="getResistance(props.bodyData.resistances)"/>
       <AbilityEntry title="Damage Immunities" :description="getResistance(props.bodyData.immunity)"/>
