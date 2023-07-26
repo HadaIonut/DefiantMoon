@@ -4,12 +4,11 @@ import {Actor, Speed, Save, Skill, Resistance, MonsterResistance} from '../../ty
 import {CrToXpMap, skillModifierMap, skillToAbilityMap} from '../../constants/crMaps'
 
 export interface MonsterWindowProps {
-    bodyData: Actor
+  bodyData: Actor
 }
 
 const props = defineProps<MonsterWindowProps>()
 console.log(props.bodyData)
-const monsterType = typeof props.bodyData?.type === 'string' ? props.bodyData?.type : props.bodyData?.type?.type
 const displayedAcSource = props.bodyData?.ac?.[0]?.source?.length > 0 ? `(${props.bodyData?.ac?.[0]?.source.join(', ')})` : ''
 
 
@@ -19,7 +18,7 @@ const getSpeedText = (speedObject: Speed) => {
     if (cur === 'walk') return acc
     const speedValue = speedObject[cur as keyof Speed]
 
-    if (typeof speedValue === 'boolean') return `${acc}, Can Hover`
+    if (typeof speedValue === 'boolean') return `${acc} Can Hover`
     if (speedValue.value === 0) return acc
 
     return `${acc} ${cur} ${speedValue.value} ft,`
@@ -50,7 +49,7 @@ const getSkills = (skills: Skill, actor: Actor) => {
 }
 
 const getResistance = (resistances: Resistance[] | MonsterResistance[]) => {
-  return resistances.reduce((acc: string, cur: {value: string[]}) => {
+  return resistances.reduce((acc: string, cur: { value: string[] }) => {
     return `${acc} ${cur.value.join(', ')},`
   }, '')
 }
@@ -58,55 +57,36 @@ const getResistance = (resistances: Resistance[] | MonsterResistance[]) => {
 </script>
 
 <template>
-    <div style="overflow: auto">
-        <div style="display: flex; justify-content: space-between">
-            <div>
-                <div>{{ props.bodyData.name }}</div>
-                <div>{{ props.bodyData.size[0] }} {{ monsterType }}</div>
-            </div>
-            <div>
-                <div>Challange {{props.bodyData.cr}}</div>
-                <div>{{CrToXpMap[props.bodyData.cr]}} XP</div>
-            </div>
-        </div>
-        <div>
-            AC {{props.bodyData.ac[0].value}} {{displayedAcSource}}
-        </div>
-        <div>
-            HP {{props.bodyData.hp.average}} ({{props.bodyData.hp.formula}})
-        </div>
-        <div>
-            Speed {{ getSpeedText(props.bodyData.speed) }}
-        </div>
-        <AbilitiesDisplay :actor="props.bodyData"/>
-        <div>
-            Proficiency {{props.bodyData.proficiency}}
-        </div>
-        <div>
-            Saving Throws {{getSavingThrows(props.bodyData.save, props.bodyData)}}
-        </div>
-        <div>
-            Skills {{getSkills(props.bodyData.skill, props.bodyData)}}
-        </div>
-        <div>
-            Damage Resistances {{getResistance(props.bodyData.resistances)}}
-        </div>
-        <div>
-            Damage Immunities {{getResistance(props.bodyData.immunity)}}
-        </div>
-        <div>
-            Condition Immunities {{props.bodyData.conditionImmunity.join(', ')}}
-        </div>
-        <div>
-            Senses {{props.bodyData.senses.join(', ')}}
-        </div>
-        <div>
-            Languages {{props.bodyData.languages.join(', ')}}
-        </div>
-        <traitsDisplay :traits="props.bodyData.trait"/>
+  <div style="overflow: auto; margin-top: 5px; margin-bottom: 5px">
+    <HeaderDisplay :actor="props.bodyData"/>
+
+    <div class="abilityGroup">
+      <AbilityEntry title="AC" :description="`${props.bodyData.ac[0].value} ${displayedAcSource}`"/>
+      <AbilityEntry title="HP" :description="`${props.bodyData.hp.average} (${props.bodyData.hp.formula})`"/>
+      <AbilityEntry title="Speed" :description="getSpeedText(props.bodyData.speed)"/>
     </div>
+
+    <AbilitiesDisplay :actor="props.bodyData"/>
+
+    <div class="abilityGroup">
+      <AbilityEntry title="Proficiency" :description="props.bodyData.proficiency"/>
+      <AbilityEntry title="Saving Throws" :description="getSavingThrows(props.bodyData.save, props.bodyData)"/>
+      <AbilityEntry title="Skills" :description="getSkills(props.bodyData.skill, props.bodyData)"/>
+      <AbilityEntry title="Damage Resistances" :description="getResistance(props.bodyData.resistances)"/>
+      <AbilityEntry title="Damage Immunities" :description="getResistance(props.bodyData.immunity)"/>
+      <AbilityEntry title="Condition Immunities" :description="props.bodyData.conditionImmunity.join(', ')"/>
+      <AbilityEntry title="Senses" :description="props.bodyData.senses.join(', ')"/>
+      <AbilityEntry title="Languages" :description="props.bodyData.languages.join(', ')"/>
+    </div>
+
+    <TraitsDisplay :traits="props.bodyData.trait"/>
+  </div>
 </template>
 
 <style>
-
+.abilityGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 </style>

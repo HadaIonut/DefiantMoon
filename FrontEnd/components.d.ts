@@ -7,7 +7,8 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
-    AbilitiesDisplay: typeof import('./src/components/AbilitiesDisplay.vue')['default']
+    AbilitiesDisplay: typeof import('./src/components/monsterWindowComponents/AbilitiesDisplay.vue')['default']
+    AbilityEntry: typeof import('./src/components/monsterWindowComponents/AbilityEntry.vue')['default']
     ActionsSidebar: typeof import('./src/components/ActionsSidebar.vue')['default']
     ActorListWindowBody: typeof import('./src/components/windowBodies/ActorListWindowBody.vue')['default']
     App: typeof import('./src/App.vue')['default']
@@ -26,6 +27,7 @@ declare module '@vue/runtime-core' {
     FormOptionComponent: typeof import('./src/components/FormOptionComponent.vue')['default']
     GamePage: typeof import('./src/pages/GamePage.vue')['default']
     Generics: typeof import('./src/styles/generics.vue')['default']
+    HeaderDisplay: typeof import('./src/components/monsterWindowComponents/HeaderDisplay.vue')['default']
     InputComponent: typeof import('./src/components/InputComponent.vue')['default']
     ItemListWindowBody: typeof import('./src/components/windowBodies/ItemListWindowBody.vue')['default']
     MainPage: typeof import('./src/pages/MainPage.vue')['default']
@@ -36,7 +38,7 @@ declare module '@vue/runtime-core' {
     RouterView: typeof import('vue-router')['RouterView']
     SimpleCloseActions: typeof import('./src/components/windowHeaderActions/SimpleCloseActions.vue')['default']
     SimpleWindowHeader: typeof import('./src/components/windowHeaders/SimpleWindowHeader.vue')['default']
-    TraitsDisplay: typeof import('./src/components/TraitsDisplay.vue')['default']
+    TraitsDisplay: typeof import('./src/components/monsterWindowComponents/TraitsDisplay.vue')['default']
     UploadedImage: typeof import('./src/components/chatComponents/UploadedImage.vue')['default']
     WebsocketComponent: typeof import('./src/components/WebsocketComponent.vue')['default']
     WindowActionsRender: typeof import('./src/components/windowHeaderActions/WindowActionsRender.vue')['default']
