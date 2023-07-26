@@ -25,7 +25,7 @@ const normalTraits = props.traits.filter((trait) => !trait.isAction && !trait.is
     <div class="traitTitle">Actions</div>
     <div class="abilityGroup">
       <div v-for="(action, index) in actions" :key=index>
-        <AbilityEntry :title="action.name" :description="action.description" send-message/>
+        <AbilityEntry :title="action.name" :description="action.description" send-message :action-message="action.action"/>
       </div>
     </div>
   </div>
@@ -33,7 +33,7 @@ const normalTraits = props.traits.filter((trait) => !trait.isAction && !trait.is
     <div class="traitTitle">Reactions</div>
     <div class="abilityGroup">
       <div v-for="(action, index) in reactions" :key=index>
-        <AbilityEntry :title="action.name" :description="action.description" send-message/>
+        <AbilityEntry :title="action.name" :description="action.description" send-message :action-message="action.action"/>
       </div>
     </div>
   </div>
@@ -41,7 +41,7 @@ const normalTraits = props.traits.filter((trait) => !trait.isAction && !trait.is
     <div class="traitTitle">Legendary Actions</div>
     <div class="abilityGroup">
       <div v-for="(action, index) in legendaryActions" :key=index>
-        <AbilityEntry :title="action.name" :description="action.description" send-message/>
+        <AbilityEntry :title="action.name" :description="action.description" send-message :action-message="action.action"/>
       </div>
     </div>
   </div>

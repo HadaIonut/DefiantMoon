@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {Actor, Save} from '../../types/Actors'
 import {getSignedNumber} from '../../utils/utils'
+import {apiClient} from '../../api'
 
 export interface AbilitiesDisplayProps {
   actor: Actor
@@ -14,6 +15,21 @@ const getSavingThrow = (ability: string, actor: Actor) => {
 
   return abilityValue + actor.proficiency
 }
+
+const abilityCheck = async (ability: string) => {
+  const rollModifier = (props.actor[ability.toLowerCase() as keyof Actor] as number - 10) / 2
+
+  await apiClient.sendChatMessage(`/r 1d20${getSignedNumber(rollModifier)}`, [])
+}
+
+const savingThrow = async (ability: string) => {
+  const rollModifier = (props.actor[ability.toLowerCase() as keyof Actor] as number - 10) / 2
+  const hasProficiency = props.actor.save[ability.toLowerCase() as keyof Save]
+  const proficiency = hasProficiency ? props.actor.proficiency : 0
+
+  await apiClient.sendChatMessage(`/r 1d20${getSignedNumber(rollModifier)}${getSignedNumber(proficiency, true)}`, [])
+}
+
 </script>
 
 <template>
@@ -23,8 +39,12 @@ const getSavingThrow = (ability: string, actor: Actor) => {
         {{ ability }}
       </div>
       <div style="text-align: center">
-        <span>{{ props.actor[ability.toLowerCase()] }}</span>
-        <span style="margin-left: 2px">({{ getSignedNumber(getSavingThrow(ability, actor)) }})</span>
+        <span class="clickable" @click="abilityCheck(ability)">
+          {{ props.actor[ability.toLowerCase()] }}
+        </span>
+        <span class="clickable" style="margin-left: 2px" @click="savingThrow(ability)">
+          ({{ getSignedNumber(getSavingThrow(ability, actor)) }})
+        </span>
       </div>
     </div>
   </div>
@@ -40,5 +60,11 @@ const getSavingThrow = (ability: string, actor: Actor) => {
   padding-bottom: 3px;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.clickable {
+  &:hover {
+    color: $primary;
+  }
 }
 </style>
