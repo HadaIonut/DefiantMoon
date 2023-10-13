@@ -22,6 +22,7 @@ const windowObject = windowStore.$state
 const isMoving: Ref<boolean> = ref(false)
 const window: Ref<HTMLElement | null> = ref(null)
 const windowHeader: Ref<HTMLElement | null> = ref(null)
+const windowHitEdgeX: Ref<boolean> = ref(false)
 
 const initWindowMove = (event: MouseEvent) => {
   pullFocus(event)
@@ -72,6 +73,15 @@ const initWindowMove = (event: MouseEvent) => {
     } else return clientY - windowMoveOffset.y
   }
 
+  const detectEdgeHits = () => {
+    if (windowLocation.stopX === 0 && !windowHitEdgeX.value) {
+      windowHitEdgeX.value = true
+      console.log("Hit")
+    } else if (windowLocation.stopX !== 0) {
+      windowHitEdgeX.value = false
+    }
+  }
+
   const windowMove = (event: MouseEvent) => {
     if (!isMoving.value || !window.value) return
 
@@ -81,6 +91,8 @@ const initWindowMove = (event: MouseEvent) => {
       startX: event.clientX,
       startY: event.clientY,
     }
+
+    detectEdgeHits()
 
     window.value.style.top = windowLocation.stopY + 'px'
     window.value.style.left = windowLocation.stopX + 'px'
@@ -194,6 +206,17 @@ const windowPosition = computed(() => {
   return `width: ${storeData.width}; height: ${height}; top: ${storeData.top}; left: ${storeData.left}; ${!windowObject[props.windowKey].isMinimized ? minText : ''}`
 })
 
+const shadowWindowPosition = computed(() => {
+  const storeData = windowObject[props.windowKey].display
+  const height = windowObject[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
+
+  if (windowHitEdgeX.value) {
+    return `top: 0px; left: 2px; width: 50vw; height:100vh; transform: translateY(-100%)`
+  }
+
+  return `top: -${parseInt(height ?? '0')/2}px; left: 10px; transform: translateY(-50%) }`
+})
+
 const windowClasses = computed((): string => {
   if (props.windowData.status === 'focused') return 'draggable-window--focused'
 
@@ -240,6 +263,11 @@ const closeWindow = () => {
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
+        <div class="shadow-window-container">
+          <div class="shadow-window" :style="shadowWindowPosition">
+
+          </div>
+        </div>
     </div>
 </template>
 
@@ -259,6 +287,20 @@ const closeWindow = () => {
     &--focused {
         z-index: $window-z-index + 1;
     }
+}
+
+.shadow-window-container {
+  position: relative
+}
+
+.shadow-window {
+  width: 10px;
+  height: 10px;
+  background: white;
+  position: absolute;
+  z-index: -1;
+  transition: all, 0.2s ease-in-out;
+  opacity: 0.2;
 }
 
 .draggable-window-header {
