@@ -20,8 +20,9 @@ const windowStore = useWindowsStore()
 const windowObject = windowStore.$state
 
 const isMoving: Ref<boolean> = ref(false)
-const window: Ref<HTMLElement | null> = ref(null)
-const windowHeader: Ref<HTMLElement | null> = ref(null)
+const windowRef: Ref<HTMLElement | null> = ref(null)
+const shadowWindowRef: Ref<HTMLElement | null> = ref(null)
+const windowHeaderRef: Ref<HTMLElement | null> = ref(null)
 const windowHitEdgeX: Ref<boolean> = ref(false)
 
 const initWindowMove = (event: MouseEvent) => {
@@ -30,7 +31,7 @@ const initWindowMove = (event: MouseEvent) => {
   let windowLocation = {startX: 0, startY: 0, stopX: 0, stopY: 0}
   let windowMoveOffset = {x: 0, y: 0}
 
-  if (!window.value || !windowHeader.value) return
+  if (!windowRef.value || !windowHeaderRef.value) return
   windowLocation = {
     ...windowLocation,
     startX: event.clientX,
@@ -38,18 +39,18 @@ const initWindowMove = (event: MouseEvent) => {
   }
 
   isMoving.value = true
-  if (window.value) window.value.style.userSelect = 'none'
+  if (windowRef.value) windowRef.value.style.userSelect = 'none'
 
   windowMoveOffset = {
-    x: event.pageX - window.value.offsetLeft,
-    y: event.pageY - window.value.offsetTop,
+    x: event.pageX - windowRef.value.offsetLeft,
+    y: event.pageY - windowRef.value.offsetTop,
   }
 
   const getLimitedXMovement = (clientX: number): number => {
-    if (!window.value) return 0
+    if (!windowRef.value) return 0
 
     const windowX = parseInt(
-      document?.defaultView?.getComputedStyle?.(window?.value)?.width ?? '',
+      document?.defaultView?.getComputedStyle?.(windowRef?.value)?.width ?? '',
       10,
     )
 
@@ -60,10 +61,10 @@ const initWindowMove = (event: MouseEvent) => {
   }
 
   const getLimitedYMovement = (clientY: number): number => {
-    if (!window.value) return 0
+    if (!windowRef.value) return 0
 
     const windowY = parseInt(
-      document?.defaultView?.getComputedStyle?.(window?.value)?.height ?? '',
+      document?.defaultView?.getComputedStyle?.(windowRef?.value)?.height ?? '',
       10,
     )
 
@@ -74,16 +75,19 @@ const initWindowMove = (event: MouseEvent) => {
   }
 
   const detectEdgeHits = () => {
-    if (windowLocation.stopX === 0 && !windowHitEdgeX.value) {
-      windowHitEdgeX.value = true
-      console.log("Hit")
-    } else if (windowLocation.stopX !== 0) {
-      windowHitEdgeX.value = false
-    }
+    if (!windowRef?.value) return
+
+    const windowWidth = parseInt(
+      document?.defaultView?.getComputedStyle?.(windowRef?.value)?.width ?? '',
+      10,
+    )
+
+
+    windowHitEdgeX.value = (windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth - 10)
   }
 
   const windowMove = (event: MouseEvent) => {
-    if (!isMoving.value || !window.value) return
+    if (!isMoving.value || !windowRef.value || !shadowWindowRef.value) return
 
     windowLocation = {
       stopX: getLimitedXMovement(event.clientX),
@@ -94,26 +98,32 @@ const initWindowMove = (event: MouseEvent) => {
 
     detectEdgeHits()
 
-    window.value.style.top = windowLocation.stopY + 'px'
-    window.value.style.left = windowLocation.stopX + 'px'
+    windowRef.value.style.top = windowLocation.stopY + 'px'
+    windowRef.value.style.left = windowLocation.stopX + 'px'
+
+
+    if (windowHitEdgeX.value) return
+
+    shadowWindowRef.value.style.left = windowLocation.stopX + 'px'
+    shadowWindowRef.value.style.top = windowLocation.stopY + parseInt(windowRef.value?.style.height ?? '0') /2 + 'px'
   }
 
   const stopWindowMove = () => {
     isMoving.value = false
-    if (!window.value) return
+    if (!windowRef.value) return
     const windowLocation = {
-      top: window.value?.style.top,
-      left: window.value?.style.left,
+      top: windowRef.value?.style.top,
+      left: windowRef.value?.style.left,
     }
 
-    window.value.style.userSelect = ''
+    windowRef.value.style.userSelect = ''
 
     document.removeEventListener('mousemove', windowMove)
     windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
   }
 
   document.addEventListener('mousemove', windowMove)
-  windowHeader.value.addEventListener('mouseup', stopWindowMove)
+  windowHeaderRef.value.addEventListener('mouseup', stopWindowMove)
 }
 
 const initResize = (event: MouseEvent) => {
@@ -124,46 +134,46 @@ const initResize = (event: MouseEvent) => {
 
   dragWindowLocation.startX = event.clientX
   dragWindowLocation.startY = event.clientY
-  if (!window.value) return
+  if (!windowRef.value) return
 
   dragWindowLocation.startWidth = parseInt(
-    document?.defaultView?.getComputedStyle?.(window.value)?.width ?? '',
+    document?.defaultView?.getComputedStyle?.(windowRef.value)?.width ?? '',
     10,
   )
   dragWindowLocation.startHeight = parseInt(
-    document?.defaultView?.getComputedStyle?.(window.value)?.height ?? '',
+    document?.defaultView?.getComputedStyle?.(windowRef.value)?.height ?? '',
     10,
   )
 
-  window.value.style.userSelect = 'none'
-  window.value.style.transition = 'none'
+  windowRef.value.style.userSelect = 'none'
+  windowRef.value.style.transition = 'none'
 
   const doResize = (event: MouseEvent) => {
-    if (!window.value) return
+    if (!windowRef.value) return
 
     switch (resizeType) {
     case 'resizer-both':
-      window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-      window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+      windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+      windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
       break
     case 'resizer-bottom':
-      window.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+      windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
       break
     case 'resizer-right':
-      window.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+      windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
       break
     }
   }
 
   const stopResize = () => {
-    if (!window.value) return
+    if (!windowRef.value) return
     const windowSize = {
-      width: window.value?.style.width,
-      height: window.value?.style.height,
+      width: windowRef.value?.style.width,
+      height: windowRef.value?.style.height,
     }
 
-    window.value.style.userSelect = ''
-    window.value.style.transition = ''
+    windowRef.value.style.userSelect = ''
+    windowRef.value.style.transition = ''
 
     document.removeEventListener('mousemove', doResize)
     document.removeEventListener('mouseup', stopResize)
@@ -176,15 +186,15 @@ const initResize = (event: MouseEvent) => {
 }
 
 const minimize = () => {
-  if (!window.value) return
+  if (!windowRef.value) return
 
   windowStore.toggleMinimize(props.windowKey)
 
   if (windowObject[props.windowKey].isMinimized) {
-    lastHeightBeforeMinimize = window.value?.style.height
+    lastHeightBeforeMinimize = windowRef.value?.style.height
 
-    window.value.style.height = WINDOW_HEADER_HEIGHT
-  } else window.value.style.height = lastHeightBeforeMinimize
+    windowRef.value.style.height = WINDOW_HEADER_HEIGHT
+  } else windowRef.value.style.height = lastHeightBeforeMinimize
 }
 
 onMounted(() => {
@@ -208,13 +218,14 @@ const windowPosition = computed(() => {
 
 const shadowWindowPosition = computed(() => {
   const storeData = windowObject[props.windowKey].display
-  const height = windowObject[props.windowKey].isMinimized ? WINDOW_HEADER_HEIGHT : storeData.height
 
-  if (windowHitEdgeX.value) {
-    return `top: 0px; left: 2px; width: 50vw; height:100vh; transform: translateY(-100%)`
+  if (windowHitEdgeX.value && windowRef.value) {
+    const leftVal = windowRef.value.style.left === '0px' ? `left: 0px` : `right: 0px`
+
+    return `top: 0px; ${leftVal}; width: 50vw; height:100vh; z-index:10`
   }
 
-  return `top: -${parseInt(height ?? '0')/2}px; left: 10px; transform: translateY(-50%) }`
+  return `top: calc(${storeData.top} + (${storeData.height} / 2)); left: ${storeData.left}; transform: translateY(-50%) }`
 })
 
 const windowClasses = computed((): string => {
@@ -237,10 +248,10 @@ const closeWindow = () => {
 <template>
     <div
         :class="`draggable-window ${windowClasses}`"
-        ref="window" v-if="props.windowData.status !== 'closed'"
+        ref="windowRef" v-if="props.windowData.status !== 'closed'"
         @click="pullFocus"
         :style="windowPosition">
-        <div class="draggable-window-header" ref="windowHeader" @dblclick="minimize" @mousedown="initWindowMove">
+        <div class="draggable-window-header" ref="windowHeaderRef" @dblclick="minimize" @mousedown="initWindowMove">
             <div class="window-header-content">
                 <slot name="header">
                     header
@@ -264,10 +275,11 @@ const closeWindow = () => {
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
         <div class="shadow-window-container">
-          <div class="shadow-window" :style="shadowWindowPosition">
 
-          </div>
         </div>
+    </div>
+    <div class="shadow-window" :style="shadowWindowPosition" ref="shadowWindowRef">
+
     </div>
 </template>
 
