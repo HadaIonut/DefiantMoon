@@ -13,6 +13,7 @@ const props = defineProps<WindowProps>()
 
 const RIGHT_MARGIN_OFFSET = 0
 const WINDOW_HEADER_HEIGHT = '30px'
+const SHADOW_MARGIN_OFFSET = '2px'
 
 let lastHeightBeforeMinimize = '0px'
 
@@ -82,8 +83,7 @@ const initWindowMove = (event: MouseEvent) => {
       10,
     )
 
-
-    windowHitEdgeX.value = (windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth - 10)
+    windowHitEdgeX.value = (windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth )
   }
 
   const windowMove = (event: MouseEvent) => {
@@ -111,15 +111,33 @@ const initWindowMove = (event: MouseEvent) => {
   const stopWindowMove = () => {
     isMoving.value = false
     if (!windowRef.value) return
-    const windowLocation = {
-      top: windowRef.value?.style.top,
-      left: windowRef.value?.style.left,
+
+    if (windowHitEdgeX.value) {
+      const leftCenter = document.body.clientWidth / 2
+      const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
+      const windowData = {
+        top: '0px',
+        left: leftVal,
+        height: document.body.clientHeight + 'px',
+        width: document.body.clientWidth/2 + 'px'
+      }
+
+      windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
+      windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
+      windowStore.setMinimizeStatus(props.windowKey, false)
+      windowHitEdgeX.value = false
+    } else {
+      const windowLocation = {
+        top: windowRef.value?.style.top,
+        left: windowRef.value?.style.left,
+      }
+
+      windowRef.value.style.userSelect = ''
+
+      windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
     }
-
-    windowRef.value.style.userSelect = ''
-
     document.removeEventListener('mousemove', windowMove)
-    windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
+
   }
 
   document.addEventListener('mousemove', windowMove)
@@ -220,9 +238,9 @@ const shadowWindowPosition = computed(() => {
   const storeData = windowObject[props.windowKey].display
 
   if (windowHitEdgeX.value && windowRef.value) {
-    const leftVal = windowRef.value.style.left === '0px' ? `left: 0px` : `right: 0px`
+    const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth/2}px`
 
-    return `top: 0px; ${leftVal}; width: 50vw; height:100vh; z-index:10`
+    return `top: ${SHADOW_MARGIN_OFFSET}; ${leftVal}; width: calc(50vw - ${SHADOW_MARGIN_OFFSET}); height:calc(100vh - ${SHADOW_MARGIN_OFFSET}); z-index:10`
   }
 
   return `top: calc(${storeData.top} + (${storeData.height} / 2)); left: ${storeData.left}; transform: translateY(-50%) }`
@@ -274,13 +292,8 @@ const closeWindow = () => {
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
         <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
-        <div class="shadow-window-container">
-
-        </div>
     </div>
-    <div class="shadow-window" :style="shadowWindowPosition" ref="shadowWindowRef">
-
-    </div>
+    <div class="shadow-window" :style="shadowWindowPosition" ref="shadowWindowRef" v-if="props.windowData.status !== 'closed'"></div>
 </template>
 
 <style scoped lang="scss">
@@ -308,11 +321,12 @@ const closeWindow = () => {
 .shadow-window {
   width: 10px;
   height: 10px;
-  background: white;
+  background-color: rgba(white,0.3);
   position: absolute;
   z-index: -1;
   transition: all, 0.2s ease-in-out;
-  opacity: 0.2;
+  border: 1px solid white;
+  border-radius: 8px;
 }
 
 .draggable-window-header {

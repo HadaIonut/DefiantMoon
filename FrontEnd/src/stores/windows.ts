@@ -140,6 +140,9 @@ export const useWindowsStore = defineStore('windows', {
     toggleMinimize(key: string) {
       this.$state[key].isMinimized = !this[key].isMinimized
     },
+    setMinimizeStatus(key:string, value: boolean) {
+      this.$state[key].isMinimized = value
+    },
     applyWindowStartingData(key: string) {
       this.$state[key].display = {...this[key].startingDisplay}
     },
