@@ -30,40 +30,29 @@ const windowHitEdgeY: Ref<boolean> = ref(false)
 const getSnapLocation = () => {
   if (!windowRef.value) return
 
+  let left = '0px'
+  let top = '0px'
+  let width
+  let height
+
   if (windowHitEdgeY.value && windowHitEdgeX.value) {
-    const leftVal = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth / 2}px`
-    const topVal = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight / 2}px`
+    left = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth / 2}px`
+    top = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight / 2}px`
+    width = document.body.clientWidth / 2 + 'px'
+    height = document.body.clientHeight / 2 + 'px'
+  } else if (windowHitEdgeY.value && !windowHitEdgeX.value) {
+    width = document.body.clientWidth + 'px'
+    height = document.body.clientHeight + 'px'
+  } else if (!windowHitEdgeY.value && windowHitEdgeX.value) {
+    left = windowRef.value?.style.left === '0px' ? '0px' : `${document.body.clientWidth / 2}px`
+    width = document.body.clientWidth / 2 + 'px'
+    height = document.body.clientHeight + 'px'
+  } else {
+    top = windowRef.value?.style.top
+    left = windowRef.value?.style.left
+  }
 
-    return {
-      top: topVal,
-      left: leftVal,
-      width: document.body.clientWidth / 2 + 'px',
-      height: document.body.clientHeight / 2 + 'px',
-    }
-  }
-  if (windowHitEdgeY.value && !windowHitEdgeX.value) {
-    return {
-      top: '0px',
-      left: '0px',
-      width: document.body.clientWidth + 'px',
-      height: document.body.clientHeight + 'px',
-    }
-  }
-  if (!windowHitEdgeY.value && windowHitEdgeX.value) {
-    const leftCenter = document.body.clientWidth / 2
-    const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
-
-    return {
-      top: '0px',
-      left: leftVal,
-      height: document.body.clientHeight + 'px',
-      width: document.body.clientWidth / 2 + 'px',
-    }
-  }
-  return {
-    top: windowRef.value?.style.top,
-    left: windowRef.value?.style.left,
-  }
+  return {top, left, width, height}
 }
 
 const initWindowMove = (event: MouseEvent) => {
