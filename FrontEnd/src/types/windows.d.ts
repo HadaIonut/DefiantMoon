@@ -26,6 +26,12 @@ export type WindowDisplay = {
     height?: string | null
 }
 
+export type SnapData = {
+    isSnapped: boolean
+    previousWidth: string
+    previousHeight: string
+}
+
 export type Window = {
     action: Action,
     status: 'closed' | 'opened' | 'focused',
@@ -34,6 +40,7 @@ export type Window = {
     body: WindowBody,
     display: WindowDisplay,
     isMinimized: boolean,
+    snapData?: SnapData,
     startingDisplay?: {
         top: string,
         left: string,

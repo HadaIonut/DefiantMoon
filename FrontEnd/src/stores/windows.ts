@@ -140,6 +140,22 @@ export const useWindowsStore = defineStore('windows', {
     toggleMinimize(key: string) {
       this.$state[key].isMinimized = !this[key].isMinimized
     },
+    setSnap(key: string) {
+      this.$state[key].snapData = {
+        isSnapped: true,
+        previousHeight: this.$state[key].display.height ?? '',
+        previousWidth: this.$state[key].display.width ?? '',
+      }
+    },
+    unSnap(key: string) {
+      this.$state[key].display.height = this.$state[key].snapData?.previousHeight
+      this.$state[key].display.width = this.$state[key].snapData?.previousWidth
+      this.$state[key].snapData = {
+        isSnapped: false,
+        previousHeight: '',
+        previousWidth: '',
+      }
+    },
     setMinimizeStatus(key:string, value: boolean) {
       this.$state[key].isMinimized = value
     },

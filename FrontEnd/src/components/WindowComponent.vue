@@ -76,6 +76,10 @@ const initWindowMove = (event: MouseEvent) => {
     y: event.pageY - windowRef.value.offsetTop,
   }
 
+  if (windowObject[props.windowKey]?.snapData?.isSnapped) {
+    console.log('here')
+    windowStore.unSnap(props.windowKey)
+  }
   const getLimitedXMovement = (clientX: number): number => {
     if (!windowRef.value) return 0
 
@@ -158,6 +162,7 @@ const initWindowMove = (event: MouseEvent) => {
       windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
 
       if (windowData.width && windowData.height) {
+        windowStore.setSnap(props.windowKey)
         windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
         windowStore.setMinimizeStatus(props.windowKey, false)
       }
