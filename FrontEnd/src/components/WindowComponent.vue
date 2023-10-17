@@ -211,48 +211,69 @@ const initResize = (event: MouseEvent) => {
   windowRef.value.style.userSelect = 'none'
   windowRef.value.style.transition = 'none'
 
+
+  const handleMixedResize = (event: MouseEvent) => {
+    if (!windowRef.value) return
+
+    if (resizeType.includes('left')) {
+      const minWidth = parseInt(windowRef.value.style.minWidth)
+      const newWidth = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX
+
+      if (newWidth > minWidth) {
+        windowRef.value.style.left = event.clientX + 'px'
+        windowRef.value.style.width = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX + 'px'
+      }
+    }
+    if (resizeType.includes('top')) {
+      const minHeight = parseInt(windowRef.value.style.minHeight)
+      const newHeight = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY
+
+      if (newHeight > minHeight) {
+        windowRef.value.style.top = event.clientY + 'px'
+        windowRef.value.style.height = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY + 'px'
+      }
+    }
+    if (resizeType.includes('bottom')) {
+      windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+    }
+    if (resizeType.includes('right')) {
+      windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+    }
+  }
+
+  const handleHorizontalResize = (event: MouseEvent) => {
+    if (!windowRef.value) return
+
+    if (resizeType.includes('left')) {
+      windowRef.value.style.left = event.clientX + 'px'
+      windowRef.value.style.width = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX + 'px'
+    } else {
+      windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+    }
+  }
+
+  const handleVerticalResize = (event: MouseEvent) => {
+    if (!windowRef.value) return
+
+    if (resizeType.includes('top')) {
+      windowRef.value.style.top = event.clientY + 'px'
+      windowRef.value.style.height = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY + 'px'
+    } else {
+      windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+    }
+  }
+
   const doResize = (event: MouseEvent) => {
     if (!windowRef.value) return
 
     if (resizeType.includes('resizer-both')) {
-      if (resizeType.includes('left')) {
-        const minWidth = parseInt(windowRef.value.style.minWidth)
-        const newWidth = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX
-
-        if (newWidth > minWidth) {
-          windowRef.value.style.left = event.clientX + 'px'
-          windowRef.value.style.width = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX + 'px'
-        }
-      }
-      if (resizeType.includes('top')) {
-        const minHeight = parseInt(windowRef.value.style.minHeight)
-        const newHeight = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY
-
-        if (newHeight > minHeight) {
-          windowRef.value.style.top = event.clientY + 'px'
-          windowRef.value.style.height = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY + 'px'
-        }
-      }
-      if (resizeType.includes('bottom')) {
-        windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
-      }
-      if (resizeType.includes('right')) {
-        windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-      }
-    } else if (resizeType.includes('resizer-horizontal')) {
-      if (resizeType.includes('left')) {
-        windowRef.value.style.left = event.clientX + 'px'
-        windowRef.value.style.width = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX + 'px'
-      } else {
-        windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-      }
-    } else if (resizeType.includes('resizer-vertical')) {
-      if (resizeType.includes('top')) {
-        windowRef.value.style.top = event.clientY + 'px'
-        windowRef.value.style.height = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY + 'px'
-      } else {
-        windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
-      }
+      handleMixedResize(event)
+    }
+    if (resizeType.includes('resizer-horizontal')) {
+      handleHorizontalResize(event)
+    }
+    if (resizeType.includes('resizer-vertical')) {
+      handleVerticalResize(event)
     }
   }
 
