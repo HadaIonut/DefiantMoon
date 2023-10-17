@@ -176,11 +176,14 @@ const initWindowMove = (event: MouseEvent) => {
 
     document.removeEventListener('mousemove', windowMove)
     document.body.removeEventListener('mouseleave', stopWindowMove)
+    windowHeaderRef?.value?.removeEventListener?.('mouseleave', stopWindowMove)
+    windowHeaderRef?.value?.removeEventListener?.('mouseup', stopWindowMove)
   }
 
   document.addEventListener('mousemove', windowMove)
   document.body.addEventListener('mouseleave', stopWindowMove)
   windowHeaderRef.value.addEventListener('mouseup', stopWindowMove)
+  windowHeaderRef.value.addEventListener('mouseleave', stopWindowMove)
 }
 
 const initResize = (event: MouseEvent) => {
