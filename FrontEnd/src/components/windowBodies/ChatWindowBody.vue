@@ -193,7 +193,7 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlaye
           </div>
         </perfect-scrollbar>
       </div>
-      <ChatToolbar :chatEditor="chatEditor"/>
+      <ChatToolbar :chatEditor="chatEditor" :sendEvent="sendMessage"/>
       <div class="chat-input">
         <QuillEditor theme="bubble" ref="chatEditor"/>
       </div>
