@@ -5,8 +5,8 @@ import {useWindowsStore} from '../stores/windows'
 import {Motion} from 'motion/vue'
 
 interface WindowProps {
-    windowData: Window,
-    windowKey: string
+  windowData: Window,
+  windowKey: string
 }
 
 const props = defineProps<WindowProps>()
@@ -31,19 +31,34 @@ const getSnapLocation = () => {
   if (!windowRef.value) return
 
   if (windowHitEdgeY.value && windowHitEdgeX.value) {
-    const leftVal = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth/2}px`
-    const topVal = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight/2}px`
+    const leftVal = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth / 2}px`
+    const topVal = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight / 2}px`
 
-    return {top: topVal, left: leftVal, width: document.body.clientWidth/2 + 'px', height: document.body.clientHeight/2 + 'px'}
+    return {
+      top: topVal,
+      left: leftVal,
+      width: document.body.clientWidth / 2 + 'px',
+      height: document.body.clientHeight / 2 + 'px',
+    }
   }
   if (windowHitEdgeY.value && !windowHitEdgeX.value) {
-    return {top: '0px', left: '0px', width: document.body.clientWidth + 'px', height: document.body.clientHeight + 'px'}
+    return {
+      top: '0px',
+      left: '0px',
+      width: document.body.clientWidth + 'px',
+      height: document.body.clientHeight + 'px',
+    }
   }
   if (!windowHitEdgeY.value && windowHitEdgeX.value) {
     const leftCenter = document.body.clientWidth / 2
     const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
 
-    return {top: '0px', left: leftVal, height: document.body.clientHeight + 'px', width: document.body.clientWidth/2 + 'px'}
+    return {
+      top: '0px',
+      left: leftVal,
+      height: document.body.clientHeight + 'px',
+      width: document.body.clientWidth / 2 + 'px',
+    }
   }
   return {
     top: windowRef.value?.style.top,
@@ -80,10 +95,13 @@ const initWindowMove = (event: MouseEvent) => {
       10,
     )
 
-    if (clientX - windowMoveOffset.x < 0) return 0
-    else if (clientX - windowMoveOffset.x + windowX > document.body.clientWidth) {
+    if (clientX - windowMoveOffset.x < 0) {
+      return 0
+    } else if (clientX - windowMoveOffset.x + windowX > document.body.clientWidth) {
       return document.body.clientWidth - windowX - RIGHT_MARGIN_OFFSET
-    } else return clientX - windowMoveOffset.x
+    } else {
+      return clientX - windowMoveOffset.x
+    }
   }
 
   const getLimitedYMovement = (clientY: number): number => {
@@ -94,10 +112,13 @@ const initWindowMove = (event: MouseEvent) => {
       10,
     )
 
-    if (clientY - windowMoveOffset.y < 0) return 0
-    else if (clientY - windowMoveOffset.y + windowY > document.body.clientHeight) {
+    if (clientY - windowMoveOffset.y < 0) {
+      return 0
+    } else if (clientY - windowMoveOffset.y + windowY > document.body.clientHeight) {
       return document.body.clientHeight - windowY - RIGHT_MARGIN_OFFSET
-    } else return clientY - windowMoveOffset.y
+    } else {
+      return clientY - windowMoveOffset.y
+    }
   }
 
   const detectEdgeHits = () => {
@@ -113,7 +134,7 @@ const initWindowMove = (event: MouseEvent) => {
     )
 
     windowHitEdgeX.value = windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth
-    windowHitEdgeY.value = windowLocation.stopY === 0|| windowLocation.stopY + windowHeight >= document.body.clientHeight
+    windowHitEdgeY.value = windowLocation.stopY === 0 || windowLocation.stopY + windowHeight >= document.body.clientHeight
   }
 
   const windowMove = (event: MouseEvent) => {
@@ -135,7 +156,7 @@ const initWindowMove = (event: MouseEvent) => {
     if (windowHitEdgeX.value || windowHitEdgeY.value) return
 
     shadowWindowRef.value.style.left = windowLocation.stopX + 'px'
-    shadowWindowRef.value.style.top = windowLocation.stopY + parseInt(windowRef.value?.style.height ?? '0') /2 + 'px'
+    shadowWindowRef.value.style.top = windowLocation.stopY + parseInt(windowRef.value?.style.height ?? '0') / 2 + 'px'
   }
 
   const stopWindowMove = () => {
@@ -193,17 +214,45 @@ const initResize = (event: MouseEvent) => {
   const doResize = (event: MouseEvent) => {
     if (!windowRef.value) return
 
-    switch (resizeType) {
-    case 'resizer-both':
-      windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-      windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
-      break
-    case 'resizer-bottom':
-      windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
-      break
-    case 'resizer-right':
-      windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
-      break
+    if (resizeType.includes('resizer-both')) {
+      if (resizeType.includes('left')) {
+        const minWidth = parseInt(windowRef.value.style.minWidth)
+        const newWidth = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX
+
+        if (newWidth > minWidth) {
+          windowRef.value.style.left = event.clientX + 'px'
+          windowRef.value.style.width = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX + 'px'
+        }
+      }
+      if (resizeType.includes('top')) {
+        const minHeight = parseInt(windowRef.value.style.minHeight)
+        const newHeight = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY
+
+        if (newHeight > minHeight) {
+          windowRef.value.style.top = event.clientY + 'px'
+          windowRef.value.style.height = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY + 'px'
+        }
+      }
+      if (resizeType.includes('bottom')) {
+        windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+      }
+      if (resizeType.includes('right')) {
+        windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+      }
+    } else if (resizeType.includes('resizer-horizontal')) {
+      if (resizeType.includes('left')) {
+        windowRef.value.style.left = event.clientX + 'px'
+        windowRef.value.style.width = dragWindowLocation.startWidth - event.clientX + dragWindowLocation.startX + 'px'
+      } else {
+        windowRef.value.style.width = dragWindowLocation.startWidth + event.clientX - dragWindowLocation.startX + 'px'
+      }
+    } else if (resizeType.includes('resizer-vertical')) {
+      if (resizeType.includes('top')) {
+        windowRef.value.style.top = event.clientY + 'px'
+        windowRef.value.style.height = dragWindowLocation.startHeight - event.clientY + dragWindowLocation.startY + 'px'
+      } else {
+        windowRef.value.style.height = dragWindowLocation.startHeight + event.clientY - dragWindowLocation.startY + 'px'
+      }
     }
   }
 
@@ -221,6 +270,7 @@ const initResize = (event: MouseEvent) => {
     document.removeEventListener('mouseup', stopResize)
 
     windowStore.setWindowSize(props.windowKey, windowSize.width, windowSize.height)
+    windowStore.setWindowLocation(props.windowKey, windowRef.value.style.top, windowRef.value.style.left)
   }
 
   document.addEventListener('mousemove', doResize)
@@ -236,7 +286,9 @@ const minimize = () => {
     lastHeightBeforeMinimize = windowRef.value?.style.height
 
     windowRef.value.style.height = WINDOW_HEADER_HEIGHT
-  } else windowRef.value.style.height = lastHeightBeforeMinimize
+  } else {
+    windowRef.value.style.height = lastHeightBeforeMinimize
+  }
 }
 
 onMounted(() => {
@@ -262,8 +314,8 @@ const shadowWindowPosition = computed(() => {
   const storeData = windowObject[props.windowKey].display
 
   if (windowHitEdgeY.value && windowHitEdgeX.value && windowRef.value) {
-    const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth/2}px`
-    const topVal = windowRef.value.style.top === '0px' ? `top: ${SHADOW_MARGIN_OFFSET}` : `top: ${document.body.clientHeight/2}px`
+    const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth / 2}px`
+    const topVal = windowRef.value.style.top === '0px' ? `top: ${SHADOW_MARGIN_OFFSET}` : `top: ${document.body.clientHeight / 2}px`
 
     return `${topVal}; ${leftVal}; width: calc(50vw - 2 * ${SHADOW_MARGIN_OFFSET}); height:calc(50vh - 2* ${SHADOW_MARGIN_OFFSET}); z-index:10`
   }
@@ -273,7 +325,7 @@ const shadowWindowPosition = computed(() => {
   }
 
   if (windowHitEdgeX.value && windowRef.value) {
-    const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth/2}px`
+    const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth / 2}px`
 
     return `top: ${SHADOW_MARGIN_OFFSET}; ${leftVal}; width: calc(50vw - 2 * ${SHADOW_MARGIN_OFFSET}); height:calc(100vh - 2 * ${SHADOW_MARGIN_OFFSET}); z-index:10`
   }
@@ -299,54 +351,69 @@ const closeWindow = () => {
 </script>
 
 <template>
-    <div
-        :class="`draggable-window ${windowClasses}`"
-        ref="windowRef" v-if="props.windowData.status !== 'closed'"
-        @click="pullFocus"
-        :style="windowPosition">
-        <div class="draggable-window-header" ref="windowHeaderRef" @dblclick="minimize" @mousedown="initWindowMove">
-            <div class="window-header-content">
-                <slot name="header">
-                    header
-                </slot>
-                <slot name="header-actions">
-                    <div class="action close-button" @click="closeWindow">
-                        <font-awesome-icon icon="fa-solid fa-xmark"/>
-                    </div>
-                </slot>
-            </div>
-        </div>
-        <div class="draggable-window-body">
-            <Motion v-show="!windowObject[props.windowKey].isMinimized" style="height: 100%" :animate="{scaleY: 1}"
-                    :exit="{scaleY: 0}">
-                <div class="window-body-content">
-                    <slot name="body">big content energy</slot>
-                </div>
-            </Motion>
-        </div>
-        <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-right" @mousedown="initResize"/>
-        <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-bottom" @mousedown="initResize"/>
-        <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both" @mousedown="initResize"/>
+  <div
+    :class="`draggable-window ${windowClasses}`"
+    ref="windowRef" v-if="props.windowData.status !== 'closed'"
+    @click="pullFocus"
+    :style="windowPosition">
+    <div class="draggable-window-header" ref="windowHeaderRef" @dblclick="minimize" @mousedown="initWindowMove">
+      <div class="window-header-content">
+        <slot name="header">
+          header
+        </slot>
+        <slot name="header-actions">
+          <div class="action close-button" @click="closeWindow">
+            <font-awesome-icon icon="fa-solid fa-xmark"/>
+          </div>
+        </slot>
+      </div>
     </div>
-    <div class="shadow-window" :style="shadowWindowPosition" ref="shadowWindowRef" v-if="props.windowData.status !== 'closed'"></div>
+    <div class="draggable-window-body">
+      <Motion v-show="!windowObject[props.windowKey].isMinimized" style="height: 100%" :animate="{scaleY: 1}"
+              :exit="{scaleY: 0}">
+        <div class="window-body-content">
+          <slot name="body">big content energy</slot>
+        </div>
+      </Motion>
+    </div>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-horizontal resizer-horizontal--right"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class=" resizer-horizontal resizer-horizontal--left"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-vertical resizer-vertical--top"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-vertical resizer-vertical--bottom"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both resizer-both--bottom-right"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both resizer-both--bottom-left"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both resizer-both--top-right"
+          @mousedown="initResize"/>
+    <span v-if="!windowObject[props.windowKey].isMinimized" class="resizer-both resizer-both--top-left"
+          @mousedown="initResize"/>
+
+  </div>
+  <div class="shadow-window" :style="shadowWindowPosition" ref="shadowWindowRef"
+       v-if="props.windowData.status !== 'closed'"></div>
 </template>
 
 <style scoped lang="scss">
 .draggable-window {
-    position: absolute;
-    top: $window-default-location-top;
-    left: $window-default-location-left;
-    z-index: $window-z-index;
-    transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
-    border-radius: 6px;
-    box-shadow: -2px 5px 10px $background;
-    border: 1px solid $accent;
-    display: flex;
-    flex-direction: column;
+  position: absolute;
+  top: $window-default-location-top;
+  left: $window-default-location-left;
+  z-index: $window-z-index;
+  transition: height 0.2s ease-in-out, scale 0.2s ease-in-out;
+  border-radius: 6px;
+  box-shadow: -2px 5px 10px $background;
+  border: 1px solid $accent;
+  display: flex;
+  flex-direction: column;
 
-    &--focused {
-        z-index: $window-z-index + 1;
-    }
+  &--focused {
+    z-index: $window-z-index + 1;
+  }
 }
 
 .shadow-window-container {
@@ -356,7 +423,7 @@ const closeWindow = () => {
 .shadow-window {
   width: 10px;
   height: 10px;
-  background-color: rgba($secondary,0.3);
+  background-color: rgba($secondary, 0.3);
   position: absolute;
   z-index: -1;
   transition: all, 0.2s ease-in-out;
@@ -365,87 +432,129 @@ const closeWindow = () => {
 }
 
 .draggable-window-header {
-    background-color: rgba($tertiary, 1);
-    backdrop-filter: blur(6px);
-    color: $text;
-    height: $window-header-height;
-    cursor: move;
-    display: flex;
-    border-radius: 6px 6px 0 0;
-    flex: 0 0 30px;
+  background-color: rgba($tertiary, 1);
+  backdrop-filter: blur(6px);
+  color: $text;
+  height: $window-header-height;
+  cursor: move;
+  display: flex;
+  border-radius: 6px 6px 0 0;
+  flex: 0 0 30px;
 }
 
 .draggable-window-body {
-    background-color: rgba($secondary, 1);
-    backdrop-filter: blur(6px);
-    color: $text-dark;
-    position: relative;
-    height: calc(100% - #{$window-header-height});
-    border-radius: 0 0 6px 6px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  background-color: rgba($secondary, 1);
+  backdrop-filter: blur(6px);
+  color: $text-dark;
+  position: relative;
+  height: calc(100% - #{$window-header-height});
+  border-radius: 0 0 6px 6px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 
-    &--minimized {
+  &--minimized {
 
-        & > .window-body-content {
-            display: none;
-        }
+    & > .window-body-content {
+      display: none;
     }
+  }
 }
 
 .window-header-content {
-    flex: 1;
-    padding: 5px;
-    display: flex;
-    justify-content: space-between;
+  flex: 1;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .window-body-content {
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    height: 100%;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
 }
 
 .close-button {
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    margin-right: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin-right: 5px;
 }
 
-.resizer-right {
-    width: 5px;
-    height: 100%;
-    background: transparent;
-    position: absolute;
+.resizer-horizontal {
+  width: 5px;
+  height: 100%;
+  background: transparent;
+  position: absolute;
+  cursor: e-resize;
+
+  &--right {
     right: 0;
     bottom: 0;
-    cursor: e-resize;
+  }
+
+  &--left {
+    left: 0;
+    bottom: 0;
+  }
 }
 
-.resizer-bottom {
-    width: 100%;
-    height: 5px;
-    background: transparent;
-    position: absolute;
+
+.resizer-vertical {
+  width: 100%;
+  height: 5px;
+  background: transparent;
+  position: absolute;
+  cursor: n-resize;
+
+  &--bottom {
     right: 0;
     bottom: 0;
-    cursor: n-resize;
+  }
+
+  &--top {
+    right: 0;
+    top: 0;
+  }
 }
 
 .resizer-both {
-    width: 5px;
-    height: 5px;
-    background: transparent;
-    z-index: $window-z-index;
-    position: absolute;
+  width: 5px;
+  height: 5px;
+  background: transparent;
+  z-index: $window-z-index;
+  position: absolute;
+
+  &--top-left {
+    cursor: nw-resize;
+
+    top: 0;
+    left: 0;
+  }
+
+  &--top-right {
+    cursor: sw-resize;
+
+    top: 0;
+    right: 0;
+  }
+
+  &--bottom-left {
+    cursor: sw-resize;
+
+    left: 0;
+    bottom: 0;
+  }
+
+  &--bottom-right {
+    cursor: nw-resize;
+
     right: 0;
     bottom: 0;
-    cursor: nw-resize;
+  }
 }
 </style>
