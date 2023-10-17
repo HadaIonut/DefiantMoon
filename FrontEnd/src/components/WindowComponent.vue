@@ -25,6 +25,7 @@ const windowRef: Ref<HTMLElement | null> = ref(null)
 const shadowWindowRef: Ref<HTMLElement | null> = ref(null)
 const windowHeaderRef: Ref<HTMLElement | null> = ref(null)
 const windowHitEdgeX: Ref<boolean> = ref(false)
+const windowHitEdgeY: Ref<boolean> = ref(false)
 
 const initWindowMove = (event: MouseEvent) => {
   pullFocus(event)
@@ -83,7 +84,8 @@ const initWindowMove = (event: MouseEvent) => {
       10,
     )
 
-    windowHitEdgeX.value = (windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth )
+    windowHitEdgeX.value = windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth
+    windowHitEdgeY.value = windowLocation.stopY === 0
   }
 
   const windowMove = (event: MouseEvent) => {
@@ -102,7 +104,7 @@ const initWindowMove = (event: MouseEvent) => {
     windowRef.value.style.left = windowLocation.stopX + 'px'
 
 
-    if (windowHitEdgeX.value) return
+    if (windowHitEdgeX.value || windowHitEdgeY.value) return
 
     shadowWindowRef.value.style.left = windowLocation.stopX + 'px'
     shadowWindowRef.value.style.top = windowLocation.stopY + parseInt(windowRef.value?.style.height ?? '0') /2 + 'px'
@@ -112,14 +114,25 @@ const initWindowMove = (event: MouseEvent) => {
     isMoving.value = false
     if (!windowRef.value) return
 
-    if (windowHitEdgeX.value) {
+    if (windowHitEdgeY.value && !windowHitEdgeX.value) {
+      const windowData = {
+        top: '0px',
+        left: '0px',
+        height: document.body.clientHeight + 'px',
+        width: document.body.clientWidth + 'px',
+      }
+      windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
+      windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
+      windowStore.setMinimizeStatus(props.windowKey, false)
+      windowHitEdgeY.value = false
+    } else if (!windowHitEdgeY.value && windowHitEdgeX.value) {
       const leftCenter = document.body.clientWidth / 2
       const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
       const windowData = {
         top: '0px',
         left: leftVal,
         height: document.body.clientHeight + 'px',
-        width: document.body.clientWidth/2 + 'px'
+        width: document.body.clientWidth/2 + 'px',
       }
 
       windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
@@ -137,10 +150,11 @@ const initWindowMove = (event: MouseEvent) => {
       windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
     }
     document.removeEventListener('mousemove', windowMove)
-
+    document.body.removeEventListener('mouseleave', stopWindowMove)
   }
 
   document.addEventListener('mousemove', windowMove)
+  document.body.addEventListener('mouseleave', stopWindowMove)
   windowHeaderRef.value.addEventListener('mouseup', stopWindowMove)
 }
 
@@ -237,10 +251,14 @@ const windowPosition = computed(() => {
 const shadowWindowPosition = computed(() => {
   const storeData = windowObject[props.windowKey].display
 
+  if (windowHitEdgeY.value && !windowHitEdgeX.value) {
+    return `top: ${SHADOW_MARGIN_OFFSET}; left: ${SHADOW_MARGIN_OFFSET}; width: calc(100vw - 2 * ${SHADOW_MARGIN_OFFSET}); height:calc(100vh - 2* ${SHADOW_MARGIN_OFFSET}); z-index:10`
+  }
+
   if (windowHitEdgeX.value && windowRef.value) {
     const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth/2}px`
 
-    return `top: ${SHADOW_MARGIN_OFFSET}; ${leftVal}; width: calc(50vw - ${SHADOW_MARGIN_OFFSET}); height:calc(100vh - ${SHADOW_MARGIN_OFFSET}); z-index:10`
+    return `top: ${SHADOW_MARGIN_OFFSET}; ${leftVal}; width: calc(50vw - 2 * ${SHADOW_MARGIN_OFFSET}); height:calc(100vh - 2 * ${SHADOW_MARGIN_OFFSET}); z-index:10`
   }
 
   return `top: calc(${storeData.top} + (${storeData.height} / 2)); left: ${storeData.left}; transform: translateY(-50%) }`
@@ -321,11 +339,11 @@ const closeWindow = () => {
 .shadow-window {
   width: 10px;
   height: 10px;
-  background-color: rgba(white,0.3);
+  background-color: rgba($secondary,0.3);
   position: absolute;
   z-index: -1;
   transition: all, 0.2s ease-in-out;
-  border: 1px solid white;
+  border: 1px solid $secondary;
   border-radius: 8px;
 }
 

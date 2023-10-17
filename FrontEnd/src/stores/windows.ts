@@ -1,4 +1,4 @@
-import {defineStore, PiniaCustomStateProperties} from 'pinia'
+import {defineStore} from 'pinia'
 import {WindowStore, WindowHeader, WindowBody, WindowDisplay} from 'types/windows'
 import {Action} from '../types/actions'
 
