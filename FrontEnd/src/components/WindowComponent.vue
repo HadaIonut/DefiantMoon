@@ -27,6 +27,30 @@ const windowHeaderRef: Ref<HTMLElement | null> = ref(null)
 const windowHitEdgeX: Ref<boolean> = ref(false)
 const windowHitEdgeY: Ref<boolean> = ref(false)
 
+const getSnapLocation = () => {
+  if (!windowRef.value) return
+
+  if (windowHitEdgeY.value && windowHitEdgeX.value) {
+    const leftVal = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth/2}px`
+    const topVal = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight/2}px`
+
+    return {top: topVal, left: leftVal, width: document.body.clientWidth/2 + 'px', height: document.body.clientHeight/2 + 'px'}
+  }
+  if (windowHitEdgeY.value && !windowHitEdgeX.value) {
+    return {top: '0px', left: '0px', width: document.body.clientWidth + 'px', height: document.body.clientHeight + 'px'}
+  }
+  if (!windowHitEdgeY.value && windowHitEdgeX.value) {
+    const leftCenter = document.body.clientWidth / 2
+    const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
+
+    return {top: '0px', left: leftVal, height: document.body.clientHeight + 'px', width: document.body.clientWidth/2 + 'px'}
+  }
+  return {
+    top: windowRef.value?.style.top,
+    left: windowRef.value?.style.left,
+  }
+}
+
 const initWindowMove = (event: MouseEvent) => {
   pullFocus(event)
 
@@ -118,58 +142,23 @@ const initWindowMove = (event: MouseEvent) => {
     isMoving.value = false
     if (!windowRef.value) return
 
-    if (windowHitEdgeY.value && windowHitEdgeX.value) {
-      const leftVal = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth/2}px`
-      const topVal = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight/2}px`
+    const windowData = getSnapLocation()
 
-      const windowData = {
-        top: topVal,
-        left: leftVal,
-        height: document.body.clientHeight/2 + 'px',
-        width: document.body.clientWidth/2 + 'px',
-      }
-      windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
+    if (windowData) {
       windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
-      windowStore.setMinimizeStatus(props.windowKey, false)
-      windowHitEdgeY.value = false
-      windowHitEdgeX.value = false
-    } else if (windowHitEdgeY.value && !windowHitEdgeX.value) {
-      const windowData = {
-        top: '0px',
-        left: '0px',
-        height: document.body.clientHeight + 'px',
-        width: document.body.clientWidth + 'px',
-      }
-      windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
-      windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
-      windowStore.setMinimizeStatus(props.windowKey, false)
-      windowHitEdgeY.value = false
-      windowHitEdgeX.value = false
-    } else if (!windowHitEdgeY.value && windowHitEdgeX.value) {
-      const leftCenter = document.body.clientWidth / 2
-      const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
-      const windowData = {
-        top: '0px',
-        left: leftVal,
-        height: document.body.clientHeight + 'px',
-        width: document.body.clientWidth/2 + 'px',
-      }
 
-      windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
-      windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
-      windowStore.setMinimizeStatus(props.windowKey, false)
-      windowHitEdgeY.value = false
-      windowHitEdgeX.value = false
-    } else {
-      const windowLocation = {
-        top: windowRef.value?.style.top,
-        left: windowRef.value?.style.left,
+      if (windowData.width && windowData.height) {
+        windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
+        windowStore.setMinimizeStatus(props.windowKey, false)
       }
-
-      windowRef.value.style.userSelect = ''
-
-      windowStore.setWindowLocation(props.windowKey, windowLocation.top, windowLocation.left)
     }
+
+
+    windowHitEdgeY.value = false
+    windowHitEdgeX.value = false
+
+    windowRef.value.style.userSelect = ''
+
     document.removeEventListener('mousemove', windowMove)
     document.body.removeEventListener('mouseleave', stopWindowMove)
   }
