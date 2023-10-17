@@ -83,9 +83,13 @@ const initWindowMove = (event: MouseEvent) => {
       document?.defaultView?.getComputedStyle?.(windowRef?.value)?.width ?? '',
       10,
     )
+    const windowHeight = parseInt(
+      document?.defaultView?.getComputedStyle?.(windowRef?.value)?.height ?? '',
+      10,
+    )
 
     windowHitEdgeX.value = windowLocation.stopX === 0 || windowLocation.stopX + windowWidth >= document.body.clientWidth
-    windowHitEdgeY.value = windowLocation.stopY === 0
+    windowHitEdgeY.value = windowLocation.stopY === 0|| windowLocation.stopY + windowHeight >= document.body.clientHeight
   }
 
   const windowMove = (event: MouseEvent) => {
@@ -114,7 +118,22 @@ const initWindowMove = (event: MouseEvent) => {
     isMoving.value = false
     if (!windowRef.value) return
 
-    if (windowHitEdgeY.value && !windowHitEdgeX.value) {
+    if (windowHitEdgeY.value && windowHitEdgeX.value) {
+      const leftVal = windowRef.value.style.left === '0px' ? '0px' : `${document.body.clientWidth/2}px`
+      const topVal = windowRef.value.style.top === '0px' ? '0px' : `${document.body.clientHeight/2}px`
+
+      const windowData = {
+        top: topVal,
+        left: leftVal,
+        height: document.body.clientHeight/2 + 'px',
+        width: document.body.clientWidth/2 + 'px',
+      }
+      windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
+      windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
+      windowStore.setMinimizeStatus(props.windowKey, false)
+      windowHitEdgeY.value = false
+      windowHitEdgeX.value = false
+    } else if (windowHitEdgeY.value && !windowHitEdgeX.value) {
       const windowData = {
         top: '0px',
         left: '0px',
@@ -125,6 +144,7 @@ const initWindowMove = (event: MouseEvent) => {
       windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
       windowStore.setMinimizeStatus(props.windowKey, false)
       windowHitEdgeY.value = false
+      windowHitEdgeX.value = false
     } else if (!windowHitEdgeY.value && windowHitEdgeX.value) {
       const leftCenter = document.body.clientWidth / 2
       const leftVal = windowRef.value?.style.left === '0px' ? '0px' : `${leftCenter}px`
@@ -138,6 +158,7 @@ const initWindowMove = (event: MouseEvent) => {
       windowStore.setWindowSize(props.windowKey, windowData.width, windowData.height)
       windowStore.setWindowLocation(props.windowKey, windowData.top, windowData.left)
       windowStore.setMinimizeStatus(props.windowKey, false)
+      windowHitEdgeY.value = false
       windowHitEdgeX.value = false
     } else {
       const windowLocation = {
@@ -250,6 +271,13 @@ const windowPosition = computed(() => {
 
 const shadowWindowPosition = computed(() => {
   const storeData = windowObject[props.windowKey].display
+
+  if (windowHitEdgeY.value && windowHitEdgeX.value && windowRef.value) {
+    const leftVal = windowRef.value.style.left === '0px' ? `left: ${SHADOW_MARGIN_OFFSET}` : `left: ${document.body.clientWidth/2}px`
+    const topVal = windowRef.value.style.top === '0px' ? `top: ${SHADOW_MARGIN_OFFSET}` : `top: ${document.body.clientHeight/2}px`
+
+    return `${topVal}; ${leftVal}; width: calc(50vw - 2 * ${SHADOW_MARGIN_OFFSET}); height:calc(50vh - 2* ${SHADOW_MARGIN_OFFSET}); z-index:10`
+  }
 
   if (windowHitEdgeY.value && !windowHitEdgeX.value) {
     return `top: ${SHADOW_MARGIN_OFFSET}; left: ${SHADOW_MARGIN_OFFSET}; width: calc(100vw - 2 * ${SHADOW_MARGIN_OFFSET}); height:calc(100vh - 2* ${SHADOW_MARGIN_OFFSET}); z-index:10`
