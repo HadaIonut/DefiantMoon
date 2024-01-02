@@ -55,6 +55,7 @@ onMounted(() => {
   color: $text;
   position: relative;
   overflow: hidden;
+
 }
 
 .windows-container {
