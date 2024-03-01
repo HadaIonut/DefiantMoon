@@ -2,7 +2,7 @@
   "name": "BackEnd",
   "version": "1.0.0",
   "scripts": {
-    "start": "deno run --allow-net --allow-read --allow-write --watch  main.ts"
+    "start": "deno run --allow-net --allow-read --allow-write --watch  webRTCTest.ts"
   },
   "dependencies": {
   }

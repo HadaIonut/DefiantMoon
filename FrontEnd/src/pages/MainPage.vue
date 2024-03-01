@@ -7,7 +7,8 @@ import {useUsersStore} from '../stores/users'
 import {useRouter} from 'vue-router'
 import {useToast} from 'vue-toastification'
 import {useI18n} from 'vue-i18n'
-import {Peer} from 'peerjs'
+import {initWebRTCClient, rtFetch} from '../utils/fetchOverRTC'
+import {User, UserRequest} from 'types/users'
 
 const players = ref<DropdownOption[]>([])
 const loginData = ref<LoginRequest>({username: '', password: ''})
@@ -16,17 +17,29 @@ const router = useRouter()
 const toast = useToast()
 const {t} = useI18n()
 
-onMounted(() => usersStore.clearUser())
+onMounted(async () => {
+  usersStore.clearUser()
+  await initWebRTCClient('server')
 
-// apiClient.getAvailableUsers().then(({data}) => {
-//   players.value = data?.users?.map?.((user) => ({optionName: user.username, id: user.id})) ?? []
-// })
+  const usersRes = await rtFetch({
+    route: '/api/users',
+    method: 'GET',
+  })
+
+  const users = (usersRes.data?.users as UserRequest[])
+
+  players.value = users?.map?.((user) => ({optionName: user.username, id: user.id})) ?? []
+})
 
 const onDropdownChange = (newValue: DropdownOption) => loginData.value.username = newValue.optionName
 const onInputChange = (newValue: string) => loginData.value.password = newValue
 const login = async () => {
   if (loginData.value.username === '') return toast.error(t('notifications.noUser'))
-  const loginResult = await usersStore.loginUser(loginData.value)
+  const loginResult = await rtFetch({
+    route: '/api/auth/login',
+    method: 'POST',
+    body: loginData.value,
+  })
 
   try {
     console.log(await apiClient.getUserProfile())
@@ -44,40 +57,6 @@ const dropdownInitialValue = computed(() => {
     id: '0',
   } as DropdownOption
 })
-
-const initPeer = () => {
-  const peer = new Peer('', {
-    debug: 3,
-    config: {
-      'iceServers': [
-        {urls: 'stun:stun.l.google.com:19302'},
-        {urls: 'TURN:freeturn.net:3478', username: 'free', credential: 'free'},
-      ],
-    },
-    host: 'ionut.xeosmarthome.com',
-    port: 80,
-    path: '/',
-    secure: false,
-  })
-
-  peer.on('open', (id) => {
-    console.log(id)
-
-    const conn = peer.connect('server', {serialization: 'raw'})
-
-    conn.on('open', () => {
-      console.log('sent')
-      conn.send('hello from the browser side')
-    })
-
-    conn.on('data', function(data) {
-      // Will print 'hi!'
-      console.log(data)
-    })
-  })
-}
-
-initPeer()
 
 </script>
 
