@@ -2,6 +2,7 @@ import {defineStore} from 'pinia'
 import {AvailableUser, LoginRequest} from 'api/generated'
 import {apiClient} from '../api/index'
 import {User, UsersStore} from 'types/users'
+import {rtFetch} from '../utils/fetchOverRTC'
 
 export const useUsersStore = defineStore('users', {
   state: (): UsersStore => {
@@ -19,7 +20,11 @@ export const useUsersStore = defineStore('users', {
       this.currentUser.name = loginData.username ?? ''
 
       try {
-        const {data} = await apiClient.login(loginData)
+        const {data} = await rtFetch({
+          route: '/api/auth/login',
+          method: 'POST',
+          body: loginData,
+        })
         // @ts-ignore
         this.currentUser.id = data.accessToken
 
@@ -33,7 +38,10 @@ export const useUsersStore = defineStore('users', {
       this.currentUser.id = ''
     },
     async getWorldUsers() {
-      const users = (await apiClient.getAvailableUsers()).data.users ?? []
+      const users = (await rtFetch({
+        route: '/api/users',
+        method: 'GET',
+      })).data.users ?? []
       this.allUsers = users.map((user: AvailableUser) => ({id: user.id, name: user.username}))
     },
   },

@@ -3,12 +3,13 @@ const fetch = require('node-fetch');
 const WebSocket = require('ws');
 const WebRTC = require('werift');
 const FileReader = require('filereader');
+const axios = require("axios");
+const FormData = require('form-data');
 
 const polyfills = {fetch, WebSocket, WebRTC, FileReader};
 
 const ServerPeer = new Peer('server', {
   polyfills,
-  // debug: 3,
   host: 'localhost',
   port: 9000,
   path: '/',
@@ -22,24 +23,7 @@ const ServerPeer = new Peer('server', {
   }
 });
 
-const ClientPeer = new Peer({
-  polyfills,
-  // debug: 3,
-  host: 'localhost',
-  port: 9000,
-  path: '/',
-  secure: false,
-  config: {
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302",
-      },
-    ],
-  }
-});
-
-let serverId, clientId;
-let clientConnection;
+let serverId
 let serverConnections = {}
 
 ServerPeer.on('open', id => {
@@ -47,57 +31,24 @@ ServerPeer.on('open', id => {
   serverId = id;
 });
 
-let clientOpen = false;
-const sendMessage = (connection, {method, route, body, authToken}) => {
-  return new Promise((resolve, reject) => {
-    const message = {method, route, body, authToken}
-    const dataCallback = (data) => {
-      const parsedData = JSON.parse(data)
+const messageFormat = (body, bodyType) => {
+  switch (bodyType) {
+    case 'application/json':
+      return JSON.stringify(body)
+      break;
+    case 'multipart/form-data':
+      const formatted =  new FormData();
 
-      if (parsedData.sourceRoute !== route) return;
-
-      if (parsedData.isOk) {
-        resolve(parsedData);
-        connection.off("data", dataCallback)
-      } else {
-        reject(parsedData);
-        connection.off("data", dataCallback)
-      }
-
-      setTimeout(() => {
-        reject("timeout")
-        connection.off("data", dataCallback)
-      }, 10000)
-    }
-
-    connection.send(JSON.stringify(message))
-
-    connection.on("data", dataCallback)
-  })
-}
-
-ClientPeer.on('open', id2 => {
-  console.log('Client: peer id ', id2);
-  clientId = id2;
-  clientConnection = ClientPeer.connect(serverId, {serialization: 'none'})
-
-  clientConnection.on("open", async () => {
-    clientOpen = true;
-
-    try {
-      const meRes = await sendMessage(clientConnection, {
-        method: 'GET',
-        route: '/users',
+      formatted.append('message', body.message)
+      body.images.forEach((image) => {
+        formatted.append('images', Buffer.from(image.split('data:image/png;base64,')[1], 'base64'))
       })
 
-      console.log(meRes)
-    } catch (e) {
-      console.log(e)
-    }
+      return formatted
 
-  })
-
-});
+      break;
+  }
+}
 
 ServerPeer.on("connection", (connection) => {
   console.log(`Server: ${connection.peer} connected`)
@@ -107,16 +58,22 @@ ServerPeer.on("connection", (connection) => {
     console.log(`Server: ${connection.peer} send: ${data}`)
 
     let parsedData = JSON.parse(data)
-    const fetchRes = (await fetch(`http://localhost:8000${parsedData.route}`, {
-      method: parsedData.method,
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: `accessToken=${parsedData.authToken}`,
-      },
-      body: JSON.stringify(parsedData.body)
-    }))
+    let fetchRes
+    try {
+      fetchRes = (await axios({
+        url: `http://localhost:8000${parsedData.route}`,
+        method: parsedData.method,
+        headers: {
+          "Content-Type": parsedData.contentType,
+          Cookie: `accessToken=${parsedData.authToken}`,
+        },
+        data: messageFormat(parsedData.body, parsedData.contentType)
+      }))
+    } catch (e) {
+      // console.log(e)
+    }
 
-    if (!fetchRes.ok) {
+    if (fetchRes.statusText !== 'OK') {
       connection.send(JSON.stringify(
         {
           data: {
@@ -129,7 +86,7 @@ ServerPeer.on("connection", (connection) => {
       return;
     }
 
-    const cookie = fetchRes.headers.get('set-cookie')
+    const cookie = fetchRes?.headers?.['set-cookie']?.[0]
     let parsedCookie
     if (cookie) {
       parsedCookie = cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
@@ -137,7 +94,7 @@ ServerPeer.on("connection", (connection) => {
 
     connection.send(JSON.stringify(
       {
-        data: await fetchRes.json(),
+        data: fetchRes.data,
         status: fetchRes.status,
         sourceRoute: parsedData.route,
         setCookie: parsedCookie,

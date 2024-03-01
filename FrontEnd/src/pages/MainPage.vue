@@ -8,7 +8,7 @@ import {useRouter} from 'vue-router'
 import {useToast} from 'vue-toastification'
 import {useI18n} from 'vue-i18n'
 import {initWebRTCClient, rtFetch} from '../utils/fetchOverRTC'
-import {User, UserRequest} from 'types/users'
+import {UserRequest} from 'types/users'
 
 const players = ref<DropdownOption[]>([])
 const loginData = ref<LoginRequest>({username: '', password: ''})
@@ -35,14 +35,13 @@ const onDropdownChange = (newValue: DropdownOption) => loginData.value.username 
 const onInputChange = (newValue: string) => loginData.value.password = newValue
 const login = async () => {
   if (loginData.value.username === '') return toast.error(t('notifications.noUser'))
-  const loginResult = await rtFetch({
-    route: '/api/auth/login',
-    method: 'POST',
-    body: loginData.value,
-  })
+  const loginResult = await usersStore.loginUser(loginData.value)
 
   try {
-    console.log(await apiClient.getUserProfile())
+    console.log(await rtFetch({
+      route: '/api/users/me',
+      method: 'GET',
+    }))
   } catch (e) {
     console.log(e)
   }

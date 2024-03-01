@@ -3,12 +3,13 @@ import {Quill, QuillEditor} from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import {nextTick, onMounted, ref, Ref} from 'vue'
 import {Window} from 'types/windows'
-import {getRandomString} from '../../utils/utils'
+import {getRandomString, toBase64} from '../../utils/utils'
 import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
 import {apiClient} from '../../api/index'
 import {ChatMessage} from '../../api/generated/index'
 import {useInfiniteScroll} from '@vueuse/core'
+import {rtFetch} from '../../utils/fetchOverRTC'
 
 const props = defineProps<{ windowData: Window }>()
 
@@ -87,7 +88,18 @@ const sendMessage = async () => {
   currentContent = currentContent.replaceAll(/\n/g, '<br>')
   const images: File[] = await getImages()
 
-  await apiClient.sendChatMessage(currentContent, images)
+  console.log(typeof images[0])
+
+  await rtFetch({
+    route: '/api/chat/messages',
+    method: 'POST',
+    contentType: 'multipart/form-data',
+    body: {
+      message: currentContent,
+      images,
+    },
+  })
+  // await apiClient.sendChatMessage(currentContent, images)
   chatEditor.value.setHTML('<p></p>')
   uploadedImages.value = []
 }
@@ -118,7 +130,10 @@ onMounted(() => {
   catchImagePasteEvent()
   catchEnterEvent()
 
-  apiClient.getChatMessages(Date.now()).then(({data}) => {
+  rtFetch({
+    route: `/api/chat/messages?timestamp=${Date.now()}`,
+    method: 'GET',
+  }).then(({data}) => {
     chatMessages.value = data
     nextTick().then(() => scrollToBottom(messageDisplayArea))
   })
