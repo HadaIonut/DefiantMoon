@@ -50,6 +50,33 @@ const messageFormat = (body, bodyType) => {
   }
 }
 
+const replaceAsync = async (string, regexp, replacerFunction) => {
+  const replacements = await Promise.all(
+    Array.from(string.matchAll(regexp),
+      match => replacerFunction(...match)));
+  let i = 0;
+  return string.replace(regexp, () => replacements[i++]);
+}
+
+const getBase64 = (url) => {
+  return axios
+    .get(url, {
+      responseType: 'arraybuffer'
+    })
+    .then(response => 'data:image/png;base64,' + Buffer.from(response.data, 'binary').toString('base64'))
+    .catch(() => '')
+}
+
+const formatResponseData = async (data) => {
+  const strinfiedData = JSON.stringify(data)
+
+  const formatted = await replaceAsync(strinfiedData, /\.(\/[A-z0-9/]+.[A-z]+)/g, async (_, url) => {
+    return getBase64(`http://localhost:8000${url}`)
+  })
+
+  return JSON.parse(formatted)
+}
+
 ServerPeer.on("connection", (connection) => {
   console.log(`Server: ${connection.peer} connected`)
   serverConnections[connection.peer] = connection;
@@ -69,36 +96,33 @@ ServerPeer.on("connection", (connection) => {
         },
         data: messageFormat(parsedData.body, parsedData.contentType)
       }))
-    } catch (e) {
-      // console.log(e)
-    }
 
-    if (fetchRes.statusText !== 'OK') {
+      const cookie = fetchRes?.headers?.['set-cookie']?.[0]
+      let parsedCookie
+      if (cookie) {
+        parsedCookie = cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
+      }
+
+      connection.send(JSON.stringify(
+        {
+          data: await formatResponseData(fetchRes.data),
+          status: fetchRes.status,
+          sourceRoute: parsedData.route,
+          setCookie: parsedCookie,
+          isOk: true
+        }))
+
+    } catch (e) {
+      console.error(parsedData.route, e)
       connection.send(JSON.stringify(
         {
           data: {
-            message: fetchRes.statusText,
+            message: e.statusText,
           },
-          status: fetchRes.status,
+          status: e.status,
           sourceRoute: parsedData.route,
           isOk: false,
         }))
-      return;
     }
-
-    const cookie = fetchRes?.headers?.['set-cookie']?.[0]
-    let parsedCookie
-    if (cookie) {
-      parsedCookie = cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
-    }
-
-    connection.send(JSON.stringify(
-      {
-        data: fetchRes.data,
-        status: fetchRes.status,
-        sourceRoute: parsedData.route,
-        setCookie: parsedCookie,
-        isOk: true
-      }))
   })
 })

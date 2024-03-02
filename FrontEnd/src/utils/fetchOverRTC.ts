@@ -1,6 +1,6 @@
 import {Peer} from 'peerjs'
 import type {DataConnection} from 'peerjs'
-import {getCookie, getFormData, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
+import {getCookie, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
 import axios from 'axios'
 
 export let clientConnection: DataConnection
