@@ -37,7 +37,7 @@ const messageFormat = (body, bodyType) => {
       return JSON.stringify(body)
       break;
     case 'multipart/form-data':
-      const formatted =  new FormData();
+      const formatted = new FormData();
 
       formatted.append('message', body.message)
       body.images.forEach((image) => {
@@ -77,6 +77,62 @@ const formatResponseData = async (data) => {
   return JSON.parse(formatted)
 }
 
+const HTTPSend = (connection, message) => {
+  connection.send(JSON.stringify({
+    protocol: 'http',
+    data: message
+  }))
+}
+
+const HTTPServerRequest = (data) => {
+  return axios({
+    url: `http://localhost:8000${data.route}`,
+    method: data.method,
+    headers: {
+      "Content-Type": data.contentType,
+      Cookie: `accessToken=${data.authToken}`,
+    },
+    data: messageFormat(data.body, data.contentType)
+  })
+}
+
+const extractCookies = (fetchRes) => {
+  const cookie = fetchRes?.headers?.['set-cookie']?.[0]
+
+  if (cookie) {
+    return  cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
+  }
+
+  return ''
+}
+
+const handleHTTPMessage = async (data, connection) => {
+  try {
+    const fetchRes = (await HTTPServerRequest(data))
+
+    const parsedCookie = extractCookies(fetchRes)
+
+    HTTPSend(connection, {
+      data: await formatResponseData(fetchRes.data),
+      status: fetchRes.status,
+      sourceRoute: data.route,
+      setCookie: parsedCookie,
+      isOk: true
+    })
+
+  } catch (e) {
+    console.error(data.route, e)
+    HTTPSend(connection, {
+        data: {
+          message: e.statusText,
+        },
+        status: e.status,
+        sourceRoute: data.route,
+        isOk: false,
+      })
+  }
+}
+
 ServerPeer.on("connection", (connection) => {
   console.log(`Server: ${connection.peer} connected`)
   serverConnections[connection.peer] = connection;
@@ -85,44 +141,13 @@ ServerPeer.on("connection", (connection) => {
     console.log(`Server: ${connection.peer} send: ${data}`)
 
     let parsedData = JSON.parse(data)
-    let fetchRes
-    try {
-      fetchRes = (await axios({
-        url: `http://localhost:8000${parsedData.route}`,
-        method: parsedData.method,
-        headers: {
-          "Content-Type": parsedData.contentType,
-          Cookie: `accessToken=${parsedData.authToken}`,
-        },
-        data: messageFormat(parsedData.body, parsedData.contentType)
-      }))
 
-      const cookie = fetchRes?.headers?.['set-cookie']?.[0]
-      let parsedCookie
-      if (cookie) {
-        parsedCookie = cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
-      }
-
-      connection.send(JSON.stringify(
-        {
-          data: await formatResponseData(fetchRes.data),
-          status: fetchRes.status,
-          sourceRoute: parsedData.route,
-          setCookie: parsedCookie,
-          isOk: true
-        }))
-
-    } catch (e) {
-      console.error(parsedData.route, e)
-      connection.send(JSON.stringify(
-        {
-          data: {
-            message: e.statusText,
-          },
-          status: e.status,
-          sourceRoute: parsedData.route,
-          isOk: false,
-        }))
+    if (parsedData.protocol === 'http') {
+      await handleHTTPMessage(parsedData.data, connection)
+    } else if (parsedData.protocol === 'websocket') {
+      console.log("socketing...")
+    } else {
+      console.error("unknown protocol")
     }
   })
 })

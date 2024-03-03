@@ -1,5 +1,5 @@
-import {Peer} from 'peerjs'
 import type {DataConnection} from 'peerjs'
+import {Peer} from 'peerjs'
 import {getCookie, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
 import axios from 'axios'
 
@@ -7,10 +7,20 @@ export let clientConnection: DataConnection
 export let usesWebRTC = false
 export let myId: string = ''
 
+type WebRTCMessage = {
+  protocol: 'http' | 'websocket',
+  data: WebRTCRequest | WebRTCResponse | SocketMessage
+}
+
+type SocketMessage = {
+  event: string,
+  payload: any
+}
+
 type WebRTCRequest = {
   method: 'GET' | 'POST',
   route: string,
-  contentType?: 'application/json' | 'multipart/form-data'
+  contentType?: 'application/json' | 'multipart/form-data' | 'socket-init'
   body?: any,
   authToken?: string
 }
@@ -55,22 +65,25 @@ const sendMessage = ({method, route, body, contentType}: WebRTCRequest): Promise
       authToken: getCookie('accessToken'),
     }
     const dataCallback = (data: string) => {
-      const parsedData: WebRTCResponse = JSON.parse(data)
+      const parsedData: WebRTCMessage = JSON.parse(data)
 
-      if (parsedData.sourceRoute !== route) return
+      if (parsedData.protocol !== 'http') return
+      const message = parsedData.data as WebRTCResponse
 
-      if (parsedData.isOk) {
-        if (parsedData.setCookie) {
-          document.cookie = `accessToken=${parsedData.setCookie}`
+      if (message.sourceRoute !== route) return
+
+      if (message.isOk) {
+        if (message.setCookie) {
+          document.cookie = `accessToken=${message.setCookie}`
         }
         // @ts-ignore
-        delete parsedData.setCookie
+        delete message.setCookie
 
-        resolve(parsedData)
+        resolve(message)
 
         clientConnection.off('data', dataCallback)
       } else {
-        reject(parsedData)
+        reject(message)
         clientConnection.off('data', dataCallback)
       }
 
@@ -88,15 +101,21 @@ const sendMessage = ({method, route, body, contentType}: WebRTCRequest): Promise
     }
 
     const formattedBody = await formatBodyRTC(message.body, message.contentType)
+    const data = {...message, body: formattedBody}
 
-    clientConnection.send(JSON.stringify({...message, body: formattedBody}))
+    clientConnection.send(JSON.stringify({
+      'protocol': 'http',
+      data,
+    }))
 
     clientConnection.on('data', dataCallback)
   })
 }
 
 const axiosWrapper = (params: WebRTCRequest) => {
-  const formattedBody = params.contentType === 'multipart/form-data' ? jsonToFormData(params.body) : params.body
+  const formattedBody = params.contentType === 'multipart/form-data' ?
+    jsonToFormData(params.body) :
+    params.body
 
   return axios({
     method: params.method,
@@ -112,6 +131,18 @@ export const rtFetch = (params: WebRTCRequest) => {
   if (usesWebRTC) return sendMessage(params)
 
   return axiosWrapper(params)
+}
+
+const initWebSocket = async (socketRoute: string) => {
+  if (usesWebRTC) {
+    const sockResponse = await sendMessage({
+      method: 'GET',
+      route: socketRoute,
+      contentType: 'socket-init',
+    })
+  } else {
+    return new WebSocket(`ws://localhost:5173${socketRoute}`)
+  }
 }
 
 export const initWebRTCClient = (serverId: string) => {
