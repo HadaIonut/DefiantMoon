@@ -88,8 +88,6 @@ const sendMessage = async () => {
   currentContent = currentContent.replaceAll(/\n/g, '<br>')
   const images: File[] = await getImages()
 
-  console.log(typeof images[0])
-
   await rtFetch({
     route: '/api/chat/messages',
     method: 'POST',

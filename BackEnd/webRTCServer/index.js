@@ -26,6 +26,8 @@ const ServerPeer = new Peer('server', {
 let serverId
 let serverConnections = {}
 
+let socketConnections = {}
+
 ServerPeer.on('open', id => {
   console.log('Server: peer id ', id);
   serverId = id;
@@ -100,13 +102,61 @@ const extractCookies = (fetchRes) => {
   const cookie = fetchRes?.headers?.['set-cookie']?.[0]
 
   if (cookie) {
-    return  cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
+    return cookie.match(/accessToken=([A-z0-9._-]+);/)[1]
   }
 
   return ''
 }
 
+const sendSysSocketMessage = (connection, message) => {
+  connection.send(JSON.stringify({
+    protocol: 'websocket',
+    data: {
+      event: 'sys',
+      payload: message
+    }
+  }))
+}
+
+const sendSocketMessage = (connection, event, data) => {
+  connection.send(JSON.stringify({
+    protocol: 'websocket',
+    data: {
+      event: event,
+      payload: data
+    }
+  }))
+}
+
+const initWebSocket = (data, connection) => {
+  socketConnections[connection.id] = new WebSocket(`ws://localhost:8000${data.route}`, [], {
+    headers: {
+      Cookie: `accessToken=${data.authToken}`,
+    }
+  })
+
+  console.log(socketConnections[connection.id])
+  socketConnections[connection.id].on('open', () => {
+    console.log('open')
+    sendSysSocketMessage(connection, {status: 'open'})
+  })
+  socketConnections[connection.id].on('error', (err) => {
+    console.error(Buffer.from(err).toString())
+    sendSysSocketMessage(connection, {status: 'error', details: Buffer.from(err).toString()})
+  })
+  socketConnections[connection.id].on('close', () => {
+    sendSysSocketMessage(connection, {status: 'close'})
+  })
+  socketConnections[connection.id].on('message', (messageEvent) => {
+    console.log(Buffer.from(messageEvent).toString())
+    const {event, payload} = JSON.parse(Buffer.from(messageEvent).toString())
+    sendSocketMessage(connection, event, payload)
+  })
+}
+
 const handleHTTPMessage = async (data, connection) => {
+  if (data.contentType === 'socket-init') return initWebSocket(data, connection)
+
   try {
     const fetchRes = (await HTTPServerRequest(data))
 
@@ -123,13 +173,13 @@ const handleHTTPMessage = async (data, connection) => {
   } catch (e) {
     console.error(data.route, e)
     HTTPSend(connection, {
-        data: {
-          message: e.statusText,
-        },
-        status: e.status,
-        sourceRoute: data.route,
-        isOk: false,
-      })
+      data: {
+        message: e.statusText,
+      },
+      status: e.status,
+      sourceRoute: data.route,
+      isOk: false,
+    })
   }
 }
 

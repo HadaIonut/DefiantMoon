@@ -1,22 +1,22 @@
 import type {DataConnection} from 'peerjs'
 import {Peer} from 'peerjs'
-import {getCookie, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
+import {getCookie, getRandomString, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
 import axios from 'axios'
 
 export let clientConnection: DataConnection
 export let usesWebRTC = false
 export let myId: string = ''
+let connectedSocket: ConnectedSocket
 
 type WebRTCMessage = {
   protocol: 'http' | 'websocket',
   data: WebRTCRequest | WebRTCResponse | SocketMessage
 }
-
 type SocketMessage = {
   event: string,
   payload: any
 }
-
+type UnparsedSocketMessage = { data: string }
 type WebRTCRequest = {
   method: 'GET' | 'POST',
   route: string,
@@ -24,13 +24,19 @@ type WebRTCRequest = {
   body?: any,
   authToken?: string
 }
-
 type WebRTCResponse = {
   sourceRoute: string
   status: number
   setCookie: string
   data: any
   isOk: boolean
+}
+type ConnectedSocket = {
+  socketId: string,
+  onopen?: () => void,
+  onclose?: () => void,
+  onerror?: (socketMessage: UnparsedSocketMessage) => void
+  onmessage?: (socketMessage: UnparsedSocketMessage) => void,
 }
 
 const formatBodyRTC = async (body: any, bodyType: string) => {
@@ -54,7 +60,6 @@ const formatBodyRTC = async (body: any, bodyType: string) => {
     return formatted
   }
 }
-
 const sendMessage = ({method, route, body, contentType}: WebRTCRequest): Promise<WebRTCResponse> => {
   return new Promise(async (resolve, reject) => {
     const message = {
@@ -111,7 +116,6 @@ const sendMessage = ({method, route, body, contentType}: WebRTCRequest): Promise
     clientConnection.on('data', dataCallback)
   })
 }
-
 const axiosWrapper = (params: WebRTCRequest) => {
   const formattedBody = params.contentType === 'multipart/form-data' ?
     jsonToFormData(params.body) :
@@ -126,20 +130,49 @@ const axiosWrapper = (params: WebRTCRequest) => {
     data: formattedBody,
   })
 }
-
 export const rtFetch = (params: WebRTCRequest) => {
   if (usesWebRTC) return sendMessage(params)
 
   return axiosWrapper(params)
 }
+const startSockManager = () => {
+  clientConnection.on('data', (message: string) => {
+    const parsedMessage = JSON.parse(message)
 
-const initWebSocket = async (socketRoute: string) => {
+    if (parsedMessage.protocol !== 'websocket') return
+    const data = parsedMessage.data as SocketMessage
+    if (data.event === 'sys') {
+      switch (data.payload.status) {
+      case 'open':
+        console.log('calling open')
+        connectedSocket?.onopen?.()
+        break
+      case 'close':
+        connectedSocket?.onclose?.()
+        break
+      case 'error':
+        connectedSocket?.onerror?.({data: JSON.stringify(data)})
+        break
+      }
+    }
+    connectedSocket?.onmessage?.({data: JSON.stringify(data)})
+  })
+}
+
+export const initWebSocket = (socketRoute: string) => {
   if (usesWebRTC) {
-    const sockResponse = await sendMessage({
+    const sockResponse = sendMessage({
       method: 'GET',
       route: socketRoute,
       contentType: 'socket-init',
     })
+
+    connectedSocket = {
+      socketId: getRandomString(),
+    }
+    startSockManager()
+
+    return connectedSocket
   } else {
     return new WebSocket(`ws://localhost:5173${socketRoute}`)
   }

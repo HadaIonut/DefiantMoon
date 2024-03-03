@@ -1,8 +1,9 @@
-const ws = new WebSocket(`ws://localhost:5173/api/websocket`)
+import {initWebSocket} from '../utils/fetchOverRTC'
 
+// const ws = new WebSocket(`ws://localhost:5173/api/websocket`)
+const ws = initWebSocket('/api/websocket')
 const WEBSOCKET_DEBUG = true
 const eventsMap: WebsocketEvents = {}
-
 
 ws.onopen = () => {
   wsLog('[WS]: socket connected')
