@@ -29,7 +29,7 @@ const wsLog = (...message: any) => {
 
 const sendMessage = (event: string, payload: Object | string) => {
   wsLog(`[WS]: sending event "${event}" payload "${payload}"`)
-  ws.send(JSON.stringify({event, payload}))
+  ws.send(JSON.stringify({event, payload})) // TODO implement this eventually
 }
 
 const addEventListener = (event: string, callback: WebsocketMessageCallback) => {

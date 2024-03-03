@@ -80,6 +80,9 @@ const formatResponseData = async (data) => {
 }
 
 const HTTPSend = (connection, message) => {
+
+  if (message.sourceRoute === '/api/actors/all') console.log(message)
+
   connection.send(JSON.stringify({
     protocol: 'http',
     data: message
@@ -135,14 +138,13 @@ const initWebSocket = (data, connection) => {
     }
   })
 
-  console.log(socketConnections[connection.id])
   socketConnections[connection.id].on('open', () => {
     console.log('open')
     sendSysSocketMessage(connection, {status: 'open'})
   })
   socketConnections[connection.id].on('error', (err) => {
-    console.error(Buffer.from(err).toString())
-    sendSysSocketMessage(connection, {status: 'error', details: Buffer.from(err).toString()})
+    console.error(err)
+    sendSysSocketMessage(connection, {status: 'error', details: err})
   })
   socketConnections[connection.id].on('close', () => {
     sendSysSocketMessage(connection, {status: 'close'})
@@ -161,13 +163,13 @@ const handleHTTPMessage = async (data, connection) => {
     const fetchRes = (await HTTPServerRequest(data))
 
     const parsedCookie = extractCookies(fetchRes)
-
     HTTPSend(connection, {
       data: await formatResponseData(fetchRes.data),
       status: fetchRes.status,
       sourceRoute: data.route,
       setCookie: parsedCookie,
-      isOk: true
+      isOk: true,
+      requestId: data.requestId
     })
 
   } catch (e) {
@@ -179,6 +181,8 @@ const handleHTTPMessage = async (data, connection) => {
       status: e.status,
       sourceRoute: data.route,
       isOk: false,
+      requestId: data.requestId
+
     })
   }
 }

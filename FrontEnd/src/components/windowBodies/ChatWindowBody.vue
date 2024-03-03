@@ -170,7 +170,10 @@ useInfiniteScroll(
     const lastTimeStamp = chatMessages.value[0].timestamp
     const scrollHeightBeforeAdd = messageDisplayArea.value.ps.element.scrollHeight
 
-    apiClient.getChatMessages(Number(lastTimeStamp)).then(({data}) => {
+    rtFetch({
+      route: `/api/chat/messages?timestamp=${Number(lastTimeStamp)}`,
+      method: 'GET',
+    }).then(({data}) => {
       chatMessages.value.unshift(...data)
       nextTick().then(() => {
         const element = messageDisplayArea.value.ps.element

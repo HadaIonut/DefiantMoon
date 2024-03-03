@@ -7,6 +7,7 @@ export let clientConnection: DataConnection
 export let usesWebRTC = false
 export let myId: string = ''
 let connectedSocket: ConnectedSocket
+const responseWaitList = {}
 
 type WebRTCMessage = {
   protocol: 'http' | 'websocket',
@@ -23,6 +24,7 @@ type WebRTCRequest = {
   contentType?: 'application/json' | 'multipart/form-data' | 'socket-init'
   body?: any,
   authToken?: string
+  requestId?: string
 }
 type WebRTCResponse = {
   sourceRoute: string
@@ -30,6 +32,7 @@ type WebRTCResponse = {
   setCookie: string
   data: any
   isOk: boolean
+  requestId: string
 }
 type ConnectedSocket = {
   socketId: string,
@@ -69,51 +72,17 @@ const sendMessage = ({method, route, body, contentType}: WebRTCRequest): Promise
       contentType: contentType ?? 'application/json',
       authToken: getCookie('accessToken'),
     }
-    const dataCallback = (data: string) => {
-      const parsedData: WebRTCMessage = JSON.parse(data)
-
-      if (parsedData.protocol !== 'http') return
-      const message = parsedData.data as WebRTCResponse
-
-      if (message.sourceRoute !== route) return
-
-      if (message.isOk) {
-        if (message.setCookie) {
-          document.cookie = `accessToken=${message.setCookie}`
-        }
-        // @ts-ignore
-        delete message.setCookie
-
-        resolve(message)
-
-        clientConnection.off('data', dataCallback)
-      } else {
-        reject(message)
-        clientConnection.off('data', dataCallback)
-      }
-
-      setTimeout(() => {
-        reject({
-          sourceRoute: route,
-          status: 500,
-          body: {
-            message: 'Request timed-out',
-          },
-          isOk: false,
-        })
-        clientConnection.off('data', dataCallback)
-      }, 10000)
-    }
-
     const formattedBody = await formatBodyRTC(message.body, message.contentType)
-    const data = {...message, body: formattedBody}
+    const data = {...message, body: formattedBody, requestId: getRandomString()}
 
+    responseWaitList[data.requestId] = [resolve, reject]
+    console.log(responseWaitList)
+    console.log(data.requestId, data.route)
+    debugger
     clientConnection.send(JSON.stringify({
       'protocol': 'http',
       data,
     }))
-
-    clientConnection.on('data', dataCallback)
   })
 }
 const axiosWrapper = (params: WebRTCRequest) => {
@@ -135,28 +104,49 @@ export const rtFetch = (params: WebRTCRequest) => {
 
   return axiosWrapper(params)
 }
-const startSockManager = () => {
-  clientConnection.on('data', (message: string) => {
-    const parsedMessage = JSON.parse(message)
-
-    if (parsedMessage.protocol !== 'websocket') return
-    const data = parsedMessage.data as SocketMessage
-    if (data.event === 'sys') {
-      switch (data.payload.status) {
-      case 'open':
-        console.log('calling open')
-        connectedSocket?.onopen?.()
-        break
-      case 'close':
-        connectedSocket?.onclose?.()
-        break
-      case 'error':
-        connectedSocket?.onerror?.({data: JSON.stringify(data)})
-        break
-      }
+const handleSocketComms = (data: SocketMessage) => {
+  if (data.event === 'sys') {
+    switch (data.payload.status) {
+    case 'open':
+      connectedSocket?.onopen?.()
+      break
+    case 'close':
+      connectedSocket?.onclose?.()
+      break
+    case 'error':
+      connectedSocket?.onerror?.({data: JSON.stringify(data)})
+      break
     }
-    connectedSocket?.onmessage?.({data: JSON.stringify(data)})
-  })
+  }
+  connectedSocket?.onmessage?.({data: JSON.stringify(data)})
+}
+
+const handleHTTPComms = (data: WebRTCResponse) => {
+  const [resolve, reject] = responseWaitList[data.requestId]
+  console.log(data.requestId, data.sourceRoute)
+
+  if (data.sourceRoute === '/api/actors/all') debugger
+
+  if (data.isOk) {
+    if (data.setCookie) {
+      document.cookie = `accessToken=${data.setCookie}`
+    }
+    // @ts-ignore
+    delete data.setCookie
+
+    resolve(data)
+  } else {
+    reject(data)
+  }
+
+  delete responseWaitList[data.requestId]
+}
+
+const handleDataChannel = (message: string) => {
+  const parsedMessage = JSON.parse(message)
+
+  if (parsedMessage.protocol === 'websocket') handleSocketComms(parsedMessage.data)
+  if (parsedMessage.protocol === 'http') handleHTTPComms(parsedMessage.data)
 }
 
 export const initWebSocket = (socketRoute: string) => {
@@ -170,7 +160,6 @@ export const initWebSocket = (socketRoute: string) => {
     connectedSocket = {
       socketId: getRandomString(),
     }
-    startSockManager()
 
     return connectedSocket
   } else {
@@ -202,6 +191,8 @@ export const initWebRTCClient = (serverId: string) => {
 
       clientConnection.on('open', async () => {
         usesWebRTC = true
+
+        clientConnection.on('data', handleDataChannel)
         resolve(true)
       })
     })
