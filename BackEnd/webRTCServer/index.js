@@ -33,6 +33,33 @@ ServerPeer.on('open', id => {
   serverId = id;
 });
 
+
+const sendChunkedMessage = (message, connection) => {
+  const file = new Blob([message], {type: 'text/plain'})
+
+  file.arrayBuffer().then(buffer => {
+    const chunkSize = 16 * 1024;
+    let index = 0;
+    const total = Math.floor(buffer.byteLength / chunkSize)
+
+    while(buffer.byteLength) {
+      const chunk = buffer.slice(0, chunkSize);
+      const stringified = btoa(
+        new Uint8Array(chunk)
+          .reduce((data, byte) => data + String.fromCharCode(byte), ''))
+      buffer = buffer.slice(chunkSize, buffer.byteLength);
+
+      connection.send(JSON.stringify({
+        index,
+        total,
+        data: stringified
+        }));
+      index++
+    }
+
+  })
+}
+
 const messageFormat = (body, bodyType) => {
   switch (bodyType) {
     case 'application/json':
@@ -81,12 +108,12 @@ const formatResponseData = async (data) => {
 
 const HTTPSend = (connection, message) => {
 
-  if (message.sourceRoute === '/api/actors/all') console.log(message)
-
-  connection.send(JSON.stringify({
+  sendChunkedMessage(JSON.stringify({
     protocol: 'http',
     data: message
-  }))
+  }), connection)
+
+  // connection.send()
 }
 
 const HTTPServerRequest = (data) => {
@@ -112,23 +139,23 @@ const extractCookies = (fetchRes) => {
 }
 
 const sendSysSocketMessage = (connection, message) => {
-  connection.send(JSON.stringify({
+  sendChunkedMessage(JSON.stringify({
     protocol: 'websocket',
     data: {
       event: 'sys',
       payload: message
     }
-  }))
+  }), connection)
 }
 
 const sendSocketMessage = (connection, event, data) => {
-  connection.send(JSON.stringify({
+  sendChunkedMessage(JSON.stringify({
     protocol: 'websocket',
     data: {
       event: event,
       payload: data
     }
-  }))
+  }), connection)
 }
 
 const initWebSocket = (data, connection) => {
@@ -192,6 +219,7 @@ ServerPeer.on("connection", (connection) => {
   serverConnections[connection.peer] = connection;
 
   connection.on("data", async (data) => {
+
     console.log(`Server: ${connection.peer} send: ${data}`)
 
     let parsedData = JSON.parse(data)

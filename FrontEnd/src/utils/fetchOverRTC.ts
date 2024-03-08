@@ -42,6 +42,21 @@ type ConnectedSocket = {
   onmessage?: (socketMessage: UnparsedSocketMessage) => void,
 }
 
+let fileChunks = []
+const receiveChunks = async (data) => {
+  const message = JSON.parse(data)
+
+  fileChunks[message.index] = message.data
+
+  if (message.total === message.index) {
+    const biteChunks = []
+    fileChunks.forEach((chunk) => biteChunks.push(Uint8Array.from(atob(chunk), (c) => c.charCodeAt(0))))
+    const file = new Blob(biteChunks)
+    handleDataChannel(await file.text())
+    fileChunks = []
+  }
+}
+
 const formatBodyRTC = async (body: any, bodyType: string) => {
   switch (bodyType) {
   case 'application/json':
@@ -76,9 +91,7 @@ const sendMessage = ({method, route, body, contentType}: WebRTCRequest): Promise
     const data = {...message, body: formattedBody, requestId: getRandomString()}
 
     responseWaitList[data.requestId] = [resolve, reject]
-    console.log(responseWaitList)
-    console.log(data.requestId, data.route)
-    debugger
+
     clientConnection.send(JSON.stringify({
       'protocol': 'http',
       data,
@@ -123,9 +136,6 @@ const handleSocketComms = (data: SocketMessage) => {
 
 const handleHTTPComms = (data: WebRTCResponse) => {
   const [resolve, reject] = responseWaitList[data.requestId]
-  console.log(data.requestId, data.sourceRoute)
-
-  if (data.sourceRoute === '/api/actors/all') debugger
 
   if (data.isOk) {
     if (data.setCookie) {
@@ -187,12 +197,14 @@ export const initWebRTCClient = (serverId: string) => {
     ClientPeer.on('open', (id2) => {
       console.log('Client: peer id ', id2)
       myId = id2
-      clientConnection = ClientPeer.connect(serverId, {serialization: 'none'})
+      clientConnection = ClientPeer.connect(serverId, {serialization: 'none', reliable: true})
 
       clientConnection.on('open', async () => {
         usesWebRTC = true
 
-        clientConnection.on('data', handleDataChannel)
+        clientConnection.on('data', receiveChunks)
+        clientConnection.on('error', console.error)
+
         resolve(true)
       })
     })
