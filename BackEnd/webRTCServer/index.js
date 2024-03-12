@@ -64,7 +64,6 @@ const messageFormat = (body, bodyType) => {
   switch (bodyType) {
     case 'application/json':
       return JSON.stringify(body)
-      break;
     case 'multipart/form-data':
       const formatted = new FormData();
 
@@ -74,8 +73,6 @@ const messageFormat = (body, bodyType) => {
       })
 
       return formatted
-
-      break;
   }
 }
 

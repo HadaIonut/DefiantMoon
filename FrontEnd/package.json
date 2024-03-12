@@ -19,6 +19,7 @@
     "@vueup/vue-quill": "^1.0.0-beta.10",
     "@vueuse/core": "^9.3.0",
     "axios": "^1.6.7",
+    "dice-parsering-library": "^1.0.7",
     "motion": "^10.14.2",
     "peerjs": "^2.0.0-beta.3",
     "pinia": "^2.0.22",

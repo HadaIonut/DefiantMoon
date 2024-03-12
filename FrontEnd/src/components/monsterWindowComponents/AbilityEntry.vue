@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {apiClient} from '../../api'
+import {sendChatMessage, sendDiceRoll} from '../../utils/routeUtils'
 
 export interface AbilityEntryProps {
   title: string
@@ -13,9 +13,9 @@ const props = defineProps<AbilityEntryProps>()
 const handleClick = async () => {
   if (!props.sendMessage) return
 
-  if (props.actionMessage) return await apiClient.sendChatMessage(props.actionMessage, [])
+  if (props.actionMessage) return await sendChatMessage(props.actionMessage, [])
 
-  await apiClient.sendChatMessage(props.description as string, [])
+  await sendDiceRoll(props.description as string)
 }
 
 </script>

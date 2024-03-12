@@ -5,6 +5,7 @@ import {onMounted} from 'vue'
 import {useVirtualList, UseVirtualListItem} from '@vueuse/core'
 import {useWindowsStore} from '../../stores/windows'
 import {rtFetch} from '../../utils/fetchOverRTC'
+import {getCenteredWindow} from '../../utils/utils'
 
 
 const actors = ref<Actor[]>([])
@@ -29,6 +30,7 @@ onMounted(async () => {
   actors.value = actorsRes.data.actors
 })
 
+
 const actorClickHandler = (clickedObject: UseVirtualListItem<Actor>, event: MouseEvent) => {
   windowStore.addNewWindow(`monsterWindow-${clickedObject.data.id}`,
     {
@@ -42,7 +44,8 @@ const actorClickHandler = (clickedObject: UseVirtualListItem<Actor>, event: Mous
     {
       icon: 'shirt', actionName: 'MonsterWindow',
     },
-    {top: `${event.screenY}px`, left: `${event.screenX}px`, width: `500px`, height: `500px`})
+    getCenteredWindow(500, 500),
+  )
 }
 
 </script>

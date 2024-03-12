@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {Actor, Save} from '../../types/Actors'
 import {getSignedNumber} from '../../utils/utils'
-import {apiClient} from '../../api'
+import {sendChatMessage, sendDiceRoll} from '../../utils/routeUtils'
 
 export interface AbilitiesDisplayProps {
   actor: Actor
@@ -19,7 +19,7 @@ const getSavingThrow = (ability: string, actor: Actor) => {
 const abilityCheck = async (ability: string) => {
   const rollModifier = (props.actor[ability.toLowerCase() as keyof Actor] as number - 10) / 2
 
-  await apiClient.sendChatMessage(`/r 1d20${getSignedNumber(rollModifier)}`, [])
+  await sendDiceRoll(`1d20 ${getSignedNumber(rollModifier, true)}`)
 }
 
 const savingThrow = async (ability: string) => {
@@ -27,7 +27,7 @@ const savingThrow = async (ability: string) => {
   const hasProficiency = props.actor.save[ability.toLowerCase() as keyof Save]
   const proficiency = hasProficiency ? props.actor.proficiency : 0
 
-  await apiClient.sendChatMessage(`/r 1d20${getSignedNumber(rollModifier)}${getSignedNumber(proficiency, true)}`, [])
+  await sendDiceRoll(`1d20${getSignedNumber(rollModifier)}${getSignedNumber(proficiency, true)}`)
 }
 
 </script>

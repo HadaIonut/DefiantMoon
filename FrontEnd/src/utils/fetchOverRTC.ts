@@ -2,54 +2,28 @@ import type {DataConnection} from 'peerjs'
 import {Peer} from 'peerjs'
 import {getCookie, getRandomString, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
 import axios from 'axios'
+import {
+  ChunkedData,
+  ConnectedSocket,
+  ResponseWaitList,
+  SocketMessage,
+  WebRTCRequest,
+  WebRTCResponse,
+} from 'utils/FetchOverRTC'
 
 export let clientConnection: DataConnection
 export let usesWebRTC = false
 export let myId: string = ''
 let connectedSocket: ConnectedSocket
-const responseWaitList = {}
-
-type WebRTCMessage = {
-  protocol: 'http' | 'websocket',
-  data: WebRTCRequest | WebRTCResponse | SocketMessage
-}
-type SocketMessage = {
-  event: string,
-  payload: any
-}
-type UnparsedSocketMessage = { data: string }
-type WebRTCRequest = {
-  method: 'GET' | 'POST',
-  route: string,
-  contentType?: 'application/json' | 'multipart/form-data' | 'socket-init'
-  body?: any,
-  authToken?: string
-  requestId?: string
-}
-type WebRTCResponse = {
-  sourceRoute: string
-  status: number
-  setCookie: string
-  data: any
-  isOk: boolean
-  requestId: string
-}
-type ConnectedSocket = {
-  socketId: string,
-  onopen?: () => void,
-  onclose?: () => void,
-  onerror?: (socketMessage: UnparsedSocketMessage) => void
-  onmessage?: (socketMessage: UnparsedSocketMessage) => void,
-}
-
-let fileChunks = []
-const receiveChunks = async (data) => {
-  const message = JSON.parse(data)
+const responseWaitList: ResponseWaitList = {}
+let fileChunks: string[] = []
+const receiveChunks = async (data: string) => {
+  const message: ChunkedData = JSON.parse(data)
 
   fileChunks[message.index] = message.data
 
   if (message.total === message.index) {
-    const biteChunks = []
+    const biteChunks: ArrayBuffer[] = []
     fileChunks.forEach((chunk) => biteChunks.push(Uint8Array.from(atob(chunk), (c) => c.charCodeAt(0))))
     const file = new Blob(biteChunks)
     handleDataChannel(await file.text())
@@ -103,6 +77,7 @@ const axiosWrapper = (params: WebRTCRequest) => {
     jsonToFormData(params.body) :
     params.body
 
+
   return axios({
     method: params.method,
     headers: {
@@ -117,7 +92,7 @@ export const rtFetch = (params: WebRTCRequest) => {
 
   return axiosWrapper(params)
 }
-const handleSocketComms = (data: SocketMessage) => {
+const handleSocketCommunications = (data: SocketMessage) => {
   if (data.event === 'sys') {
     switch (data.payload.status) {
     case 'open':
@@ -134,7 +109,7 @@ const handleSocketComms = (data: SocketMessage) => {
   connectedSocket?.onmessage?.({data: JSON.stringify(data)})
 }
 
-const handleHTTPComms = (data: WebRTCResponse) => {
+const handleHTTPCommunications = (data: WebRTCResponse) => {
   const [resolve, reject] = responseWaitList[data.requestId]
 
   if (data.isOk) {
@@ -155,8 +130,8 @@ const handleHTTPComms = (data: WebRTCResponse) => {
 const handleDataChannel = (message: string) => {
   const parsedMessage = JSON.parse(message)
 
-  if (parsedMessage.protocol === 'websocket') handleSocketComms(parsedMessage.data)
-  if (parsedMessage.protocol === 'http') handleHTTPComms(parsedMessage.data)
+  if (parsedMessage.protocol === 'websocket') handleSocketCommunications(parsedMessage.data)
+  if (parsedMessage.protocol === 'http') handleHTTPCommunications(parsedMessage.data)
 }
 
 export const initWebSocket = (socketRoute: string) => {
@@ -180,7 +155,6 @@ export const initWebSocket = (socketRoute: string) => {
 export const initWebRTCClient = (serverId: string) => {
   return new Promise((resolve, reject) => {
     const ClientPeer = new Peer({
-      // debug: 3,
       host: 'localhost',
       port: 9000,
       path: '/',

@@ -40,3 +40,11 @@ export const jsonToFormData = (data: any) => {
 
   return formData
 }
+
+export const getCenteredWindow = (width: number, height: number) => {
+  return {
+    top: `${window.screen.height / 2 - height / 2}px`,
+    left: `${window.screen.width / 2 - width / 2}px`,
+    width: `${width}px`,
+    height: `${height}px`}
+}

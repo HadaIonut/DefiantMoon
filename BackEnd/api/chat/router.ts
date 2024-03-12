@@ -36,10 +36,16 @@ chatRouter.post("/messages", async (context) => {
     const data = await body.value.read({ outPath: "./cdn/images" });
     const message = data.fields.message;
     const images = data.files?.map((file) => file.filename || "") ?? [];
+    let parsedMessage;
+    try {
+        parsedMessage = JSON.parse(message)
+    } catch (e) {
+        parsedMessage = message;
+    }
 
-    saveChatMessage([message], images, user._id);
+    saveChatMessage([parsedMessage], images, user._id);
 
-    broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, { images, content: [message], from: userId });
+    broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CHAT_MESSAGE, { images, content: [parsedMessage], from: userId });
     context.response.status = 200;
     context.response.body = {};
 });

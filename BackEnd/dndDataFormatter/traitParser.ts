@@ -11,8 +11,8 @@ import {
 } from "../database/schemas/Items.ts";
 import { OriginalAttackType, OriginalMonster, OriginalTrait } from "./types/OriginalMonster.d.ts";
 
-const getToHitRoll = (modifier: string): string => `/r 1d20 + ${modifier}`;
-const getDamageRoll = (roll: string): string => `/r ${roll}`;
+const getToHitRoll = (modifier: string): string => `[[1d20 + ${modifier}]]`;
+const getDamageRoll = (roll: string): string => `[[${roll}]]`;
 
 const parseRange = (entries: string[]): simpleRange | multiRange | shapeRange | null => {
     const mergedEntries = entries.join("\n");
