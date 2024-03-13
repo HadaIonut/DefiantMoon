@@ -15,25 +15,28 @@ import PerfectScrollbar from 'vue3-perfect-scrollbar'
 import 'vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css'
 import {autoAnimatePlugin} from '@formkit/auto-animate/vue'
 import {QuillEditor} from '@vueup/vue-quill'
+import FloatingVue from 'floating-vue'
+import 'floating-vue/dist/style.css'
+
 
 const MainPage = () => import('./pages/MainPage.vue')
 const GamePage = () => import('./pages/GamePage.vue')
 
 const routes = [
-    {path: '/', component: MainPage},
-    {path: '/game', component: GamePage},
+  {path: '/', component: MainPage},
+  {path: '/game', component: GamePage},
 ]
 
 const router = createRouter({
-    history: createWebHashHistory(),
-    routes,
+  history: createWebHashHistory(),
+  routes,
 })
 
 const i18n = createI18n({
-    legacy: false,
-    locale: 'en',
-    fallbackLocale: 'en',
-    messages: translations,
+  legacy: false,
+  locale: 'en',
+  fallbackLocale: 'en',
+  messages: translations,
 })
 
 const pinia = createPinia()
@@ -41,10 +44,10 @@ pinia.use(piniaPluginPersistedstate)
 const app = createApp(App)
 
 const toastOptions = {
-    position: POSITION.TOP_LEFT,
-    hideProgressBar: true,
-    transition: 'Vue-Toastification__slideBlurred',
-    toastClassName: 'notification',
+  position: POSITION.TOP_LEFT,
+  hideProgressBar: true,
+  transition: 'Vue-Toastification__slideBlurred',
+  toastClassName: 'notification',
 }
 
 app.use(pinia)
@@ -54,6 +57,17 @@ app.use(Toast, toastOptions)
 app.use(i18n)
 app.use(PerfectScrollbar)
 app.use(autoAnimatePlugin)
+app.use(FloatingVue,
+  {
+    themes: {
+      'info-tooltip': {
+        $extend: 'tooltip',
+        $resetCss: true,
+      },
+    },
+  },
+)
+
 app.component('QuillEditor', QuillEditor)
 app.component('FontAwesomeIcon', FontAwesomeIcon)
 app.mount('#app')

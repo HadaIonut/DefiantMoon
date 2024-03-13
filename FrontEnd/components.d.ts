@@ -27,6 +27,7 @@ declare module '@vue/runtime-core' {
     FormOptionComponent: typeof import('./src/components/FormOptionComponent.vue')['default']
     GamePage: typeof import('./src/pages/GamePage.vue')['default']
     HeaderDisplay: typeof import('./src/components/monsterWindowComponents/HeaderDisplay.vue')['default']
+    InlineRoll: typeof import('./src/components/InlineRoll.vue')['default']
     InputComponent: typeof import('./src/components/InputComponent.vue')['default']
     ItemListWindowBody: typeof import('./src/components/windowBodies/ItemListWindowBody.vue')['default']
     MainPage: typeof import('./src/pages/MainPage.vue')['default']

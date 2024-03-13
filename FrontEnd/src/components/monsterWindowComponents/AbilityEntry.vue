@@ -26,7 +26,7 @@ const handleClick = async () => {
       {{ props.title }}
     </span>
     <span>
-      {{ props.description }}
+      <InlineRoll :text="props.description" theme="light" :isInChat="false"/>
     </span>
   </div>
 </template>
