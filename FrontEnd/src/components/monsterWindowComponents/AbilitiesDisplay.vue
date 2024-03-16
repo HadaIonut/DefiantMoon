@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {Actor, Save} from '../../types/Actors'
 import {getSignedNumber} from '../../utils/utils'
-import {sendChatMessage, sendDiceRoll} from '../../utils/routeUtils'
+import {sendChatMessage, sendSimpleDiceRoll} from '../../utils/routeUtils'
 
 export interface AbilitiesDisplayProps {
   actor: Actor
@@ -19,7 +19,10 @@ const getSavingThrow = (ability: string, actor: Actor) => {
 const abilityCheck = async (ability: string) => {
   const rollModifier = (props.actor[ability.toLowerCase() as keyof Actor] as number - 10) / 2
 
-  await sendDiceRoll(`1d20 ${getSignedNumber(rollModifier, true)}`)
+  await sendSimpleDiceRoll(
+    `1d20 ${getSignedNumber(rollModifier, true)}`,
+    `<b>${props.actor.name}</b> rolled a <b>${ability}</b> check: `,
+  )
 }
 
 const savingThrow = async (ability: string) => {
@@ -27,7 +30,10 @@ const savingThrow = async (ability: string) => {
   const hasProficiency = props.actor.save[ability.toLowerCase() as keyof Save]
   const proficiency = hasProficiency ? props.actor.proficiency : 0
 
-  await sendDiceRoll(`1d20${getSignedNumber(rollModifier)}${getSignedNumber(proficiency, true)}`)
+  await sendSimpleDiceRoll(
+    `1d20${getSignedNumber(rollModifier)}${getSignedNumber(proficiency, true)}`,
+    `<b>${props.actor.name}</b> rolled a <b>${ability}</b> saving throw: `,
+  )
 }
 
 </script>

@@ -1,5 +1,6 @@
 import { attackShortHandMap, boldText } from "./constants/constants.ts";
 import {
+    DamageEntry,
     LimitedUsage,
     limitedUsageRechargeAtDiceRoll,
     limitedUsageRechargeInTime,
@@ -7,12 +8,12 @@ import {
     shapeRange,
     shapeTypes,
     simpleRange,
-    Trait,
+    Trait, TraitAction,
 } from "../database/schemas/Items.ts";
 import { OriginalAttackType, OriginalMonster, OriginalTrait } from "./types/OriginalMonster.d.ts";
 
-const getToHitRoll = (modifier: string): string => `[[1d20 + ${modifier}]]`;
-const getDamageRoll = (roll: string): string => `[[${roll}]]`;
+const getToHitRoll = (modifier: string): string => `/r 1d20 + ${modifier}`;
+const getDamageRoll = (roll: string): string => `/r ${roll}`;
 
 const parseRange = (entries: string[]): simpleRange | multiRange | shapeRange | null => {
     const mergedEntries = entries.join("\n");
@@ -107,25 +108,18 @@ const extractDataFromTraitName = (name: string): [string, LimitedUsage | null] =
     ];
 };
 
-export const extractAction = (entries: string[]): string => {
+export const extractAction = (entries: string[]): TraitAction => {
     const mergedEntries = entries.join("\n");
-    let actionText = "";
     const toHitRolls = mergedEntries.match(/{@hit (\d+)}/);
-    const damageRolls = [...mergedEntries.matchAll(/{@damage (.+?)}/g)];
+    const damageRolls = [...mergedEntries.matchAll(/{@damage (.+?)}\)( \w+ )?(?:damage)?/g)];
     const otherDice = [...mergedEntries.matchAll(/{@dice (.+?)}/g)];
 
-    if (toHitRolls?.[1]) {
-        actionText += "To Hit: ";
-        actionText += getToHitRoll(toHitRolls[1]);
+    return {
+        description: '',
+        toHit: toHitRolls ? getToHitRoll(toHitRolls[1]) : '',
+        damage: damageRolls.reduce((acc, cur) => [...acc, {roll: getDamageRoll(cur[1]), damageType: cur[2]}] ,[] as DamageEntry[]),
+        other: otherDice.reduce((acc, cur) => [...acc, getDamageRoll(cur[1])] ,[] as string[])
     }
-
-    if (damageRolls.length > 0) actionText += "\nDamage: ";
-    damageRolls.forEach((damageRoll) => (actionText += getDamageRoll(damageRoll[1])));
-
-    if (otherDice?.length > 0) actionText += "\nOther: ";
-    otherDice.forEach((dice) => (actionText += getDamageRoll(dice[1])));
-
-    return actionText;
 };
 
 export const parseDescription = (entries: string[]): string => {

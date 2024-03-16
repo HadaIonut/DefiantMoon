@@ -47,11 +47,11 @@ const getSkills = (skills: Skill, actor: Actor) => {
   }, '')
 }
 
-const getResistance = (resistances: Resistance[] | MonsterResistance[]) => {
-  return resistances.reduce((acc: string, cur: { value: string[] }) => {
-    return `${acc} ${cur.value.join(', ')},`
-  }, '')
-}
+const getResistance = (resistances: Resistance[] | MonsterResistance[]) =>
+  resistances.reduce((acc: string, cur: { value: string[] }) =>
+    `${acc} ${cur.value.join(', ')},`
+  , '')
+
 
 </script>
 
@@ -60,24 +60,24 @@ const getResistance = (resistances: Resistance[] | MonsterResistance[]) => {
     <HeaderDisplay :actor="props.bodyData"/>
 
     <div class="abilityGroup">
-      <AbilityEntry title="AC" :description="`${props.bodyData.ac[0].value} ${displayedAcSource}`"/>
-      <AbilityEntry title="HP" :description="`${props.bodyData.hp.average} (${props.bodyData.hp.formula})`"/>
-      <AbilityEntry title="Speed" :description="getSpeedText(props.bodyData.speed)"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="AC" :description="`${props.bodyData.ac[0].value} ${displayedAcSource}`"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="HP" :description="`${props.bodyData.hp.average} (${props.bodyData.hp.formula})`"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Speed" :description="getSpeedText(props.bodyData.speed)"/>
     </div>
 
     <AbilitiesDisplay :actor="props.bodyData"/>
 
     <div class="abilityGroup">
-      <AbilityEntry title="Proficiency" :description="props.bodyData.proficiency"/>
-      <AbilityEntry title="Skills" :description="getSkills(props.bodyData.skill, props.bodyData)"/>
-      <AbilityEntry title="Damage Resistances" :description="getResistance(props.bodyData.resistances)"/>
-      <AbilityEntry title="Damage Immunities" :description="getResistance(props.bodyData.immunity)"/>
-      <AbilityEntry title="Condition Immunities" :description="props.bodyData.conditionImmunity.join(', ')"/>
-      <AbilityEntry title="Senses" :description="props.bodyData.senses.join(', ')"/>
-      <AbilityEntry title="Languages" :description="props.bodyData.languages.join(', ')"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Proficiency" :description="props.bodyData.proficiency"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Skills" :description="getSkills(props.bodyData.skill, props.bodyData)"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Damage Resistances" :description="getResistance(props.bodyData.resistances)"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Damage Immunities" :description="getResistance(props.bodyData.immunity)"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Condition Immunities" :description="props.bodyData.conditionImmunity.join(', ')"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Senses" :description="props.bodyData.senses.join(', ')"/>
+      <AbilityEntry :sourceMonster="props.bodyData.name" title="Languages" :description="props.bodyData.languages.join(', ')"/>
     </div>
 
-    <TraitsDisplay :traits="props.bodyData.trait"/>
+    <TraitsDisplay :sourceMonster="props.bodyData.name" :traits="props.bodyData.trait"/>
   </div>
 </template>
 

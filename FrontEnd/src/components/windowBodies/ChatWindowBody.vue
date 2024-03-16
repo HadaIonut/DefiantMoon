@@ -8,7 +8,7 @@ import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
 import {useInfiniteScroll} from '@vueuse/core'
 import {rtFetch} from '../../utils/fetchOverRTC'
-import {sendChatMessage} from '../../utils/routeUtils'
+import {sendHTMLMessage, sendChatMessage} from '../../utils/routeUtils'
 import {useChatStore} from '../../stores/chat'
 import {ChatMessage} from 'types/ChatMessage'
 
@@ -89,8 +89,7 @@ const sendMessage = async () => {
   currentContent = currentContent.replaceAll(/\n/g, '<br>')
   const images: File[] = await getImages()
 
-  await sendChatMessage(currentContent, images)
-  // await apiClient.sendChatMessage(currentContent, images)
+  await sendHTMLMessage(currentContent, images)
   chatEditor.value.setHTML('<p></p>')
   uploadedImages.value = []
 }

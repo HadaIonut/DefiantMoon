@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ParseResultType} from 'dice-parsering-library/dist/types'
 import {parse} from 'dice-parsering-library'
-import {sendDiceRoll} from '../utils/routeUtils'
+import {sendHTMLMessage, sendSimpleDiceRoll} from '../utils/routeUtils'
 
 const props = defineProps<{
   roll?: ParseResultType
@@ -17,12 +17,13 @@ if (!roll) {
   roll = parse(props.text ?? '')
 }
 
-const originalTextArray = roll.original.split(/\[\[([0-9d+-\s]+)\]\]/g)
-const parsedTextArray = roll.parsed.split(/\[\[([0-9d]+)\]\]/g)
+// TODO: to something smarter for monsters with proficiency
+const originalTextArray = roll?.original?.split?.(/\[\[([0-9d+-\s]+)\]\]/g) ?? [roll?.original]
+const parsedTextArray = roll?.parsed?.split?.(/\[\[([0-9d]+)\]\]/g) ?? [roll?.parsed]
 
 const handleClick = (expression: string) => {
   console.log('clicked')
-  sendDiceRoll(expression)
+  sendSimpleDiceRoll(expression)
 }
 
 </script>

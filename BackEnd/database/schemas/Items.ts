@@ -39,10 +39,22 @@ export type simpleRange = {
     unit: string;
 };
 
+export type DamageEntry = {
+    roll: string,
+    damageType: string
+}
+
+export type TraitAction = {
+    toHit: string,
+    damage: DamageEntry[],
+    other: string[],
+    description: string,
+}
+
 export type Trait = {
     name: string;
     description: string;
-    action: string;
+    action: TraitAction;
     image: string | null;
     limitedUsage: LimitedUsage | null;
     range: simpleRange | multiRange | shapeRange | null;

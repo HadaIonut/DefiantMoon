@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import {sendChatMessage, sendDiceRoll} from '../../utils/routeUtils'
+import {sendChatMessage, sendSimpleDiceRoll, sendTraitMessage} from '../../utils/routeUtils'
+import {TraitAction} from 'types/Actors'
 
 export interface AbilityEntryProps {
+  sourceMonster: string,
   title: string
   description: string | number
   sendMessage?: boolean
-  actionMessage?: string
+  actionMessage?: string | TraitAction
 }
 
 const props = defineProps<AbilityEntryProps>()
@@ -13,9 +15,16 @@ const props = defineProps<AbilityEntryProps>()
 const handleClick = async () => {
   if (!props.sendMessage) return
 
-  if (props.actionMessage) return await sendChatMessage(props.actionMessage, [])
+  if (props.actionMessage) {
+    if (typeof props.actionMessage === 'string') return await sendChatMessage(props.actionMessage, [])
 
-  await sendDiceRoll(props.description as string)
+    return await sendTraitMessage({
+      ...props.actionMessage,
+      description: `<b>${props.sourceMonster}</b> used <b>${props.title}</b>`,
+    })
+  }
+
+  await sendChatMessage(props.description as string, [])
 }
 
 </script>
