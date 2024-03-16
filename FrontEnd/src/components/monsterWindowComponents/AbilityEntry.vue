@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {sendChatMessage, sendSimpleDiceRoll, sendTraitMessage} from '../../utils/routeUtils'
+import {sendChatMessage, sendSimpleDiceRoll, sendTraitMessage} from '../../utils/diceUtils'
 import {TraitAction} from 'types/Actors'
 
 export interface AbilityEntryProps {
