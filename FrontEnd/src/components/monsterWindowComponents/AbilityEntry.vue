@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import {apiClient} from '../../api'
+import {sendChatMessage, sendSimpleDiceRoll, sendTraitMessage} from '../../utils/diceUtils'
+import {TraitAction} from 'types/Actors'
 
 export interface AbilityEntryProps {
+  sourceMonster: string,
   title: string
   description: string | number
   sendMessage?: boolean
-  actionMessage?: string
+  actionMessage?: string | TraitAction
 }
 
 const props = defineProps<AbilityEntryProps>()
@@ -13,9 +15,16 @@ const props = defineProps<AbilityEntryProps>()
 const handleClick = async () => {
   if (!props.sendMessage) return
 
-  if (props.actionMessage) return await apiClient.sendChatMessage(props.actionMessage, [])
+  if (props.actionMessage) {
+    if (typeof props.actionMessage === 'string') return await sendChatMessage(props.actionMessage, [])
 
-  await apiClient.sendChatMessage(props.description as string, [])
+    return await sendTraitMessage({
+      ...props.actionMessage,
+      description: `<b>${props.sourceMonster}</b> used <b>${props.title}</b>`,
+    })
+  }
+
+  await sendChatMessage(props.description as string, [])
 }
 
 </script>
@@ -26,7 +35,7 @@ const handleClick = async () => {
       {{ props.title }}
     </span>
     <span>
-      {{ props.description }}
+      <InlineRoll :text="props.description" theme="light" :isInChat="false"/>
     </span>
   </div>
 </template>

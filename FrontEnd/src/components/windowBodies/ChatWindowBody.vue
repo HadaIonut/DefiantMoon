@@ -6,16 +6,18 @@ import {Window} from 'types/windows'
 import {getRandomString} from '../../utils/utils'
 import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
 import {websocket} from '../../websocket/websocket'
-import {apiClient} from '../../api/index'
-import {ChatMessage} from '../../api/generated/index'
 import {useInfiniteScroll} from '@vueuse/core'
+import {rtFetch} from '../../utils/fetchOverRTC'
+import {sendHTMLMessage, sendChatMessage} from '../../utils/diceUtils'
+import {useChatStore} from '../../stores/chat'
+import {ChatMessage} from 'types/ChatMessage'
 
 const props = defineProps<{ windowData: Window }>()
 
 const chatEditor: Ref<Quill> = ref('')
-const chatMessages: Ref<ChatMessage[]> = ref([])
 const uploadedImages: Ref<string[]> = ref([])
 const messageDisplayArea: Ref<any | null> = ref(null)
+const chatStore = useChatStore()
 
 type UserJoinOrLeftParams = {
   user: {
@@ -87,7 +89,7 @@ const sendMessage = async () => {
   currentContent = currentContent.replaceAll(/\n/g, '<br>')
   const images: File[] = await getImages()
 
-  await apiClient.sendChatMessage(currentContent, images)
+  await sendHTMLMessage(currentContent, images)
   chatEditor.value.setHTML('<p></p>')
   uploadedImages.value = []
 }
@@ -118,14 +120,17 @@ onMounted(() => {
   catchImagePasteEvent()
   catchEnterEvent()
 
-  apiClient.getChatMessages(Date.now()).then(({data}) => {
-    chatMessages.value = data
+  rtFetch({
+    route: `/api/chat/messages?timestamp=${Date.now()}`,
+    method: 'GET',
+  }).then(({data}) => {
+    chatStore.pushMessages(data)
     nextTick().then(() => scrollToBottom(messageDisplayArea))
   })
 })
 
 const pushToChat = (message: ChatMessage) => {
-  chatMessages.value.push(message)
+  chatStore.pushMessage(message)
 }
 
 const onChatMessage: WebsocketMessageCallback = (chatMessage: ChatMessage) => {
@@ -139,6 +144,7 @@ const onPLayerJoin: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) =>
     images: [],
     timestamp: Date.now(),
     from: '0',
+    id: '0',
   })
 }
 
@@ -148,17 +154,22 @@ const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) =>
     images: [],
     timestamp: Date.now(),
     from: '0',
+    id: '0',
+
   })
 }
 
 useInfiniteScroll(
   messageDisplayArea,
   () => {
-    const lastTimeStamp = chatMessages.value[0].timestamp
+    const lastTimeStamp = chatStore.getLatestTimestamp()
     const scrollHeightBeforeAdd = messageDisplayArea.value.ps.element.scrollHeight
 
-    apiClient.getChatMessages(Number(lastTimeStamp)).then(({data}) => {
-      chatMessages.value.unshift(...data)
+    rtFetch({
+      route: `/api/chat/messages?timestamp=${Number(lastTimeStamp)}`,
+      method: 'GET',
+    }).then(({data}) => {
+      chatStore.unshiftMessage(data)
       nextTick().then(() => {
         const element = messageDisplayArea.value.ps.element
         element.scrollTop += (element.scrollHeight - scrollHeightBeforeAdd)
@@ -182,7 +193,7 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CHAT_PLAYER_LEFT, onPlaye
   <div :class="`chat ${props.windowData.isMinimized ? 'minimized' : ''}`">
     <div class="chat-content">
       <perfect-scrollbar ref="messageDisplayArea">
-        <ChatMessageComponent v-for="message in chatMessages" :key="message.timestamp" :message="message"/>
+        <ChatMessageComponent v-for="message in chatStore.chat" :key="message.timestamp" :message="message"/>
       </perfect-scrollbar>
     </div>
     <div class="chat-input-container">

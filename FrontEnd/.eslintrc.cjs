@@ -22,6 +22,7 @@ module.exports = {
     'max-len': 'off',
     'guard-for-in': 'off',
     'linebreak-style': 'off',
-    'indent': ['warn', 2]
+    'indent': ['warn', 2],
+    'prefer-promise-reject-errors': 'off'
   },
 };

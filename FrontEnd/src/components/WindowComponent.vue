@@ -77,7 +77,6 @@ const initWindowMove = (event: MouseEvent) => {
   }
 
   if (windowObject[props.windowKey]?.snapData?.isSnapped) {
-    console.log('here')
     windowStore.unSnap(props.windowKey)
   }
   const getLimitedXMovement = (clientX: number): number => {

@@ -52,6 +52,7 @@ export const validateAccessToken = (accessToken: string) => {
 };
 
 export const authMiddleWare: Middleware = async (context: Context, next: () => Promise<unknown>) => {
+
     const accessToken = await context.cookies.get("accessToken");
     if (!accessToken) {
         context.response.status = 401;

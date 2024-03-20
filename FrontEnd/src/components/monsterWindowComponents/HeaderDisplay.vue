@@ -8,8 +8,8 @@ export interface HeaderDisplayProps {
 
 const props = defineProps<HeaderDisplayProps>()
 const monsterType = typeof props.actor?.type === 'string' ? props.actor?.type : props.actor?.type?.type
-
 const getMonsterCr = (cr: string | Record<string, string>) => {
+  if (!cr) return '10'
   if (typeof cr === 'string') return cr
 
   return Object.keys(cr).reduce((acc, cur) => {
@@ -19,6 +19,8 @@ const getMonsterCr = (cr: string | Record<string, string>) => {
 }
 
 const getMonsterXp = (cr: string | Record<string, string>) => {
+  if (!cr) return 'unknown'
+
   if (typeof cr === 'string') return CrToXpMap[cr]
 
   return CrToXpMap[cr.cr]

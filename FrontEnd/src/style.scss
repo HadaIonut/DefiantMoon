@@ -32,3 +32,21 @@ body {
   border: $accent 1px solid;
   border-radius: 6px;
 }
+
+.v-popper--theme-info-tooltip {
+  .v-popper__inner {
+    background: $lighter-tertiary;
+    border: 1px solid rgba($accent,0.8);
+    color: $secondary;
+    padding: 3px;
+    border-radius: 6px;
+  }
+
+  .v-popper__arrow-inner {
+    visibility: visible;
+    border-color: rgba($accent,0.8);
+  }
+  .v-popper__arrow-outer {
+    border-color: rgba($darker-accent,0.8);
+  }
+}
