@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {Actor} from 'types/Actors'
-import {ref, Ref} from 'vue'
+import {ref} from 'vue'
 import {onMounted} from 'vue'
 import {useVirtualList, UseVirtualListItem} from '@vueuse/core'
-import {useWindowsStore} from '../../stores/windows'
-import {rtFetch} from '../../utils/fetchOverRTC'
-import {getCenteredWindow} from '../../utils/utils'
+import {useWindowsStore} from 'src/stores/windows'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+import {getCenteredWindow} from 'src/utils/utils'
+import {Actor} from 'src/types/Actors'
 
 
 const actors = ref<Actor[]>([])

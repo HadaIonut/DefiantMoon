@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {useWindowsStore} from '../../stores/windows'
+import {useWindowsStore} from 'src/stores/windows'
 
 interface ActionProps {
   windowKey: string

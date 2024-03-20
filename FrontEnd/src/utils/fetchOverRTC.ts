@@ -1,6 +1,5 @@
 import type {DataConnection} from 'peerjs'
 import {Peer} from 'peerjs'
-import {getCookie, getRandomString, isArray, isFile, jsonToFormData, toBase64} from '../utils/utils'
 import axios from 'axios'
 import {
   ChunkedData,
@@ -9,7 +8,8 @@ import {
   SocketMessage,
   WebRTCRequest,
   WebRTCResponse,
-} from 'utils/FetchOverRTC'
+} from 'src/utils/FetchOverRTC'
+import {getCookie, getRandomString, isArray, isFile, jsonToFormData, toBase64} from 'src/utils/utils'
 
 export let clientConnection: DataConnection
 export let usesWebRTC = false

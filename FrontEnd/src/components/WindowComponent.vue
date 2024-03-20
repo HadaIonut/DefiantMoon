@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import {computed, onMounted, Ref, ref} from 'vue'
-import {Window} from 'types/windows'
-import {useWindowsStore} from '../stores/windows'
 import {Motion} from 'motion/vue'
+import {useWindowsStore} from 'src/stores/windows'
 
 interface WindowProps {
   windowData: Window,

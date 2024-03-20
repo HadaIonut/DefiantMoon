@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from 'vue'
-import {apiClient} from '../api/index'
-import {DropdownOption} from 'types/Dropdown'
-import {LoginRequest} from 'api/generated'
-import {useUsersStore} from '../stores/users'
 import {useRouter} from 'vue-router'
 import {useToast} from 'vue-toastification'
 import {useI18n} from 'vue-i18n'
-import {initWebRTCClient, rtFetch} from '../utils/fetchOverRTC'
-import {UserRequest} from 'types/users'
+import {DropdownOption} from 'src/types/Dropdown'
+import {UserRequest} from 'src/types/users'
+import {useUsersStore} from 'src/stores/users'
+import {initWebRTCClient, rtFetch} from 'src/utils/fetchOverRTC'
 
 const players = ref<DropdownOption[]>([])
 const loginData = ref<LoginRequest>({username: '', password: ''})

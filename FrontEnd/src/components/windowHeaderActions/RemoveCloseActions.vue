@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {useWindowsStore} from '../../stores/windows'
+import {useWindowsStore} from 'src/stores/windows'
 
 interface ActionProps {
     windowKey: string
@@ -10,7 +10,7 @@ const props = defineProps<ActionProps>()
 const windowStore = useWindowsStore()
 
 const closeWindow = () => {
-    windowStore.removeWindow(props.windowKey)
+  windowStore.removeWindow(props.windowKey)
 }
 </script>
 

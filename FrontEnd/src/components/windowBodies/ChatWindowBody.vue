@@ -2,15 +2,15 @@
 import {Quill, QuillEditor} from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css'
 import {nextTick, onMounted, ref, Ref} from 'vue'
-import {Window} from 'types/windows'
-import {getRandomString} from '../../utils/utils'
-import {WEBSOCKET_RECEIVABLE_EVENTS} from '../../websocket/events'
-import {websocket} from '../../websocket/websocket'
+import {getRandomString} from 'src/utils/utils'
+import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
+import {websocket} from 'src/websocket/websocket'
 import {useInfiniteScroll} from '@vueuse/core'
-import {rtFetch} from '../../utils/fetchOverRTC'
-import {sendHTMLMessage, sendChatMessage} from '../../utils/diceUtils'
-import {useChatStore} from '../../stores/chat'
-import {ChatMessage} from 'types/ChatMessage'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+import {sendHTMLMessage} from 'src/utils/diceUtils'
+import {useChatStore} from 'src/stores/chat'
+import {ChatMessage} from 'src/types/ChatMessage'
+import {Window} from 'src/types/windows'
 
 const props = defineProps<{ windowData: Window }>()
 

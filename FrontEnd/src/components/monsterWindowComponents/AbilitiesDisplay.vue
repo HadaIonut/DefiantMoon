@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {Actor, Save} from '../../types/Actors'
-import {getSignedNumber} from '../../utils/utils'
-import {sendChatMessage, sendSimpleDiceRoll} from '../../utils/diceUtils'
+import {Actor, Save} from 'src/types/Actors'
+import {getSignedNumber} from 'src/utils/utils'
+import {sendSimpleDiceRoll} from 'src/utils/diceUtils'
 
 export interface AbilitiesDisplayProps {
   actor: Actor

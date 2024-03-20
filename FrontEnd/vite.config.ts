@@ -11,6 +11,11 @@ export default defineConfig({
       deep: true,
     }),
   ],
+  resolve: {
+    alias: {
+      src: '/src',
+    },
+  },
   css: {
     preprocessorOptions: {
       scss: {

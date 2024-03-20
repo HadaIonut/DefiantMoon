@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Trait} from '../../types/Actors'
+import {Trait} from 'src/types/Actors'
 
 export interface TraitsProps {
   traits: Trait[]

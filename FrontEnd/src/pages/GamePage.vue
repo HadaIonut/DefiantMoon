@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {useUsersStore} from '../stores/users'
-import {useWindowsStore} from '../stores/windows'
 import {onMounted} from 'vue'
-import {WindowStore} from '../types/windows'
+import {useUsersStore} from 'src/stores/users'
+import {useWindowsStore} from 'src/stores/windows'
+import {WindowStore} from 'src/types/windows'
 
 const usersStore = useUsersStore()
 const windowStore = useWindowsStore()

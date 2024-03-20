@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
-import {WindowStore, WindowHeader, WindowBody, WindowDisplay} from 'types/windows'
-import {Action} from '../types/actions'
+import {WindowBody, WindowDisplay, WindowHeader, WindowStore} from 'src/types/windows'
+import {Action} from 'src/types/actions'
 
 export const useWindowsStore = defineStore('windows', {
   state: (): WindowStore => {

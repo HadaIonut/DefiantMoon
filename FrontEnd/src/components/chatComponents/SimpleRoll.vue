@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ParsedResult} from 'types/Actors'
 import {computed} from 'vue'
-import {useUsersStore} from '../../stores/users'
+import {useUsersStore} from 'src/stores/users'
+import {ParsedResult} from 'src/types/Actors'
 
 const props = defineProps<{
   roll: ParsedResult

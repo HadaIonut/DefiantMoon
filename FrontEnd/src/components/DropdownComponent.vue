@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {Ref, ref} from 'vue'
-import {DropdownOption} from '../types/Dropdown'
+import {DropdownOption} from 'src/types/Dropdown'
 
 interface DropdownProps {
     options: DropdownOption[],
@@ -8,13 +8,13 @@ interface DropdownProps {
 }
 
 const props = withDefaults(defineProps<DropdownProps>(), {
-    options: () => [],
-    initial: () => {
-        return {
-            optionName: 'defaults.dropdownInitialValue',
-            id: '0',
-        } as DropdownOption
-    },
+  options: () => [],
+  initial: () => {
+    return {
+      optionName: 'defaults.dropdownInitialValue',
+      id: '0',
+    } as DropdownOption
+  },
 })
 
 const emit = defineEmits<{(e: 'change', selected: DropdownOption): void }>()
@@ -23,17 +23,17 @@ const selectedOption: Ref<DropdownOption> = ref(props.initial)
 const isVisible: Ref<boolean> = ref(false)
 
 const toggleDropdown = () => {
-    isVisible.value = !isVisible.value
+  isVisible.value = !isVisible.value
 }
 
 const closeDropdown = () => {
-    isVisible.value = false
+  isVisible.value = false
 }
 
 const selectOption = (option: DropdownOption) => {
-    selectedOption.value = option
-    isVisible.value = false
-    emit('change', selectedOption.value)
+  selectedOption.value = option
+  isVisible.value = false
+  emit('change', selectedOption.value)
 }
 
 </script>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {CrToXpMap, sizeToNameMap} from '../../constants/gameMaps'
-import {Actor} from '../../types/Actors'
+import {CrToXpMap, sizeToNameMap} from 'src/constants/gameMaps'
+import {Actor} from 'src/types/Actors'
 
 export interface HeaderDisplayProps {
   actor: Actor

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {sendChatMessage, sendSimpleDiceRoll, sendTraitMessage} from '../../utils/diceUtils'
-import {TraitAction} from 'types/Actors'
+import {sendChatMessage, sendTraitMessage} from 'src/utils/diceUtils'
+import {TraitAction} from 'src/types/Actors'
 
 export interface AbilityEntryProps {
   sourceMonster: string,

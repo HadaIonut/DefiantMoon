@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {computed} from 'vue'
-import {useUsersStore} from '../../stores/users'
 import {Swiper, SwiperSlide} from 'swiper/vue'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import {Navigation, Pagination} from 'swiper'
-import {ChatMessage} from 'types/ChatMessage'
+import {ChatMessage} from 'src/types/ChatMessage'
+import {useUsersStore} from 'src/stores/users'
 
 const props = defineProps<{
   message: ChatMessage

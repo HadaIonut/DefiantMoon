@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ParsedResult, RolledTraitAction} from 'types/Actors'
 import {computed} from 'vue'
-import {useUsersStore} from '../../stores/users'
+import {ParsedResult, RolledTraitAction} from 'src/types/Actors'
+import {useUsersStore} from 'src/stores/users'
 
 const props = defineProps<{
   roll: ParsedResult | RolledTraitAction

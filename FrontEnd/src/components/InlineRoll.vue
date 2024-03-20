@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ParseResultType} from 'dice-parsering-library/dist/types'
 import {parse} from 'dice-parsering-library'
-import {sendHTMLMessage, sendSimpleDiceRoll} from '../utils/diceUtils'
+import {sendSimpleDiceRoll} from 'src/utils/diceUtils'
 
 const props = defineProps<{
   roll?: ParseResultType

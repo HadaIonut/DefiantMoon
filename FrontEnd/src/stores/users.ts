@@ -1,8 +1,6 @@
 import {defineStore} from 'pinia'
-import {AvailableUser, LoginRequest} from 'api/generated'
-import {apiClient} from '../api/index'
-import {User, UsersStore} from 'types/users'
-import {rtFetch} from '../utils/fetchOverRTC'
+import {User, UsersStore} from 'src/types/users'
+import {rtFetch} from 'src/utils/fetchOverRTC'
 
 export const useUsersStore = defineStore('users', {
   state: (): UsersStore => {
