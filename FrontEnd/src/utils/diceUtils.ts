@@ -24,7 +24,7 @@ const handleMaybeHTML = (message: string) => {
 }
 
 const rollTheDice = (message: string) => {
-  const parsedDice = parse(handleMaybeHTML(message))
+  const parsedDice = parse(handleMaybeHTML(message)) // TODO: Simple objects instered into chat are removed from HTML, fix
 
   if (parsedDice.original === parsedDice.parsed) return parsedDice.original
   return JSON.stringify(parsedDice)
