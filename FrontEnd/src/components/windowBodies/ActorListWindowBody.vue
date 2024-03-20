@@ -20,12 +20,10 @@ const {list, containerProps, wrapperProps} = useVirtualList(
 
 onMounted(async () => {
   // @ts-ignore
-  console.log('before req')
   const actorsRes = (await rtFetch({
     route: `/api/actors/all`,
     method: 'GET',
   }))
-  console.log(actorsRes)
 
   actors.value = actorsRes.data.actors
 })

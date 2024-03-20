@@ -9,7 +9,6 @@ export interface MonsterWindowProps {
 }
 
 const props = defineProps<MonsterWindowProps>()
-console.log(props.bodyData)
 const displayedAcSource = props.bodyData?.ac?.[0]?.source?.length > 0 ? `(${props.bodyData?.ac?.[0]?.source.join(', ')})` : ''
 const getSpeedText = (speedObject: Speed) => {
   const walkSpeed = `${speedObject.walk.value} ft,`

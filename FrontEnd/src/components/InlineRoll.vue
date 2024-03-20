@@ -22,7 +22,6 @@ const originalTextArray = roll?.original?.split?.(/\[\[([0-9d+-\s]+)\]\]/g) ?? [
 const parsedTextArray = roll?.parsed?.split?.(/\[\[([0-9d]+)\]\]/g) ?? [roll?.parsed]
 
 const handleClick = (expression: string) => {
-  console.log('clicked')
   sendSimpleDiceRoll(expression)
 }
 

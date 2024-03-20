@@ -14,7 +14,6 @@ const colorClass = computed(() => {
   return props.from === usersStore.currentUser.id ? 'dark' : 'light'
 })
 
-
 </script>
 
 <template>
