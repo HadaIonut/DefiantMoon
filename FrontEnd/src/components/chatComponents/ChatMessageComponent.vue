@@ -33,7 +33,7 @@ const findCurrentUsername = (currentUserId: string): string => {
       </div>
 
       <div class="message-content " v-if="typeof props.message.content[0] === 'string'" v-html="props.message.content[0]"></div>
-      <RollResult v-else :roll="props.message.content[0]"></RollResult>
+      <RollResult v-else :roll="props.message.content[0]" :messageFrom="props.message.from"/>
 
       <img :src="message.images[0]" alt="" v-if="message.images.length === 1" class="chat-image">
 
