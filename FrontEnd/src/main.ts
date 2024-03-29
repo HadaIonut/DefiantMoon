@@ -17,8 +17,6 @@ import {autoAnimatePlugin} from '@formkit/auto-animate/vue'
 import {QuillEditor} from '@vueup/vue-quill'
 import FloatingVue from 'floating-vue'
 import 'floating-vue/dist/style.css'
-
-
 const MainPage = () => import('./pages/MainPage.vue')
 const GamePage = () => import('./pages/GamePage.vue')
 
