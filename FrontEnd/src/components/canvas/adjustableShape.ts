@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import {
-  BufferGeometry,
+  BoxGeometry,
+  BufferGeometry, CatmullRomCurve3, DoubleSide, ExtrudeGeometry,
   Group,
   Line,
   LineBasicMaterial,
@@ -9,7 +10,7 @@ import {
   Plane,
   Raycaster,
   Renderer,
-  Scene,
+  Scene, Shape,
   Vector2,
   Vector3,
 } from 'three'
@@ -18,6 +19,7 @@ import concaveman from 'concaveman'
 import {WallGeometry} from './WallGeometry'
 import {updateAllLightsShadowCasting} from './lightController'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
+import {PositionObject} from 'src/stores/PlayArea'
 
 export type AdjustableShapeInput = {
   scene: Scene,
@@ -31,7 +33,7 @@ export type AdjustableShapeInput = {
   filled: boolean,
   closed: boolean,
   concaveHull: boolean,
-  handleContextMenu: () => void,
+  handleContextMenu: (position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) => void,
   onDragComplete: () => void,
 }
 
@@ -53,6 +55,7 @@ const createCenterPoint = (controlPoints: DraggablePoint[], scene: Scene) => {
 const createCurveGeometry = (controlPoints: DraggablePoint[], tension: Ref<number>, centralPoint: DraggablePoint, concaveHull: boolean, closed: boolean) => {
   let pts: number[][] = []
   let vectorPoints: Vector3[] = []
+  const curveGeometry = new BufferGeometry()
 
   controlPoints.forEach((pt) => {
     pts.push([pt.position.x, pt.position.z])
@@ -62,12 +65,11 @@ const createCurveGeometry = (controlPoints: DraggablePoint[], tension: Ref<numbe
     if (!closed) pts.pop()
   }
 
-  vectorPoints = pts.map((pt) => new THREE.Vector3(pt[0], 0, pt[1]))
+  vectorPoints = pts.map((pt) => new Vector3(pt[0], 0, pt[1]))
 
-  if (vectorPoints.length <= 1) return {}
+  if (vectorPoints.length <= 1) return {curveGeometry, curve: new CatmullRomCurve3()}
 
-  const curve = new THREE.CatmullRomCurve3(vectorPoints, false, 'catmullrom', tension.value)
-  const curveGeometry = new BufferGeometry()
+  const curve = new CatmullRomCurve3(vectorPoints, false, 'catmullrom', tension.value)
   // @ts-ignore
   curveGeometry.vertices = curve.getPoints(75)
   curveGeometry.translate(0, 1, 0)
@@ -79,10 +81,10 @@ const createCurveGeometry = (controlPoints: DraggablePoint[], tension: Ref<numbe
 }
 
 export const createPoint = (position: Vector3, scene: Scene, color = 'white', objectName = 'controlPoint'): DraggablePoint => {
-  const viewGeometry = new THREE.BoxGeometry(15, 50, 15, 1, 3, 1)
+  const viewGeometry = new BoxGeometry(15, 50, 15, 1, 3, 1)
   viewGeometry.translate(0, .75, 0)
-  const viewMaterial = new THREE.MeshBasicMaterial({color: color, wireframe: false, transparent: true, opacity: .5})
-  const view = new THREE.Mesh(viewGeometry, viewMaterial)
+  const viewMaterial = new MeshBasicMaterial({color: color, wireframe: false, transparent: true, opacity: .5})
+  const view = new Mesh(viewGeometry, viewMaterial)
   view.position.copy(position)
   view.name = objectName
   scene.add(view)
@@ -102,8 +104,8 @@ export const adjustableShape = ({
   concaveHull = true,
   handleContextMenu,
   onDragComplete,
-}: AdjustableShapeInput) => {
-  const shapeGroup = new Group()
+}: AdjustableShapeInput): [() => void, () => void, Group] => {
+  const shapeGroup: Group = new Group()
   shapeGroup.add(originPoint)
   let controlPoints: DraggablePoint[] = shapeGroup.children.filter((child) => child.name === 'controlPoint')
 
@@ -117,12 +119,12 @@ export const adjustableShape = ({
   const points: Vector2[] = []
   let shape = null
   let shapeGeometry
-  const shapeMaterial = new MeshBasicMaterial({color: 'red', side: THREE.DoubleSide})
+  const shapeMaterial = new MeshBasicMaterial({color: 'red', side: DoubleSide})
   const shapeMesh = new Mesh(shapeGeometry, shapeMaterial)
 
   let intersects: DraggablePoint[]
   let dragging = false
-  let dragObject
+  let dragObject: Object3D | null
   const pointOfIntersection = new Vector3()
   const planeNormal = new Vector3(0, 1, 0)
   const shift = new Vector3()
@@ -147,8 +149,9 @@ export const adjustableShape = ({
   scene.add(shapeGroup)
 
   if (controlPoints.length !== 1) {
-    curveLine.geometry.vertices.forEach((vertex, index) => {
-      points.push(new THREE.Vector2(vertex.x, vertex.z)) // fill the array of points with THREE.Vector2() for re-use
+    // @ts-ignore
+    curveLine.geometry.vertices.forEach((vertex) => {
+      points.push(new THREE.Vector2(vertex.x, vertex.z)) // fill the array of points with Vector2() for re-use
     })
   }
 
@@ -167,15 +170,16 @@ export const adjustableShape = ({
     extrudeMesh()
   }
   const extrudeMesh = () => {
+    // @ts-ignore
     curveLine.geometry.vertices.forEach((vertex, index) => {
       if (points[index]) points[index].set(vertex.x, vertex.z) // re-use the array
-      else points[index] = new THREE.Vector2(vertex.x, vertex.z) // re-use the array
+      else points[index] = new Vector2(vertex.x, vertex.z) // re-use the array
     })
 
     if (filled) {
-      shape = new THREE.Shape(points)
+      shape = new Shape(points)
       shape.autoClose = false
-      shapeGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+      shapeGeometry = new ExtrudeGeometry(shape, extrudeSettings)
       shapeGeometry.rotateX(Math.PI * .5)
     } else {
       shapeGeometry = new WallGeometry(curve, 75 * controlPoints.length, 2, 10, 8, false)
@@ -189,9 +193,10 @@ export const adjustableShape = ({
   if (controlPoints.length !== 1) {
     extrudeMesh()
   }
-  const onMouseDown = (event) => {
+  const onMouseDown = (event: MouseEvent) => {
     const controlPointsIntersection: DraggablePoint[] = rayCaster.intersectObjects(controlPoints) as unknown as DraggablePoint[]
     const centralPointIntersection: DraggablePoint[] = rayCaster.intersectObject(centralPoint) as unknown as DraggablePoint[]
+    // @ts-ignore
     renderer.shadowMap.autoUpdate = true
 
     if (event.button === 0) {
@@ -200,8 +205,11 @@ export const adjustableShape = ({
 
       if (Array.isArray(intersects) && intersects.length > 0) {
         controls.enableRotate = false
+        // @ts-ignore
         dragObject = intersects[0].object
+        // @ts-ignore
         plane.setFromNormalAndCoplanarPoint(planeNormal, intersects[0].point)
+        // @ts-ignore
         shift.subVectors(dragObject.position, intersects[0].point)
         dragging = true
       }
@@ -211,6 +219,7 @@ export const adjustableShape = ({
         handleContextMenu({
           top: event.clientY,
           left: event.clientX,
+          // @ts-ignore
         }, centralPointIntersection?.[0]?.object ?? controlPointsIntersection?.[0]?.object)
       }
       event.preventDefault()
@@ -218,11 +227,12 @@ export const adjustableShape = ({
     }
   }
 
-  const onMouseUp = (event) => {
+  const onMouseUp = (event: MouseEvent) => {
     controls.enableRotate = false
     dragObject = null
     if (dragging) {
       updateAllLightsShadowCasting(scene)
+      // @ts-ignore
       renderer.shadowMap.autoUpdate = false
     }
     dragging = false
@@ -231,7 +241,7 @@ export const adjustableShape = ({
     event.preventDefault()
   }
 
-  const onMouseMove = (event) => {
+  const onMouseMove = (event: MouseEvent) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
     if (intersects?.length === 0 || !dragging) return
@@ -240,6 +250,9 @@ export const adjustableShape = ({
     curveGeometry = curveObj.curveGeometry
     curve = curveObj.curve
 
+    if (!dragObject) return
+
+    // @ts-ignore
     if (intersects[0].object.name === 'centerPoint') {
       const oldObjectPosition = dragObject.position.clone()
       rayCaster.ray.intersectPlane(plane, pointOfIntersection)

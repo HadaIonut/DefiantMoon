@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {onMounted, ref, watch} from 'vue'
+import {onMounted, Ref, ref, watch} from 'vue'
 import * as THREE from 'three'
 import {
   Camera,
-  Color,
+  Color, Mesh,
   OrthographicCamera,
   PCFSoftShadowMap,
   Plane,
@@ -21,6 +21,7 @@ import {hideNonVisibleLights, initCharacter} from './characterController'
 import {adjustableShape, createPoint} from 'src/components/canvas/adjustableShape'
 import Stats from 'three/examples/jsm/libs/stats.module'
 import {initLights} from 'src/components/canvas/lightController'
+import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
@@ -32,23 +33,22 @@ let renderer: Renderer
 let controls: OrbitControls
 let rayCaster: Raycaster
 let plane: Plane
-const canvas = ref(null)
+const canvas: Ref<HTMLElement | null> = ref(null)
 const stats = new Stats()
 stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
+const playAreaStore = usePlayAreaStore()
 
 const enableRotation = false
 const wallTension = ref(0)
 const lightColor = ref(0xffffff)
-const drawMode = ref(false)
+// const drawMode = ref(false)
 
-const shapes = {}
 const mouse = new Vector2()
-let currentDrawingId: string = ''
-let player
+// const currentDrawingId: string = ''
+let player: Mesh
 const groundSizes = [1000, 1000]
 const controlPoints = []
-
 
 const initGUI = () => {
   const panel = new GUI({width: 310})
@@ -94,8 +94,11 @@ const initCanvas = () => {
 
   renderer = new WebGLRenderer({antialias: true})
   renderer.setSize(window.innerWidth, window.innerHeight)
+  // @ts-ignore
   renderer.shadowMap.type = PCFSoftShadowMap
+  // @ts-ignore
   renderer.shadowMap.enabled = true
+  // @ts-ignore
   renderer.shadowMap.autoUpdate = false
 
   controls = new OrbitControls(camera, renderer.domElement)
@@ -103,16 +106,16 @@ const initCanvas = () => {
   controls.enabled = true
 
   initGUI()
-
-  watch(canvas, (newValue: Element) => {
+  // @ts-ignore
+  watch(canvas, (newValue: HTMLElement) => {
     if (!newValue) return
     newValue.appendChild(renderer.domElement)
     newValue.addEventListener('click', (event) => {
-      if (!drawMode.value) return
+      if (!playAreaStore.drawMode) return
       const clickLocation = findLocationFromCoords(event.clientX, event.clientY, camera, scene)
       const newPoint = createPoint(clickLocation, scene)
 
-      if (!shapes[currentDrawingId]) {
+      if (!playAreaStore.shapes[playAreaStore.currentDrawingId]) {
         const [updateShape, extrudeMesh, object] = adjustableShape({
           scene,
           controls,
@@ -125,24 +128,23 @@ const initCanvas = () => {
           closed: false,
           concaveHull: false,
           renderer,
-          handleContextMenu,
+          handleContextMenu: playAreaStore.handleContextMenu,
           onDragComplete: () => {
             hideNonVisibleLights(scene, player.position)
           },
         })
-        currentDrawingId = object.uuid
-        shapes[currentDrawingId] = {
+        playAreaStore.setDrawingId(object.uuid)
+        playAreaStore.setCurrentShape({
           object,
           updateShape,
           extrudeMesh,
-        }
+        })
       }
-      shapes[currentDrawingId].object.add(newPoint)
-      shapes[currentDrawingId].updateShape()
+      playAreaStore.addPointToCurrentShape(newPoint)
     })
   })
   initCharacter(scene, camera, renderer)
-  initCharacter(scene, camera, renderer, new Vector3(100, 10, 100))
+  player = initCharacter(scene, camera, renderer, new Vector3(100, 10, 100))
 
   const spawnLight = initLights(scene, lightColor, camera, renderer)
 
@@ -159,10 +161,6 @@ const animate = () => {
   requestAnimationFrame(animate)
 
   rayCaster.setFromCamera(mouse, camera)
-  controlPoints.forEach((cp, idx) => {
-    curShift = (Math.PI / 2) * idx
-    cp.material.opacity = 0.6 + Math.sin(time - curShift) * .2
-  })
 
   renderer.render(scene, camera)
   stats.end()
@@ -175,17 +173,7 @@ animate()
 
 <template>
   <div ref="canvas" style="width: 100%; height: 100%">
-<!--    <div :style="`position: absolute; top: 100px; color: white; background:${drawMode ? 'pink' : 'darkslategray'} `"-->
-<!--         @click="drawModeToggleFunction">test-->
-<!--    </div>-->
-<!--    <div ref="contextMenuRef"-->
-<!--         style="display: none; position: absolute; top: 0; left: 0; background: #888888; transform: translateX(-50%)">-->
-<!--      <div style="cursor: pointer;" @click="addPointsToObject">add points</div>-->
-<!--      <div style="cursor: pointer;" @click="removePointFromObject"-->
-<!--           v-if="contextMenuTargetedObject?.name === 'controlPoint'">remove point-->
-<!--      </div>-->
-<!--      <div style="cursor: pointer;" @click="objectDelete">delete object</div>-->
-<!--    </div>-->
+    <CanvasContextMenu/>
   </div>
 </template>
 
