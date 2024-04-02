@@ -33,6 +33,7 @@ declare module '@vue/runtime-core' {
     ItemListWindowBody: typeof import('./src/components/windowBodies/ItemListWindowBody.vue')['default']
     MainPage: typeof import('./src/pages/MainPage.vue')['default']
     MonsterWindowBody: typeof import('./src/components/windowBodies/MonsterWindowBody.vue')['default']
+    PlayArea: typeof import('./src/components/canvas/PlayArea.vue')['default']
     RemoveCloseActions: typeof import('./src/components/windowHeaderActions/RemoveCloseActions.vue')['default']
     RollResult: typeof import('./src/components/chatComponents/RollResult.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

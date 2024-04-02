@@ -15,9 +15,7 @@ onMounted(() => {
 
 <template>
   <div class="page-container">
-        <span style="user-select: none">
-            you are now logged in, poggers {{ usersStore.currentUser.name }}
-        </span>
+    <PlayArea/>
 
     <ActionsSidebar/>
 
