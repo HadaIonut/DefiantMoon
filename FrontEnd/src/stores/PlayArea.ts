@@ -9,7 +9,11 @@ type PlayAreaStore = {
     [key: string]: any
   }
   targetedObject?: DraggablePoint
-  contextMenuRef?: Ref<HTMLElement | null>
+  contextMenu: {
+    top?: number,
+    left?: number,
+    display?: string,
+  }
 }
 
 export type PositionObject = {
@@ -23,6 +27,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       drawMode: false,
       currentDrawingId: '',
       shapes: {},
+      contextMenu: {},
     }
   },
   actions: {
@@ -42,9 +47,6 @@ export const usePlayAreaStore = defineStore('playArea', {
         this.currentDrawingId = this.targetedObject?.parent?.uuid ?? ''
       }, 0)
     },
-    setContextMenuRef(ref: HTMLElement) {
-      this.contextMenuRef = ref
-    },
     setCurrentShape(value: any) {
       this.shapes[this.currentDrawingId] = value
     },
@@ -55,18 +57,15 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.shapes[this.currentDrawingId].object.add(newPoint)
       this.shapes[this.currentDrawingId].updateShape()
     },
-    // TODO: FOR THE LOVE OF ALL THAT IS HOLY REWRITE THIS
     handleContextMenu(position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) {
-      if (!this.contextMenuRef) return
-
-      if (visibility) this.contextMenuRef.style.display = visibility
+      if (visibility) this.contextMenu.display = visibility
       else {
-        if (this.contextMenuRef.style.display === 'none') this.contextMenuRef.style.display = 'block'
-        else this.contextMenuRef.style.display = 'none'
+        if (this.contextMenu.display === 'none') this.contextMenu.display = 'block'
+        else this.contextMenu.display = 'none'
       }
       if (targetedObject) this.setTargetObject(targetedObject)
-      this.contextMenuRef.style.top = `${position.top}px`
-      this.contextMenuRef.style.left = `${position.left}px`
+      this.contextMenu.top = position.top
+      this.contextMenu.left = position.left
     },
   },
 })

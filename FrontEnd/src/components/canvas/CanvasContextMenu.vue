@@ -1,14 +1,14 @@
 <script setup lang="ts">
 
-import {ref, watch} from 'vue'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {computed, ref} from 'vue'
+import {onClickOutside} from '@vueuse/core'
 
 const playAreaStore = usePlayAreaStore()
 
 const contextMenuRef = ref(null)
 
 // @ts-ignore
-watch(contextMenuRef, (newValue: HTMLElement) => playAreaStore.setContextMenuRef(newValue))
 const drawModeToggleFunction = (event: MouseEvent) => {
   event.stopPropagation()
   playAreaStore.toggleDrawMode()
@@ -37,24 +37,42 @@ const removePointFromObject = () => {
   workingShape.updateShape()
   playAreaStore.handleContextMenu({})
 }
+
+const contextMenuStyle = computed(() => {
+  return `
+    display: ${playAreaStore.contextMenu.display};
+    top: ${playAreaStore.contextMenu.top}px;
+    left: ${playAreaStore.contextMenu.left}px;
+  `
+})
+
+onClickOutside(contextMenuRef, () => playAreaStore.handleContextMenu({}, undefined, 'none'))
+
 </script>
 
 <template>
-<div >
-  <div :style="`position: absolute; top: 100px; color: white; background:${playAreaStore.drawMode ? 'pink' : 'darkslategray'} `"
-       @click="drawModeToggleFunction">test
-  </div>
-  <div ref="contextMenuRef"
-       style="display: none; position: absolute; top: 0; left: 0; background: #888888; transform: translateX(-50%)">
-    <div style="cursor: pointer;" @click="addPointsToObject">add points</div>
-    <div style="cursor: pointer;" @click="removePointFromObject"
-         v-if="playAreaStore.targetedObject?.name === 'controlPoint'">remove point
+  <div>
+    <div
+      :style="`position: absolute; top: 100px; color: white; background:${playAreaStore.drawMode ? 'pink' : 'darkslategray'} `"
+      @click="drawModeToggleFunction">test
     </div>
-    <div style="cursor: pointer;" @click="objectDelete">delete object</div>
+    <div class="contextMenu" :style="contextMenuStyle" ref="contextMenuRef">
+      <div style="cursor: pointer;" @click="addPointsToObject">add points</div>
+      <div style="cursor: pointer;" @click="removePointFromObject"
+           v-if="playAreaStore.targetedObject?.name === 'controlPoint'">remove point
+      </div>
+      <div style="cursor: pointer;" @click="objectDelete">delete object</div>
+    </div>
   </div>
-</div>
 </template>
 
 <style scoped lang="scss">
-
+.contextMenu {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #888888;
+  transform: translateX(-50%)
+}
 </style>

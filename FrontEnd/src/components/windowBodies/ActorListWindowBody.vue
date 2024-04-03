@@ -19,7 +19,6 @@ const {list, containerProps, wrapperProps} = useVirtualList(
 )
 
 onMounted(async () => {
-  // @ts-ignore
   const actorsRes = (await rtFetch({
     route: `/api/actors/all`,
     method: 'GET',
