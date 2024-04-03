@@ -55,6 +55,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.shapes[this.currentDrawingId].object.add(newPoint)
       this.shapes[this.currentDrawingId].updateShape()
     },
+    // TODO: FOR THE LOVE OF ALL THAT IS HOLY REWRITE THIS
     handleContextMenu(position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) {
       if (!this.contextMenuRef) return
 

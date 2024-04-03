@@ -48,7 +48,6 @@ const mouse = new Vector2()
 // const currentDrawingId: string = ''
 let player: Mesh
 const groundSizes = [1000, 1000]
-const controlPoints = []
 
 const initGUI = () => {
   const panel = new GUI({width: 310})

@@ -1,18 +1,20 @@
 import * as THREE from 'three'
-import {Vector3} from 'three'
+import {Camera, Object3D, Renderer, Scene, Vector3} from 'three'
 import {addDragControls, getActivePlayer} from 'src/utils/CanvasUtils'
 
-export const hideNonVisibleLights = (scene, position, viewDistance = 400) => {
+export const hideNonVisibleLights = (scene: Scene, position: Vector3, viewDistance = 400) => {
   const lights = scene.getObjectsByProperty('name', 'sourceLight')
   const walls = scene.getObjectsByProperty('name', 'adjustableShape')
     .map((group) => group.children)
     .reduce((acc, cur) => [...acc, ...cur], []).filter((el) => el.name === 'Wall')
 
-  lights.reduce((acc, cur) => {
+  lights.forEach((cur) => {
     const raycaster = new THREE.Raycaster()
     const direction = new THREE.Vector3()
 
     const lightSource = scene.getObjectByProperty('name', `sourceLight-${cur.uuid}`)
+
+    if (!lightSource) return
 
     raycaster.firstHitOnly = true
     direction.subVectors(cur.position, position)
@@ -33,7 +35,7 @@ export const hideNonVisibleLights = (scene, position, viewDistance = 400) => {
   }, [])
 }
 
-const handleKeyNavigation = (event, scene) => {
+const handleKeyNavigation = (event: KeyboardEvent, scene: Scene) => {
   const player = getActivePlayer(scene)
   if (event.key === 'ArrowUp') {
     player.translateZ(-25)
@@ -48,7 +50,7 @@ const handleKeyNavigation = (event, scene) => {
   hideNonVisibleLights(scene, player.position)
 }
 
-const selectPlayer = (currentPlayer, scene) => {
+const selectPlayer = (currentPlayer: Object3D, scene: Scene) => {
   const otherPlayers = scene.getObjectsByProperty('name', 'player')
   otherPlayers.forEach((player) => {
     player.userData.selected = false
@@ -56,7 +58,7 @@ const selectPlayer = (currentPlayer, scene) => {
   currentPlayer.userData.selected = true
 }
 
-export const initCharacter = (scene, camera, renderer, location = new Vector3(25, 10, 25)) => {
+export const initCharacter = (scene: Scene, camera: Camera, renderer: Renderer, location = new Vector3(25, 10, 25)) => {
   const otherPlayers = scene.getObjectsByProperty('name', 'player')
   otherPlayers.forEach((player) => {
     player.userData.selected = false

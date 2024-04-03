@@ -47,10 +47,7 @@ const getSkills = (skills: Skill, actor: Actor) => {
 }
 
 const getResistance = (resistances: Resistance[] | MonsterResistance[]) =>
-  resistances.reduce((acc: string, cur: { value: string[] }) =>
-    `${acc} ${cur.value.join(', ')},`
-  , '')
-
+  resistances.reduce((acc: string, cur: Resistance | MonsterResistance) => `${acc} ${cur.value.join(', ')},`, '')
 
 </script>
 

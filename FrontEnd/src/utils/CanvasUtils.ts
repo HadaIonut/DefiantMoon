@@ -1,6 +1,13 @@
 import * as THREE from 'three'
-import {Camera, Scene, Vector3} from 'three'
+import {Camera, Object3D, Renderer, Scene, Vector3} from 'three'
+// @ts-ignore
 import {DragControls} from 'three/addons/controls/DragControls.js'
+
+export type DragControlsParams = {
+  primary: Object3D,
+  secondary?: Object3D,
+  onDragComplete?: (position: Vector3) => void
+}
 
 export const findLocationFromCoords = (x: number, y: number, camera: Camera, scene: Scene): Vector3 => {
   const reycaster = new THREE.Raycaster()
@@ -11,7 +18,7 @@ export const findLocationFromCoords = (x: number, y: number, camera: Camera, sce
   reycaster.setFromCamera(mouse, camera)
   const intersectedObjects = reycaster.intersectObjects(scene.children)
 
-  if (intersectedObjects.length === 0) return []
+  if (intersectedObjects.length === 0) return new Vector3()
   return new THREE.Vector3(intersectedObjects[0].point.x, 0, intersectedObjects[0].point.z)
 }
 
@@ -19,7 +26,7 @@ export const getRandomInt = (max: number) => {
   return Math.ceil(Math.random() * max) * (Math.round(Math.random()) ? 1 : -1)
 }
 
-export const addDragControls = (camera, renderer) => ({primary, secondary, onDragComplete}) => {
+export const addDragControls = (camera: Camera, renderer: Renderer) => ({primary, secondary, onDragComplete}: DragControlsParams) => {
   const controls = new DragControls([primary], camera, renderer.domElement)
 
   controls.addEventListener('drag', () => {
@@ -42,13 +49,14 @@ export const addDragControls = (camera, renderer) => ({primary, secondary, onDra
       secondary.position.set(primary.position.x, primary.position.y, primary.position.z)
     }
 
+    // @ts-ignore
     renderer.shadowMap.needsUpdate = true
 
     onDragComplete?.(primary.position)
   })
 }
 
-export const getActivePlayer = (scene) => {
+export const getActivePlayer = (scene: Scene) => {
   const player = scene.getObjectsByProperty('name', 'player')
   return player.filter((player) => player.userData.selected)[0]
 }

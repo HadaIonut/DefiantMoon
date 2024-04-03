@@ -1,6 +1,6 @@
 import {rtFetch} from './fetchOverRTC'
 import {parse} from 'dice-parsering-library'
-import {RolledDamageEntry, TraitAction} from 'types/Actors'
+import {RolledDamageEntry, TraitAction} from 'src/types/Actors'
 import {ParseResultType} from 'dice-parsering-library/dist/types'
 
 const rollTraitAction = (trait: TraitAction): string => {

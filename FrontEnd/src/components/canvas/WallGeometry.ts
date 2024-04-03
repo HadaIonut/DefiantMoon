@@ -1,8 +1,23 @@
-import {BufferGeometry, Float32BufferAttribute, QuadraticBezierCurve3, Vector2, Vector3} from 'three'
+import {BufferGeometry, CatmullRomCurve3, Float32BufferAttribute, Vector2, Vector3} from 'three'
 
+export type WallParameters = {
+  path: CatmullRomCurve3,
+  tubularSegments: number,
+  radius: number,
+  radialSegments: number,
+  closed: boolean,
+}
+
+// eslint-disable-next-line require-jsdoc
 export class WallGeometry extends BufferGeometry {
+  public parameters?: WallParameters
+  public tangents: Vector3[]
+  public normals: Vector3[]
+  public binormals: Vector3[]
+
+  // eslint-disable-next-line require-jsdoc
   constructor(
-    path,
+    path:CatmullRomCurve3,
     tubularSegments = 64,
     radius = 1,
     heightMultiplier = 10,
@@ -11,6 +26,7 @@ export class WallGeometry extends BufferGeometry {
   ) {
     super()
 
+    // @ts-ignore
     this.type = 'WallGeometry'
 
     this.parameters = {
@@ -38,10 +54,10 @@ export class WallGeometry extends BufferGeometry {
 
     // buffer
 
-    const vertices = []
-    const normals = []
-    const uvs = []
-    const indices = []
+    const vertices: number[] = []
+    const normals: number[] = []
+    const uvs: number[] = []
+    const indices: number[] = []
 
     // create buffer data
 
@@ -56,6 +72,7 @@ export class WallGeometry extends BufferGeometry {
 
     // functions
 
+    // eslint-disable-next-line require-jsdoc
     function generateBufferData() {
       for (let i = 0; i < tubularSegments; i++) {
         generateSegment(i)
@@ -78,7 +95,8 @@ export class WallGeometry extends BufferGeometry {
       generateIndices()
     }
 
-    function generateSegment(i) {
+    // eslint-disable-next-line require-jsdoc
+    function generateSegment(i:number) {
       // we use getPointAt to sample evenly distributed points from the given path
 
       P = path.getPointAt(i / tubularSegments, P)
@@ -113,6 +131,7 @@ export class WallGeometry extends BufferGeometry {
       }
     }
 
+    // eslint-disable-next-line require-jsdoc
     function generateIndices() {
       for (let j = 1; j <= tubularSegments; j++) {
         for (let i = 1; i <= radialSegments; i++) {
@@ -129,6 +148,7 @@ export class WallGeometry extends BufferGeometry {
       }
     }
 
+    // eslint-disable-next-line require-jsdoc
     function generateUVs() {
       for (let i = 0; i <= tubularSegments; i++) {
         for (let j = 0; j <= radialSegments; j++) {
@@ -141,7 +161,7 @@ export class WallGeometry extends BufferGeometry {
     }
   }
 
-  copy(source) {
+  copy(source: WallGeometry) {
     super.copy(source)
 
     this.parameters = Object.assign({}, source.parameters)
@@ -149,6 +169,7 @@ export class WallGeometry extends BufferGeometry {
     return this
   }
 
+  // eslint-disable-next-line require-jsdoc
   toJSON() {
     const data = super.toJSON()
 

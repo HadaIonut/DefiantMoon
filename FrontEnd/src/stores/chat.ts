@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {ChatMessage} from 'types/ChatMessage'
+import {ChatMessage} from 'src/types/ChatMessage'
 
 type ChatStore = {
  chat: ChatMessage[]
