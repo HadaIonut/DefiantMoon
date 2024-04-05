@@ -1,19 +1,30 @@
 import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
-import {Ref} from 'vue'
+import {Mesh, PointLight, Scene, Vector3} from 'three'
+
+type CanvasLightProperties = {
+  position: Vector3,
+  distance: number,
+  intensity: number,
+  decay: number,
+  color: number,
+  castShadow: boolean,
+  name: string,
+  cubeName: string,
+  cubeId: string,
+}
 
 type PlayAreaStore = {
   drawMode: boolean
   currentDrawingId: string,
-  shapes: {
-    [key: string]: any
-  }
+  shapes: Record<string, any>
   targetedObject?: DraggablePoint
   contextMenu: {
     top?: number,
     left?: number,
     display?: string,
   }
+  canvasLights: Record<string, CanvasLightProperties>
 }
 
 export type PositionObject = {
@@ -28,6 +39,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       currentDrawingId: '',
       shapes: {},
       contextMenu: {},
+      canvasLights: {},
     }
   },
   actions: {
@@ -66,6 +78,25 @@ export const usePlayAreaStore = defineStore('playArea', {
       if (targetedObject) this.setTargetObject(targetedObject)
       this.contextMenu.top = position.top
       this.contextMenu.left = position.left
+    },
+    addLightToScene(light: PointLight, cube: Mesh, scene: Scene) {
+      scene.add(light)
+      this.canvasLights[light.uuid] = {
+        castShadow: light.castShadow,
+        decay: light.decay,
+        distance: light.distance,
+        intensity: light.intensity,
+        color: light.color.getHex(),
+        name: light.name,
+        position: light.position,
+        cubeId: cube.uuid,
+        cubeName: cube.name,
+      }
+    },
+  },
+  getters: {
+    getLightProps: (state) => (id?: string): CanvasLightProperties | void => {
+      if (id) return state.canvasLights[id]
     },
   },
 })

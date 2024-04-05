@@ -58,7 +58,12 @@ const initGUI = () => {
   }
   panel.add(settings, 'enable rotation').onChange((newValue) => controls.enableRotate = newValue)
   panel.add(settings, 'wall tension', 0, 1, 0.1).onChange((newValue) => wallTension.value = newValue)
-  panel.addColor(settings, 'light color', 0xffffff).onChange((newValue) => lightColor.value = newValue)
+  panel.addColor(settings, 'light color', 0xffffff).onChange((newValue) => {
+    Object.keys(playAreaStore.canvasLights).forEach((key) => {
+      playAreaStore.canvasLights[key].color = newValue
+    })
+    lightColor.value = newValue
+  })
 }
 
 const initGround = () => {
@@ -149,10 +154,10 @@ const initCanvas = () => {
 
   initGround()
   for (let i = 0; i < 10; i++) {
-    spawnLight({x: getRandomInt(10) * 25, y: 10, z: getRandomInt(10) * 25})
+    spawnLight(new Vector3(getRandomInt(10) * 25, 10, getRandomInt(10) * 25))
   }
 
-  spawnLight({x: 75, y: 10, z: 25})
+  spawnLight(new Vector3(75, 10, 25))
 }
 
 const animate = () => {

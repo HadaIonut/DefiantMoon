@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import {hideNonVisibleLights} from './characterController'
 import {Ref, watch} from 'vue'
 import {addDragControls, getActivePlayer} from 'src/utils/CanvasUtils'
@@ -10,8 +9,15 @@ import {
   PointLightHelper,
   Renderer,
   Scene,
-  SphereGeometry,
+  SphereGeometry, Vector3,
 } from 'three'
+import {usePlayAreaStore} from 'src/stores/PlayArea'
+
+type LightLocation = {
+  x: number
+  y: number
+  z: number
+}
 
 export const updateAllLightsShadowCasting = (scene: Scene) => {
   const lights = scene.getObjectsByProperty('type', 'PointLight')
@@ -26,38 +32,42 @@ const shouldCastShadow = (light: PointLight, scene: Scene) => {
   return walls.reduce((acc, cur) => acc || cur.position.distanceTo(light.position) < light.distance, false)
 }
 
-export const initLights = (scene:Scene, lightColor:Ref<number>, camera: Camera, renderer:Renderer) => ({x, y, z}: {x: number, y: number, z:number}) => {
-  const geometry = new SphereGeometry(20)
-  geometry.computeBoundsTree()
-  const material = new MeshBasicMaterial({color: 'orange'})
-  const cube = new Mesh(geometry, material)
-  cube.position.set(x, y, z)
-  cube.castShadow = false
-  cube.name = 'sourceLight'
-  scene.add(cube)
+export const initLights = (scene: Scene, lightColor: number, camera: Camera, renderer: Renderer) =>
+  (position: Vector3, intensity = 1000, distance = 300, decay = 1, lightId?: string) => {
+    const playAreaStore = usePlayAreaStore()
+    const lightProps = playAreaStore.getLightProps(lightId)
 
-  const light = new PointLight(lightColor.value, 1000, 500, 1)
-  light.position.set(x, y, z)
-  light.distance = 300
-  light.castShadow = shouldCastShadow(light, scene)
-  light.name = `sourceLight-${cube.uuid}`
+    const geometry = new SphereGeometry(20)
+    geometry.computeBoundsTree()
+    const material = new MeshBasicMaterial({color: 'orange'})
+    const cube = new Mesh(geometry, material)
+    cube.position.copy(lightProps?.position ?? position)
+    cube.castShadow = false
+    cube.name = lightProps?.cubeName ?? 'sourceLight'
+    if (lightProps?.cubeId) cube.uuid = lightProps.cubeId
+    scene.add(cube)
 
-  scene.add(light)
+    const light = new PointLight(lightColor, intensity, distance, decay)
+    light.position.copy(position)
+    light.castShadow = shouldCastShadow(light, scene)
+    light.name = `sourceLight-${cube.uuid}`
 
-  const helper = new PointLightHelper(light)
-  scene.add(helper)
+    playAreaStore.addLightToScene(light, cube, scene)
 
-  addDragControls(camera, renderer)({
-    primary: cube, secondary: light, onDragComplete: () => {
-      const player = getActivePlayer(scene)
-      console.log(player.position)
-      hideNonVisibleLights(scene, player.position)
-      console.log('drag complete')
-      light.castShadow = shouldCastShadow(light, scene)
-    },
-  })
+    const helper = new PointLightHelper(light)
+    scene.add(helper)
 
-  watch(lightColor, (newValue) => {
-    light.color.set(newValue)
-  })
-}
+    addDragControls(camera, renderer)({
+      primary: cube, secondary: light, onDragComplete: () => {
+        const player = getActivePlayer(scene)
+        hideNonVisibleLights(scene, player.position)
+        light.castShadow = shouldCastShadow(light, scene)
+      },
+    })
+
+    playAreaStore.$subscribe((mutation) => {
+      if (mutation.events.key !== 'color') return
+
+      light.color.set(mutation.events.newValue)
+    })
+  }
