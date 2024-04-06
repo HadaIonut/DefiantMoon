@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
-import {Mesh, PointLight, Scene, Vector3} from 'three'
+import {MathUtils, PointLight, Vector3} from 'three'
 
 type CanvasLightProperties = {
   position: Vector3,
@@ -8,10 +8,11 @@ type CanvasLightProperties = {
   intensity: number,
   decay: number,
   color: number,
-  castShadow: boolean,
-  name: string,
-  cubeName: string,
-  cubeId: string,
+  // castShadow: boolean,
+  // name: string,
+  // indicatorName: string,
+  indicatorId: string,
+  type: 'light'
 }
 
 type PlayAreaStore = {
@@ -79,24 +80,32 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.contextMenu.top = position.top
       this.contextMenu.left = position.left
     },
-    addLightToScene(light: PointLight, cube: Mesh, scene: Scene) {
-      scene.add(light)
-      this.canvasLights[light.uuid] = {
-        castShadow: light.castShadow,
-        decay: light.decay,
-        distance: light.distance,
-        intensity: light.intensity,
-        color: light.color.getHex(),
-        name: light.name,
-        position: light.position,
-        cubeId: cube.uuid,
-        cubeName: cube.name,
+    addLightToScene({
+      decay = 1,
+      distance = 300,
+      intensity = 1000,
+      color = 0xffffff,
+      position,
+      indicatorId = MathUtils.generateUUID(),
+    }: CanvasLightProperties) {
+      this.canvasLights[MathUtils.generateUUID()] = {
+        decay: decay,
+        distance: distance,
+        intensity: intensity,
+        color: color,
+        position: position,
+        indicatorId: indicatorId,
+        type: 'light',
       }
+    },
+    updateLightLocation(light: PointLight, newPosition: Vector3) {
+      this.canvasLights[light.uuid].position = newPosition
     },
   },
   getters: {
-    getLightProps: (state) => (id?: string): CanvasLightProperties | void => {
-      if (id) return state.canvasLights[id]
+    getLightProps: (state) => (id: string): CanvasLightProperties=> {
+      return state.canvasLights[id]
     },
   },
+  persist: true,
 })

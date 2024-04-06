@@ -6,7 +6,7 @@ import {useI18n} from 'vue-i18n'
 import {DropdownOption} from 'src/types/Dropdown'
 import {UserRequest} from 'src/types/users'
 import {useUsersStore} from 'src/stores/users'
-import {initWebRTCClient, rtFetch} from 'src/utils/fetchOverRTC'
+import {rtFetch} from 'src/utils/fetchOverRTC'
 
 const players = ref<DropdownOption[]>([])
 const loginData = ref<LoginRequest>({username: '', password: ''})
@@ -17,7 +17,6 @@ const {t} = useI18n()
 
 onMounted(async () => {
   usersStore.clearUser()
-  await initWebRTCClient('server')
 
   const usersRes = await rtFetch({
     route: '/api/users',

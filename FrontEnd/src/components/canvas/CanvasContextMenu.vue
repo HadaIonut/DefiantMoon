@@ -3,6 +3,8 @@
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {computed, ref} from 'vue'
 import {onClickOutside} from '@vueuse/core'
+import {getRandomInt} from 'src/utils/CanvasUtils'
+import {Vector3} from 'three'
 
 const playAreaStore = usePlayAreaStore()
 
@@ -12,6 +14,12 @@ const contextMenuRef = ref(null)
 const drawModeToggleFunction = (event: MouseEvent) => {
   event.stopPropagation()
   playAreaStore.toggleDrawMode()
+}
+
+const addRandomLight = () => {
+  playAreaStore.addLightToScene({
+    position: new Vector3(getRandomInt(500), 10, getRandomInt(500)),
+  })
 }
 
 const objectDelete = () => {
@@ -54,7 +62,11 @@ onClickOutside(contextMenuRef, () => playAreaStore.handleContextMenu({}, undefin
   <div>
     <div
       :style="`position: absolute; top: 100px; color: white; background:${playAreaStore.drawMode ? 'pink' : 'darkslategray'} `"
-      @click="drawModeToggleFunction">test
+      @click="drawModeToggleFunction">wall draw
+    </div>
+    <div
+      :style="`position: absolute; top: 120px; color: white; background:${playAreaStore.drawMode ? 'pink' : 'darkslategray'} `"
+      @click="addRandomLight">add random light
     </div>
     <div class="contextMenu" :style="contextMenuStyle" ref="contextMenuRef">
       <div style="cursor: pointer;" @click="addPointsToObject">add points</div>

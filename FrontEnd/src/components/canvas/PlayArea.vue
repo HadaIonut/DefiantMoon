@@ -20,7 +20,7 @@ import {findLocationFromCoords, getRandomInt} from 'src/utils/CanvasUtils'
 import {hideNonVisibleLights, initCharacter} from './characterController'
 import {adjustableShape, createPoint} from 'src/components/canvas/adjustableShape'
 import Stats from 'three/examples/jsm/libs/stats.module'
-import {initLights} from 'src/components/canvas/lightController'
+import {canvasSpawnLight, initLights} from 'src/components/canvas/lightController'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
@@ -41,7 +41,7 @@ const playAreaStore = usePlayAreaStore()
 
 const enableRotation = false
 const wallTension = ref(0)
-const lightColor = ref(0xffffff)
+// const lightColor = ref(0xffffff)
 // const drawMode = ref(false)
 
 const mouse = new Vector2()
@@ -62,7 +62,7 @@ const initGUI = () => {
     Object.keys(playAreaStore.canvasLights).forEach((key) => {
       playAreaStore.canvasLights[key].color = newValue
     })
-    lightColor.value = newValue
+    // lightColor.value = newValue
   })
 }
 
@@ -149,15 +149,23 @@ const initCanvas = () => {
   })
   initCharacter(scene, camera, renderer)
   player = initCharacter(scene, camera, renderer, new Vector3(100, 10, 100))
-
-  const spawnLight = initLights(scene, lightColor, camera, renderer)
-
   initGround()
-  for (let i = 0; i < 10; i++) {
-    spawnLight(new Vector3(getRandomInt(10) * 25, 10, getRandomInt(10) * 25))
-  }
 
-  spawnLight(new Vector3(75, 10, 25))
+  Object.keys(playAreaStore.canvasLights).forEach((key) => {
+    canvasSpawnLight(scene, camera, renderer, key)
+  })
+
+  // for (let i = 0; i < 10; i++) {
+  //   spawnLight(new Vector3(getRandomInt(10) * 25, 10, getRandomInt(10) * 25))
+  // }
+  //
+  // spawnLight(new Vector3(75, 10, 25))
+
+  playAreaStore.$subscribe((mutation) => {
+    if (mutation.events?.newValue?.type === 'light' && mutation?.events?.type === 'add') {
+      canvasSpawnLight(scene, camera, renderer, mutation.events.key)
+    }
+  })
 }
 
 const animate = () => {
