@@ -155,16 +155,14 @@ const initCanvas = () => {
     canvasSpawnLight(scene, camera, renderer, key)
   })
 
-  // for (let i = 0; i < 10; i++) {
-  //   spawnLight(new Vector3(getRandomInt(10) * 25, 10, getRandomInt(10) * 25))
-  // }
-  //
-  // spawnLight(new Vector3(75, 10, 25))
-
   playAreaStore.$subscribe((mutation) => {
-    if (mutation.events?.newValue?.type === 'light' && mutation?.events?.type === 'add') {
-      canvasSpawnLight(scene, camera, renderer, mutation.events.key)
-    }
+    const parsedMutation = Array.isArray(mutation) ? mutation : [mutation]
+
+    parsedMutation.forEach((mutation) => {
+      if (mutation.events?.newValue?.type === 'light' && mutation?.events?.type === 'add') {
+        canvasSpawnLight(scene, camera, renderer, mutation.events.key)
+      }
+    })
   })
 }
 

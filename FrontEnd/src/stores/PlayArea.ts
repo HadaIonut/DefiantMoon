@@ -8,11 +8,17 @@ type CanvasLightProperties = {
   intensity: number,
   decay: number,
   color: number,
-  // castShadow: boolean,
-  // name: string,
-  // indicatorName: string,
   indicatorId: string,
   type: 'light'
+}
+
+type CanvasLightParams = {
+  position: Vector3,
+  distance?: number,
+  intensity?: number,
+  decay?: number,
+  color?: number,
+  indicatorId?: string,
 }
 
 type PlayAreaStore = {
@@ -87,7 +93,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       color = 0xffffff,
       position,
       indicatorId = MathUtils.generateUUID(),
-    }: CanvasLightProperties) {
+    }: CanvasLightParams) {
       this.canvasLights[MathUtils.generateUUID()] = {
         decay: decay,
         distance: distance,
