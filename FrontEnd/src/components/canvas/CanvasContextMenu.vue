@@ -39,11 +39,9 @@ const addPointsToObject = () => {
 const removePointFromObject = () => {
   const workingShapeId = playAreaStore.targetedObject?.parent?.uuid
   if (!workingShapeId) return
+  if (!playAreaStore.targetedObject) return
 
-  const workingShape = playAreaStore.shapes[workingShapeId]
-  playAreaStore.targetedObject?.removeFromParent()
-  workingShape.updateShape()
-  playAreaStore.handleContextMenu({})
+  playAreaStore.removePointFromShape(playAreaStore.targetedObject?.position, workingShapeId)
 }
 
 const contextMenuStyle = computed(() => {
@@ -65,7 +63,7 @@ onClickOutside(contextMenuRef, () => playAreaStore.handleContextMenu({}, undefin
       @click="drawModeToggleFunction">wall draw
     </div>
     <div
-      :style="`position: absolute; top: 120px; color: white; background:${playAreaStore.drawMode ? 'pink' : 'darkslategray'} `"
+      :style="`position: absolute; top: 120px; color: white; background: darkslategray `"
       @click="addRandomLight">add random light
     </div>
     <div class="contextMenu" :style="contextMenuStyle" ref="contextMenuRef">

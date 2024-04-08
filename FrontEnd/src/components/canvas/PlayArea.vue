@@ -117,34 +117,12 @@ const initCanvas = () => {
     newValue.addEventListener('click', (event) => {
       if (!playAreaStore.drawMode) return
       const clickLocation = findLocationFromCoords(event.clientX, event.clientY, camera, scene)
-      const newPoint = createPoint(clickLocation, scene)
 
-      if (!playAreaStore.shapes[playAreaStore.currentDrawingId]) {
-        const [updateShape, extrudeMesh, object] = adjustableShape({
-          scene,
-          controls,
-          rayCaster,
-          originPoint: newPoint,
-          plane,
-          mouse,
-          tension: wallTension,
-          filled: false,
-          closed: false,
-          concaveHull: false,
-          renderer,
-          handleContextMenu: playAreaStore.handleContextMenu,
-          onDragComplete: () => {
-            hideNonVisibleLights(scene, player.position)
-          },
-        })
-        playAreaStore.setDrawingId(object.uuid)
-        playAreaStore.setCurrentShape({
-          object,
-          updateShape,
-          extrudeMesh,
-        })
+      if (!playAreaStore.canvasWalls[playAreaStore.currentDrawingId]) {
+        playAreaStore.createNewWall(clickLocation, 0, false, false, false)
+        return
       }
-      playAreaStore.addPointToCurrentShape(newPoint)
+      playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
     })
   })
   initCharacter(scene, camera, renderer)
@@ -155,12 +133,41 @@ const initCanvas = () => {
     canvasSpawnLight(scene, camera, renderer, key)
   })
 
-  playAreaStore.$subscribe((mutation) => {
-    const parsedMutation = Array.isArray(mutation) ? mutation : [mutation]
+  Object.keys(playAreaStore.canvasWalls).forEach((key) => {
+    adjustableShape({
+      id: key,
+      scene,
+      controls,
+      rayCaster,
+      plane,
+      mouse,
+      renderer,
+      handleContextMenu: playAreaStore.handleContextMenu,
+      onDragComplete: () => {
+        hideNonVisibleLights(scene, player.position)
+      },
+    })
+  })
 
-    parsedMutation.forEach((mutation) => {
-      if (mutation.events?.newValue?.type === 'light' && mutation?.events?.type === 'add') {
-        canvasSpawnLight(scene, camera, renderer, mutation.events.key)
+  playAreaStore.$subscribe(({events}) => {
+    const parsedEvents = Array.isArray(events) ? events : [events]
+    parsedEvents.forEach((event) => {
+      if (event?.newValue?.type === 'light' && event?.type === 'add') {
+        canvasSpawnLight(scene, camera, renderer, event.key)
+      } else if (event?.newValue?.type === 'wall' && event?.type === 'add') {
+        adjustableShape({
+          id: event.key,
+          scene,
+          controls,
+          rayCaster,
+          plane,
+          mouse,
+          renderer,
+          handleContextMenu: playAreaStore.handleContextMenu,
+          onDragComplete: () => {
+            hideNonVisibleLights(scene, player.position)
+          },
+        })
       }
     })
   })

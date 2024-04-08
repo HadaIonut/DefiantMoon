@@ -1,6 +1,8 @@
 import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
 import {MathUtils, PointLight, Vector3} from 'three'
+import {toRaw} from 'vue'
+import {pointsAreEqual} from 'src/utils/CanvasUtils'
 
 type CanvasLightProperties = {
   position: Vector3,
@@ -21,6 +23,15 @@ type CanvasLightParams = {
   indicatorId?: string,
 }
 
+type CanvasWallProperties = {
+  controlPoints: Vector3[],
+  tension: number,
+  filled: boolean,
+  closed: boolean,
+  concaveHull: boolean,
+  type: 'wall'
+}
+
 type PlayAreaStore = {
   drawMode: boolean
   currentDrawingId: string,
@@ -32,6 +43,7 @@ type PlayAreaStore = {
     display?: string,
   }
   canvasLights: Record<string, CanvasLightProperties>
+  canvasWalls: Record<string, CanvasWallProperties>
 }
 
 export type PositionObject = {
@@ -47,6 +59,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       shapes: {},
       contextMenu: {},
       canvasLights: {},
+      canvasWalls: {},
     }
   },
   actions: {
@@ -58,6 +71,9 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.targetedObject = newValue
     },
     deleteTargetObject() {
+      if (!this?.targetedObject?.parent) return
+
+      delete this.canvasWalls[this.targetedObject.parent.uuid]
       this.targetedObject?.parent?.removeFromParent?.()
     },
     addPointsToObject() {
@@ -65,16 +81,6 @@ export const usePlayAreaStore = defineStore('playArea', {
         this.drawMode = true
         this.currentDrawingId = this.targetedObject?.parent?.uuid ?? ''
       }, 0)
-    },
-    setCurrentShape(value: any) {
-      this.shapes[this.currentDrawingId] = value
-    },
-    setDrawingId(id: string) {
-      this.currentDrawingId = id
-    },
-    addPointToCurrentShape(newPoint: DraggablePoint) {
-      this.shapes[this.currentDrawingId].object.add(newPoint)
-      this.shapes[this.currentDrawingId].updateShape()
     },
     handleContextMenu(position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) {
       if (visibility) this.contextMenu.display = visibility
@@ -106,6 +112,29 @@ export const usePlayAreaStore = defineStore('playArea', {
     },
     updateLightLocation(light: PointLight, newPosition: Vector3) {
       this.canvasLights[light.uuid].position = newPosition
+    },
+    createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean) {
+      this.currentDrawingId = MathUtils.generateUUID()
+      this.canvasWalls[this.currentDrawingId] = {
+        controlPoints: [originPoint],
+        tension,
+        closed,
+        concaveHull,
+        filled,
+        type: 'wall',
+      }
+    },
+    addPointToShape(point: Vector3, shapeId: string) {
+      this.canvasWalls[shapeId].controlPoints = [...this.canvasWalls[shapeId].controlPoints.map((el) => toRaw(el)), point]
+    },
+    removePointFromShape(point: Vector3, shapeId: string) {
+      const filteredPoints = this.canvasWalls[shapeId].controlPoints.filter((controlPoint) => {
+        return !pointsAreEqual(controlPoint, point)
+      }).map((el) => toRaw(el))
+      this.$patch((state) => {
+        state.contextMenu = {}
+        state.canvasWalls[shapeId].controlPoints = filteredPoints
+      })
     },
   },
   getters: {

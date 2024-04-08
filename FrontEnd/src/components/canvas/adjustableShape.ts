@@ -14,25 +14,20 @@ import {
   Vector2,
   Vector3,
 } from 'three'
-import {Ref, watch} from 'vue'
 import concaveman from 'concaveman'
 import {WallGeometry} from './WallGeometry'
 import {updateAllLightsShadowCasting} from './lightController'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {PositionObject} from 'src/stores/PlayArea'
+import {PositionObject, usePlayAreaStore} from 'src/stores/PlayArea'
 
 export type AdjustableShapeInput = {
+  id: string,
   scene: Scene,
   controls: OrbitControls,
   rayCaster: Raycaster,
-  originPoint: DraggablePoint,
   plane: Plane,
   mouse: Vector2,
-  tension: Ref<number>,
   renderer: Renderer,
-  filled: boolean,
-  closed: boolean,
-  concaveHull: boolean,
   handleContextMenu: (position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) => void,
   onDragComplete: () => void,
 }
@@ -52,7 +47,7 @@ const createCenterPoint = (controlPoints: DraggablePoint[], scene: Scene) => {
   return createPoint(findCenterOfObject(points), scene, 'blue', 'centerPoint')
 }
 
-const createCurveGeometry = (controlPoints: DraggablePoint[], tension: Ref<number>, centralPoint: DraggablePoint, concaveHull: boolean, closed: boolean) => {
+const createCurveGeometry = (controlPoints: DraggablePoint[], tension: number, centralPoint: DraggablePoint, concaveHull: boolean, closed: boolean) => {
   let pts: number[][] = []
   let vectorPoints: Vector3[] = []
   const curveGeometry = new BufferGeometry()
@@ -69,7 +64,7 @@ const createCurveGeometry = (controlPoints: DraggablePoint[], tension: Ref<numbe
 
   if (vectorPoints.length <= 1) return {curveGeometry, curve: new CatmullRomCurve3()}
 
-  const curve = new CatmullRomCurve3(vectorPoints, false, 'catmullrom', tension.value)
+  const curve = new CatmullRomCurve3(vectorPoints, false, 'catmullrom', tension)
   // @ts-ignore
   curveGeometry.vertices = curve.getPoints(75)
   curveGeometry.translate(0, 1, 0)
@@ -91,23 +86,23 @@ export const createPoint = (position: Vector3, scene: Scene, color = 'white', ob
   return view
 }
 export const adjustableShape = ({
+  id,
   scene,
   controls,
   rayCaster,
-  originPoint,
   plane,
   mouse,
-  tension,
   renderer,
-  filled = true,
-  closed = false,
-  concaveHull = true,
   handleContextMenu,
   onDragComplete,
-}: AdjustableShapeInput): [() => void, () => void, Group] => {
+}: AdjustableShapeInput) => {
+  const playAreaStore = usePlayAreaStore()
+  const {controlPoints: controlPointVectors, closed, concaveHull, filled, tension} = playAreaStore.canvasWalls[id]
+  const controlPoints = controlPointVectors.map((vect) => createPoint(vect, scene))
+
   const shapeGroup: Group = new Group()
-  shapeGroup.add(originPoint)
-  let controlPoints: DraggablePoint[] = shapeGroup.children.filter((child) => child.name === 'controlPoint')
+  shapeGroup.add(...controlPoints)
+  shapeGroup.uuid = id
 
   const centralPoint = createCenterPoint(controlPoints, scene)
 
@@ -134,15 +129,15 @@ export const adjustableShape = ({
   shapeGroup.add(curveLine)
   shapeGroup.add(centralPoint)
 
-  watch(tension, () => {
-    if (controlPoints.length === 0) return
-    const curveObj = createCurveGeometry(controlPoints, tension, centralPoint, concaveHull, closed)
-    curveGeometry = curveObj.curveGeometry
-    curve = curveObj.curve
-    curveLine.geometry.dispose()
-    curveLine.geometry = curveGeometry
-    extrudeMesh()
-  })
+  // watch(tension, () => {
+  //   if (controlPoints.length === 0) return
+  //   const curveObj = createCurveGeometry(controlPoints, tension, centralPoint, concaveHull, closed)
+  //   curveGeometry = curveObj.curveGeometry
+  //   curve = curveObj.curve
+  //   curveLine.geometry.dispose()
+  //   curveLine.geometry = curveGeometry
+  //   extrudeMesh()
+  // }) //TODO move to store watcher
 
   shapeMesh.castShadow = true
   shapeMesh.name = 'Wall'
@@ -156,9 +151,8 @@ export const adjustableShape = ({
   }
 
   const updateShape = () => {
-    controlPoints = shapeGroup.children.filter((child) => child.name === 'controlPoint')
-
     if (controlPoints.length === 1) return
+
     const curveObj = createCurveGeometry(controlPoints, tension, centralPoint, concaveHull, closed)
     curveGeometry = curveObj.curveGeometry
     curve = curveObj.curve
@@ -261,7 +255,7 @@ export const adjustableShape = ({
 
       const moveDelta = new Vector3().subVectors(newObjectPosition, oldObjectPosition)
 
-      controlPoints.forEach((point, index) => {
+      controlPoints.forEach((point) => {
         point.position.setY(25).add(moveDelta)
       })
 
@@ -282,6 +276,22 @@ export const adjustableShape = ({
   window.addEventListener('mousemove', onMouseMove, false)
   window.addEventListener('contextmenu', (event) => event.preventDefault(), false)
 
-  return [updateShape, extrudeMesh, shapeGroup]
+  playAreaStore.$subscribe(({events}) => {
+    const parsedEvents = Array.isArray(events) ? events : [events]
+    console.log(events)
+    parsedEvents.forEach((event) => {
+      if (event.type === 'set' && event.key === 'controlPoints' && playAreaStore.currentDrawingId === shapeGroup.uuid) {
+        const startPoint = event.oldValue.length
+        const endPoint = event.newValue.length
+        console.log('removed')
+        for (let i = startPoint; i < endPoint; i++) {
+          const newPoint = createPoint(event.newValue[i], scene)
+          shapeGroup.add(newPoint)
+          controlPoints.push(newPoint)
+        }
+        updateShape()
+      }
+    })
+  })
 }
 

@@ -60,3 +60,7 @@ export const getActivePlayer = (scene: Scene) => {
   const player = scene.getObjectsByProperty('name', 'player')
   return player.filter((player) => player.userData.selected)[0]
 }
+
+export const pointsAreEqual = (controlPoint: Vector3, point: Vector3) => {
+  return (controlPoint.x === point.x && controlPoint.y === point.y && controlPoint.z === point.z)
+}
