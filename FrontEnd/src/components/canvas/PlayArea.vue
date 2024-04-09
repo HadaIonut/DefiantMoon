@@ -125,6 +125,7 @@ const initCanvas = () => {
       playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
     })
   })
+
   initCharacter(scene, camera, renderer)
   player = initCharacter(scene, camera, renderer, new Vector3(100, 10, 100))
   initGround()

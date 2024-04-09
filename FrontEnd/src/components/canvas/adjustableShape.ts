@@ -226,13 +226,14 @@ export const adjustableShape = ({
   }
 
   const onMouseUp = (event: MouseEvent) => {
-    controls.enableRotate = false
-    dragObject = null
-    if (dragging) {
+    if (dragging && dragObject) {
       updateAllLightsShadowCasting(scene)
       // @ts-ignore
       renderer.shadowMap.autoUpdate = false
+      playAreaStore.updatePointLocation(dragObject?.uuid, shapeGroup.uuid, dragObject?.position)
     }
+    controls.enableRotate = false
+    dragObject = null
     dragging = false
 
     onDragComplete()
@@ -282,7 +283,6 @@ export const adjustableShape = ({
 
   playAreaStore.$subscribe(({events}) => {
     const parsedEvents = Array.isArray(events) ? events : [events]
-    console.log(events)
     parsedEvents.forEach((event) => {
       if (event.key === 'contextMenu' || event.key === 'display' || event.key === 'drawMode') return
 

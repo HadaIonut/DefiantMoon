@@ -55,6 +55,8 @@ export const canvasSpawnLight = (scene: Scene, camera: Camera, renderer: Rendere
 
   const helper = new PointLightHelper(light)
   scene.add(helper)
+  // @ts-ignore
+  renderer.shadowMap.needsUpdate = true
 
   addDragControls(camera, renderer)({
     primary: indicator, secondary: light, onDragComplete: (newPosition: Vector3) => {

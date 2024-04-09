@@ -135,10 +135,9 @@ export const usePlayAreaStore = defineStore('playArea', {
     },
     removePointFromShape(pointId: string, shapeId: string) {
       delete this.canvasWalls[shapeId].controlPoints[pointId]
-      // this.$patch((state) => {
-      //   state.contextMenu = {}
-      //   state.canvasWalls[shapeId].controlPoints = filteredPoints
-      // })
+    },
+    updatePointLocation(pointId: string, shapeId: string, newLocation: Vector3) {
+      this.canvasWalls[shapeId].controlPoints[pointId].position = newLocation
     },
   },
   getters: {
