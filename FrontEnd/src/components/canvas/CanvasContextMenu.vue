@@ -40,8 +40,8 @@ const removePointFromObject = () => {
   const workingShapeId = playAreaStore.targetedObject?.parent?.uuid
   if (!workingShapeId) return
   if (!playAreaStore.targetedObject) return
-
-  playAreaStore.removePointFromShape(playAreaStore.targetedObject?.position, workingShapeId)
+  playAreaStore.removePointFromShape(playAreaStore.targetedObject?.uuid, workingShapeId)
+  playAreaStore.handleContextMenu({})
 }
 
 const contextMenuStyle = computed(() => {

@@ -4,7 +4,7 @@ import {
   BufferGeometry, CatmullRomCurve3, DoubleSide, ExtrudeGeometry,
   Group,
   Line,
-  LineBasicMaterial,
+  LineBasicMaterial, MathUtils,
   Mesh,
   MeshBasicMaterial, Object3D,
   Plane,
@@ -44,7 +44,10 @@ const findCenterOfObject = (points: Vector3[]) => {
 const createCenterPoint = (controlPoints: DraggablePoint[], scene: Scene) => {
   const points = controlPoints.reduce((acc: Vector3[], cur) => [...acc, cur.position], [])
 
-  return createPoint(findCenterOfObject(points), scene, 'blue', 'centerPoint')
+  return createPoint([
+    MathUtils.generateUUID(),
+    findCenterOfObject(points),
+  ], scene, 'blue', 'centerPoint')
 }
 
 const createCurveGeometry = (controlPoints: DraggablePoint[], tension: number, centralPoint: DraggablePoint, concaveHull: boolean, closed: boolean) => {
@@ -75,12 +78,13 @@ const createCurveGeometry = (controlPoints: DraggablePoint[], tension: number, c
   return {curveGeometry, curve}
 }
 
-export const createPoint = (position: Vector3, scene: Scene, color = 'white', objectName = 'controlPoint'): DraggablePoint => {
+export const createPoint = ([uuid, position]: [string, Vector3], scene: Scene, color = 'white', objectName = 'controlPoint'): DraggablePoint => {
   const viewGeometry = new BoxGeometry(15, 50, 15, 1, 3, 1)
   viewGeometry.translate(0, .75, 0)
   const viewMaterial = new MeshBasicMaterial({color: color, wireframe: false, transparent: true, opacity: .5})
   const view = new Mesh(viewGeometry, viewMaterial)
   view.position.copy(position)
+  view.uuid = uuid
   view.name = objectName
   scene.add(view)
   return view
@@ -98,7 +102,7 @@ export const adjustableShape = ({
 }: AdjustableShapeInput) => {
   const playAreaStore = usePlayAreaStore()
   const {controlPoints: controlPointVectors, closed, concaveHull, filled, tension} = playAreaStore.canvasWalls[id]
-  const controlPoints = controlPointVectors.map((vect) => createPoint(vect, scene))
+  let controlPoints = Object.entries(controlPointVectors).map((vect) => createPoint([vect[0], vect[1].position], scene))
 
   const shapeGroup: Group = new Group()
   shapeGroup.add(...controlPoints)
@@ -280,15 +284,17 @@ export const adjustableShape = ({
     const parsedEvents = Array.isArray(events) ? events : [events]
     console.log(events)
     parsedEvents.forEach((event) => {
-      if (event.type === 'set' && event.key === 'controlPoints' && playAreaStore.currentDrawingId === shapeGroup.uuid) {
-        const startPoint = event.oldValue.length
-        const endPoint = event.newValue.length
-        console.log('removed')
-        for (let i = startPoint; i < endPoint; i++) {
-          const newPoint = createPoint(event.newValue[i], scene)
-          shapeGroup.add(newPoint)
-          controlPoints.push(newPoint)
-        }
+      if (event.key === 'contextMenu' || event.key === 'display' || event.key === 'drawMode') return
+
+      if (event.type === 'add' && event.newValue.type === 'controlPoint' && playAreaStore.currentDrawingId === shapeGroup.uuid) {
+        const newPoint = createPoint([event.key, event.newValue.position], scene)
+        shapeGroup.add(newPoint)
+        controlPoints.push(newPoint)
+        updateShape()
+      }
+      if (event.type === 'delete' && event.oldValue.type === 'controlPoint' && playAreaStore.targetedObject?.parent?.uuid === shapeGroup.uuid) {
+        shapeGroup.children.find((el) => el.uuid === event.key)?.removeFromParent()
+        controlPoints = controlPoints.filter((point) => point.uuid !== event.key)
         updateShape()
       }
     })

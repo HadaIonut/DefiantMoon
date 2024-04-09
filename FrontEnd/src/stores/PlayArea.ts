@@ -23,8 +23,14 @@ type CanvasLightParams = {
   indicatorId?: string,
 }
 
+export type ControlPoint = {
+  position: Vector3,
+  type: 'controlPoint'
+}
+
+
 type CanvasWallProperties = {
-  controlPoints: Vector3[],
+  controlPoints: Record<string, ControlPoint>,
   tension: number,
   filled: boolean,
   closed: boolean,
@@ -116,7 +122,7 @@ export const usePlayAreaStore = defineStore('playArea', {
     createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean) {
       this.currentDrawingId = MathUtils.generateUUID()
       this.canvasWalls[this.currentDrawingId] = {
-        controlPoints: [originPoint],
+        controlPoints: {[MathUtils.generateUUID()]: {position: originPoint, type: 'controlPoint'}},
         tension,
         closed,
         concaveHull,
@@ -125,16 +131,14 @@ export const usePlayAreaStore = defineStore('playArea', {
       }
     },
     addPointToShape(point: Vector3, shapeId: string) {
-      this.canvasWalls[shapeId].controlPoints = [...this.canvasWalls[shapeId].controlPoints.map((el) => toRaw(el)), point]
+      this.canvasWalls[shapeId].controlPoints[MathUtils.generateUUID()] = {position: point, type: 'controlPoint'}
     },
-    removePointFromShape(point: Vector3, shapeId: string) {
-      const filteredPoints = this.canvasWalls[shapeId].controlPoints.filter((controlPoint) => {
-        return !pointsAreEqual(controlPoint, point)
-      }).map((el) => toRaw(el))
-      this.$patch((state) => {
-        state.contextMenu = {}
-        state.canvasWalls[shapeId].controlPoints = filteredPoints
-      })
+    removePointFromShape(pointId: string, shapeId: string) {
+      delete this.canvasWalls[shapeId].controlPoints[pointId]
+      // this.$patch((state) => {
+      //   state.contextMenu = {}
+      //   state.canvasWalls[shapeId].controlPoints = filteredPoints
+      // })
     },
   },
   getters: {
