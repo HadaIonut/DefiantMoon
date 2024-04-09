@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, Ref, ref, watch} from 'vue'
+import {Ref, ref, watch} from 'vue'
 import * as THREE from 'three'
 import {
   Camera,
@@ -16,11 +16,11 @@ import {
 import GUI from 'three/examples/jsm/libs/lil-gui.module.min'
 import {acceleratedRaycast, computeBoundsTree, disposeBoundsTree} from 'three-mesh-bvh'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {findLocationFromCoords, getRandomInt} from 'src/utils/CanvasUtils'
-import {hideNonVisibleLights, initCharacter} from './characterController'
-import {adjustableShape, createPoint} from 'src/components/canvas/adjustableShape'
+import {findLocationFromCoords} from 'src/utils/CanvasUtils'
+import {handleKeyNavigation, hideNonVisibleLights, initCharacter} from './characterController'
+import {adjustableShape} from 'src/components/canvas/adjustableShape'
 import Stats from 'three/examples/jsm/libs/stats.module'
-import {canvasSpawnLight, initLights} from 'src/components/canvas/lightController'
+import {canvasSpawnLight} from 'src/components/canvas/lightController'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
@@ -41,12 +41,8 @@ const playAreaStore = usePlayAreaStore()
 
 const enableRotation = false
 const wallTension = ref(0)
-// const lightColor = ref(0xffffff)
-// const drawMode = ref(false)
 
 const mouse = new Vector2()
-// const currentDrawingId: string = ''
-let player: Mesh
 const groundSizes = [1000, 1000]
 
 const initGUI = () => {
@@ -125,10 +121,11 @@ const initCanvas = () => {
       playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
     })
   })
-
-  initCharacter(scene, camera, renderer)
-  player = initCharacter(scene, camera, renderer, new Vector3(100, 10, 100))
   initGround()
+
+  Object.keys(playAreaStore.canvasPlayers).forEach((playerId) => {
+    initCharacter(scene, camera, renderer, playerId)
+  })
 
   Object.keys(playAreaStore.canvasLights).forEach((key) => {
     canvasSpawnLight(scene, camera, renderer, key)
@@ -145,13 +142,16 @@ const initCanvas = () => {
       renderer,
       handleContextMenu: playAreaStore.handleContextMenu,
       onDragComplete: () => {
-        hideNonVisibleLights(scene, player.position)
+        if (!playAreaStore.getCurrentPlayerPosition) return
+
+        hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
       },
     })
   })
 
   playAreaStore.$subscribe(({events}) => {
     const parsedEvents = Array.isArray(events) ? events : [events]
+    console.log(events)
     parsedEvents.forEach((event) => {
       if (event?.newValue?.type === 'light' && event?.type === 'add') {
         canvasSpawnLight(scene, camera, renderer, event.key)
@@ -166,12 +166,22 @@ const initCanvas = () => {
           renderer,
           handleContextMenu: playAreaStore.handleContextMenu,
           onDragComplete: () => {
-            hideNonVisibleLights(scene, player.position)
+            if (!playAreaStore.getCurrentPlayerPosition) return
+
+            hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
           },
+        })
+      } else if (event.type === 'add' && event.newValue.type === 'player') {
+        initCharacter(scene, camera, renderer, event.key)
+      } else if (event.type === 'set' && event.key === 'isActive') {
+        scene.getObjectsByProperty('name', 'player').forEach((player) => {
+          player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
         })
       }
     })
   })
+
+  document.addEventListener('keydown', (event) => handleKeyNavigation(event, scene))
 }
 
 const animate = () => {

@@ -22,6 +22,10 @@ const addRandomLight = () => {
   })
 }
 
+const addRandomPlayer = () => {
+  playAreaStore.addPlayerToScene(new Vector3(getRandomInt(500), 10, getRandomInt(500)))
+}
+
 const objectDelete = () => {
   if (playAreaStore.targetedObject?.parent?.name === 'adjustableShape') playAreaStore.deleteTargetObject()
 
@@ -65,6 +69,10 @@ onClickOutside(contextMenuRef, () => playAreaStore.handleContextMenu({}, undefin
     <div
       :style="`position: absolute; top: 120px; color: white; background: darkslategray `"
       @click="addRandomLight">add random light
+    </div>
+    <div
+      :style="`position: absolute; top: 140px; color: white; background: darkslategray `"
+      @click="addRandomPlayer">add random player
     </div>
     <div class="contextMenu" :style="contextMenuStyle" ref="contextMenuRef">
       <div style="cursor: pointer;" @click="addPointsToObject">add points</div>

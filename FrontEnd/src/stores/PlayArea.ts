@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
-import {MathUtils, PointLight, Vector3} from 'three'
+import {MathUtils, Object3D, PointLight, Scene, Vector3} from 'three'
 import {toRaw} from 'vue'
 import {pointsAreEqual} from 'src/utils/CanvasUtils'
 
@@ -38,6 +38,12 @@ type CanvasWallProperties = {
   type: 'wall'
 }
 
+type CanvasPlayerProperties = {
+  position: Vector3,
+  isActive: boolean
+  type: 'player' | 'enemy'
+}
+
 type PlayAreaStore = {
   drawMode: boolean
   currentDrawingId: string,
@@ -50,6 +56,7 @@ type PlayAreaStore = {
   }
   canvasLights: Record<string, CanvasLightProperties>
   canvasWalls: Record<string, CanvasWallProperties>
+  canvasPlayers: Record<string, CanvasPlayerProperties>
 }
 
 export type PositionObject = {
@@ -66,6 +73,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       contextMenu: {},
       canvasLights: {},
       canvasWalls: {},
+      canvasPlayers: {},
     }
   },
   actions: {
@@ -116,6 +124,15 @@ export const usePlayAreaStore = defineStore('playArea', {
         type: 'light',
       }
     },
+    addPlayerToScene(position: Vector3) {
+      const playerId = MathUtils.generateUUID()
+      this.canvasPlayers[playerId] = {
+        isActive: true,
+        position,
+        type: 'player',
+      }
+      this.selectPlayer(playerId)
+    },
     updateLightLocation(light: PointLight, newPosition: Vector3) {
       this.canvasLights[light.uuid].position = newPosition
     },
@@ -139,10 +156,28 @@ export const usePlayAreaStore = defineStore('playArea', {
     updatePointLocation(pointId: string, shapeId: string, newLocation: Vector3) {
       this.canvasWalls[shapeId].controlPoints[pointId].position = newLocation
     },
+    updatePlayerLocation(playerId: string, newLocation: Vector3) {
+      this.canvasPlayers[playerId] = {
+        ...this.canvasPlayers[playerId],
+        position: newLocation,
+      }
+    },
+    selectPlayer(currentPlayerId: string) {
+      Object.keys(this.canvasPlayers).forEach((playerId) => {
+        this.canvasPlayers[playerId].isActive = false
+      })
+      this.canvasPlayers[currentPlayerId].isActive = true
+    },
   },
   getters: {
     getLightProps: (state) => (id: string): CanvasLightProperties=> {
       return state.canvasLights[id]
+    },
+    getCurrentPlayerPosition: (state) => {
+      const activeId = Object.entries(state.canvasPlayers).find(([key, value]) => value.isActive)
+      if (!activeId) return
+      const position = state.canvasPlayers[activeId[0]].position
+      return new Vector3(position.x, position.y, position.z)
     },
   },
   persist: true,
