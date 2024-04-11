@@ -1,4 +1,4 @@
-import {Vector3} from 'three'
+import {Vector2, Vector3} from 'three'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
 
 export type CanvasLightProperties = {
@@ -45,6 +45,8 @@ export type PlayAreaStore = {
     drawMode: boolean
     currentDrawingId: string,
     shapes: Record<string, any>
+    groundDimension: number
+    gridSize: number
     targetedObject?: DraggablePoint
     contextMenu: {
         top?: number,

@@ -1,12 +1,14 @@
 import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
-import {MathUtils, PointLight, Vector3} from 'three'
+import {MathUtils, PointLight, Vector2, Vector3} from 'three'
 import {CanvasLightParams, CanvasLightProperties, PlayAreaStore, PositionObject} from 'src/types/PlayerArea'
 export const usePlayAreaStore = defineStore('playArea', {
   state: (): PlayAreaStore => {
     return {
       drawMode: false,
       currentDrawingId: '',
+      groundDimension: 1000,
+      gridSize: 20,
       shapes: {},
       contextMenu: {},
       canvasLights: {},

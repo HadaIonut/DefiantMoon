@@ -18,7 +18,7 @@ import concaveman from 'concaveman'
 import {WallGeometry} from './WallGeometry'
 import {updateAllLightsShadowCasting} from './lightController'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {PositionObject, usePlayAreaStore} from 'src/stores/PlayArea'
+import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 export type AdjustableShapeInput = {
   id: string,

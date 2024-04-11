@@ -22,6 +22,7 @@ import {adjustableShape} from 'src/components/canvas/adjustableShape'
 import Stats from 'three/examples/jsm/libs/stats.module'
 import {canvasSpawnLight} from 'src/components/canvas/lightController'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {initGround} from 'src/components/canvas/groud'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
@@ -42,7 +43,6 @@ const playAreaStore = usePlayAreaStore()
 const enableRotation = false
 
 const mouse = new Vector2()
-const groundSizes = [1000, 1000]
 
 const initGUI = () => {
   const panel = new GUI({width: 310})
@@ -50,8 +50,16 @@ const initGUI = () => {
     'enable rotation': false,
     'wall tension': 0,
     'light color': 0xffffff,
+    'ground size': playAreaStore.groundDimension,
+    'grid size': playAreaStore.gridSize,
   }
-  panel.add(settings, 'enable rotation').onChange((newValue) => controls.enableRotate = newValue)
+  // panel.add(settings, 'enable rotation').onChange((newValue) => controls.enableRotate = newValue)
+  panel.add(settings, 'ground size', 0, 10000, 10).onChange((newValue) => {
+    playAreaStore.groundDimension = newValue
+  })
+  panel.add(settings, 'grid size', 0, 500, 1).onChange((newValue) => {
+    playAreaStore.gridSize = newValue
+  })
   panel.add(settings, 'wall tension', 0, 1, 0.1).onChange((newValue) => {
     Object.keys(playAreaStore.canvasWalls).forEach((key) => {
       playAreaStore.canvasWalls[key] = {
@@ -65,26 +73,6 @@ const initGUI = () => {
       playAreaStore.canvasLights[key].color = newValue
     })
   })
-}
-
-const initGround = () => {
-  const groundTexture = new THREE.TextureLoader().load('./map.jpg')
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(groundSizes[0], groundSizes[1]),
-    new THREE.MeshStandardMaterial({
-      map: groundTexture,
-      color: 0xffffff,
-      depthWrite: true,
-    }))
-  ground.rotateX(-Math.PI / 2)
-  ground.receiveShadow = true
-
-  scene.add(ground)
-  const size = 1000
-  const divisions = 20
-
-  const gridHelper = new THREE.GridHelper(size, divisions)
-  gridHelper.position.y += 5
-  scene.add(gridHelper)
 }
 
 const initCanvas = () => {
@@ -132,7 +120,7 @@ const initCanvas = () => {
       playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
     })
   })
-  initGround()
+  initGround(scene)
 
   Object.keys(playAreaStore.canvasPlayers).forEach((playerId) => {
     initCharacter(scene, camera, renderer, playerId)
