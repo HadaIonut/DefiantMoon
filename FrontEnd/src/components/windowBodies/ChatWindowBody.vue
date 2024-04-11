@@ -113,14 +113,14 @@ const catchEnterEvent = () => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   const keyboardModule = chatEditor.value.getQuill().getModule('keyboard')
   delete keyboardModule.bindings[13]
 
   catchImagePasteEvent()
   catchEnterEvent()
 
-  rtFetch({
+  await rtFetch({
     route: `/api/chat/messages?timestamp=${Date.now()}`,
     method: 'GET',
   }).then(({data}) => {
@@ -161,11 +161,11 @@ const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) =>
 
 useInfiniteScroll(
   messageDisplayArea,
-  () => {
+    async () => {
     const lastTimeStamp = chatStore.getLatestTimestamp()
     const scrollHeightBeforeAdd = messageDisplayArea.value.ps.element.scrollHeight
 
-    rtFetch({
+    await rtFetch({
       route: `/api/chat/messages?timestamp=${Number(lastTimeStamp)}`,
       method: 'GET',
     }).then(({data}) => {

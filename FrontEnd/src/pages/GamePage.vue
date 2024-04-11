@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import {onMounted} from 'vue'
+import {onBeforeMount, onMounted} from 'vue'
 import {useUsersStore} from 'src/stores/users'
 import {useWindowsStore} from 'src/stores/windows'
 import {WindowStore} from 'src/types/windows'
+import {initWebRTCClient} from "src/utils/fetchOverRTC";
 
 const usersStore = useUsersStore()
 const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state
 
-onMounted(() => {
-  usersStore.getWorldUsers()
+onBeforeMount(async () => {
+  await initWebRTCClient('server')
+
+  await usersStore.getWorldUsers()
 })
 </script>
 

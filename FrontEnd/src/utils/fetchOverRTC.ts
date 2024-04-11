@@ -12,23 +12,24 @@ import {
 import {getCookie, getRandomString, isArray, isFile, jsonToFormData, toBase64} from 'src/utils/utils'
 
 export let clientConnection: DataConnection
-export let usesWebRTC = false
+export let usesWebRTC
 export let myId: string = ''
 let connectedSocket: ConnectedSocket
 const responseWaitList: ResponseWaitList = {}
 let fileChunks: string[] = []
+let chunkCounter = 0
 const receiveChunks = async (data: string) => {
   const message: ChunkedData = JSON.parse(data)
-
   fileChunks[message.index] = message.data
 
-  if (message.total === message.index) {
+  if (message.total === chunkCounter) {
     const biteChunks: ArrayBuffer[] = []
     fileChunks.forEach((chunk) => biteChunks.push(Uint8Array.from(atob(chunk), (c) => c.charCodeAt(0))))
     const file = new Blob(biteChunks)
     handleDataChannel(await file.text())
     fileChunks = []
-  }
+    chunkCounter = 0
+  } else chunkCounter++
 }
 
 const formatBodyRTC = async (body: any, bodyType: string) => {
@@ -87,10 +88,8 @@ const axiosWrapper = (params: WebRTCRequest) => {
     data: formattedBody,
   })
 }
-export const rtFetch = (params: WebRTCRequest) => {
-  if (usesWebRTC) return sendMessage(params)
-
-  return axiosWrapper(params)
+export const rtFetch = async (params: WebRTCRequest) => {
+  return usesWebRTC.then(() => sendMessage(params)).catch(() => axiosWrapper(params))
 }
 const handleSocketCommunications = (data: SocketMessage) => {
   if (data.event === 'sys') {
@@ -153,7 +152,7 @@ export const initWebSocket = (socketRoute: string) => {
 }
 
 export const initWebRTCClient = (serverId: string) => {
-  return new Promise((resolve, reject) => {
+  usesWebRTC = new Promise((resolve, reject) => {
     const ClientPeer = new Peer({
       host: 'localhost',
       port: 9000,
@@ -174,13 +173,18 @@ export const initWebRTCClient = (serverId: string) => {
       clientConnection = ClientPeer.connect(serverId, {serialization: 'none', reliable: true})
 
       clientConnection.on('open', async () => {
-        usesWebRTC = true
-
         clientConnection.on('data', receiveChunks)
         clientConnection.on('error', console.error)
 
         resolve(true)
       })
+      clientConnection.on('error', (err) => {
+        reject(err)
+      })
+    })
+    ClientPeer.on('error', (err) => {
+      reject(err)
     })
   })
+  return usesWebRTC
 }
