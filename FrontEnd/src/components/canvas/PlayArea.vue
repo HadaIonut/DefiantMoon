@@ -3,7 +3,7 @@ import {Ref, ref, watch} from 'vue'
 import * as THREE from 'three'
 import {
   Camera,
-  Color, Mesh,
+  Color,
   OrthographicCamera,
   PCFSoftShadowMap,
   Plane,
@@ -40,7 +40,6 @@ document.body.appendChild(stats.dom)
 const playAreaStore = usePlayAreaStore()
 
 const enableRotation = false
-const wallTension = ref(0)
 
 const mouse = new Vector2()
 const groundSizes = [1000, 1000]
@@ -53,12 +52,18 @@ const initGUI = () => {
     'light color': 0xffffff,
   }
   panel.add(settings, 'enable rotation').onChange((newValue) => controls.enableRotate = newValue)
-  panel.add(settings, 'wall tension', 0, 1, 0.1).onChange((newValue) => wallTension.value = newValue)
+  panel.add(settings, 'wall tension', 0, 1, 0.1).onChange((newValue) => {
+    Object.keys(playAreaStore.canvasWalls).forEach((key) => {
+      playAreaStore.canvasWalls[key] = {
+        ...playAreaStore.canvasWalls[key],
+        tension: newValue,
+      }
+    })
+  })
   panel.addColor(settings, 'light color', 0xffffff).onChange((newValue) => {
     Object.keys(playAreaStore.canvasLights).forEach((key) => {
       playAreaStore.canvasLights[key].color = newValue
     })
-    // lightColor.value = newValue
   })
 }
 
@@ -105,6 +110,12 @@ const initCanvas = () => {
   controls.enableRotate = enableRotation
   controls.enabled = true
 
+  const handleDragComplete = () => {
+    if (!playAreaStore.getCurrentPlayerPosition) return
+
+    hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
+  }
+
   initGUI()
   // @ts-ignore
   watch(canvas, (newValue: HTMLElement) => {
@@ -140,12 +151,7 @@ const initCanvas = () => {
       plane,
       mouse,
       renderer,
-      handleContextMenu: playAreaStore.handleContextMenu,
-      onDragComplete: () => {
-        if (!playAreaStore.getCurrentPlayerPosition) return
-
-        hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
-      },
+      onDragComplete: handleDragComplete,
     })
   })
 
@@ -164,12 +170,7 @@ const initCanvas = () => {
           plane,
           mouse,
           renderer,
-          handleContextMenu: playAreaStore.handleContextMenu,
-          onDragComplete: () => {
-            if (!playAreaStore.getCurrentPlayerPosition) return
-
-            hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
-          },
+          onDragComplete: handleDragComplete,
         })
       } else if (event.type === 'add' && event.newValue.type === 'player') {
         initCharacter(scene, camera, renderer, event.key)

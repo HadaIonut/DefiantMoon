@@ -28,7 +28,6 @@ export type AdjustableShapeInput = {
   plane: Plane,
   mouse: Vector2,
   renderer: Renderer,
-  handleContextMenu: (position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) => void,
   onDragComplete: () => void,
 }
 
@@ -97,7 +96,6 @@ export const adjustableShape = ({
   plane,
   mouse,
   renderer,
-  handleContextMenu,
   onDragComplete,
 }: AdjustableShapeInput) => {
   const playAreaStore = usePlayAreaStore()
@@ -132,16 +130,6 @@ export const adjustableShape = ({
   shapeGroup.add(shapeMesh)
   shapeGroup.add(curveLine)
   shapeGroup.add(centralPoint)
-
-  // watch(tension, () => {
-  //   if (controlPoints.length === 0) return
-  //   const curveObj = createCurveGeometry(controlPoints, tension, centralPoint, concaveHull, closed)
-  //   curveGeometry = curveObj.curveGeometry
-  //   curve = curveObj.curve
-  //   curveLine.geometry.dispose()
-  //   curveLine.geometry = curveGeometry
-  //   extrudeMesh()
-  // }) //TODO move to store watcher
 
   shapeMesh.castShadow = true
   shapeMesh.name = 'Wall'
@@ -214,7 +202,7 @@ export const adjustableShape = ({
     }
     if (event.button === 2) {
       if (centralPointIntersection.length || controlPointsIntersection.length) {
-        handleContextMenu({
+        playAreaStore.handleContextMenu({
           top: event.clientY,
           left: event.clientX,
           // @ts-ignore
@@ -296,6 +284,14 @@ export const adjustableShape = ({
         shapeGroup.children.find((el) => el.uuid === event.key)?.removeFromParent()
         controlPoints = controlPoints.filter((point) => point.uuid !== event.key)
         updateShape()
+      }
+      if (event.type === 'set' && event.newValue.type === 'wall' && event.key === shapeGroup.uuid) {
+        const curveObj = createCurveGeometry(controlPoints, event.newValue.tension, centralPoint, concaveHull, closed)
+        curveGeometry = curveObj.curveGeometry
+        curve = curveObj.curve
+        curveLine.geometry.dispose()
+        curveLine.geometry = curveGeometry
+        extrudeMesh()
       }
     })
   })

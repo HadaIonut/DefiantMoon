@@ -1,69 +1,7 @@
 import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
-import {MathUtils, Object3D, PointLight, Scene, Vector3} from 'three'
-import {toRaw} from 'vue'
-import {pointsAreEqual} from 'src/utils/CanvasUtils'
-
-type CanvasLightProperties = {
-  position: Vector3,
-  distance: number,
-  intensity: number,
-  decay: number,
-  color: number,
-  indicatorId: string,
-  type: 'light'
-}
-
-type CanvasLightParams = {
-  position: Vector3,
-  distance?: number,
-  intensity?: number,
-  decay?: number,
-  color?: number,
-  indicatorId?: string,
-}
-
-export type ControlPoint = {
-  position: Vector3,
-  type: 'controlPoint'
-}
-
-
-type CanvasWallProperties = {
-  controlPoints: Record<string, ControlPoint>,
-  tension: number,
-  filled: boolean,
-  closed: boolean,
-  concaveHull: boolean,
-  type: 'wall'
-}
-
-type CanvasPlayerProperties = {
-  position: Vector3,
-  isActive: boolean
-  type: 'player' | 'enemy'
-}
-
-type PlayAreaStore = {
-  drawMode: boolean
-  currentDrawingId: string,
-  shapes: Record<string, any>
-  targetedObject?: DraggablePoint
-  contextMenu: {
-    top?: number,
-    left?: number,
-    display?: string,
-  }
-  canvasLights: Record<string, CanvasLightProperties>
-  canvasWalls: Record<string, CanvasWallProperties>
-  canvasPlayers: Record<string, CanvasPlayerProperties>
-}
-
-export type PositionObject = {
-  top?: number | string
-  left?: number | string
-}
-
+import {MathUtils, PointLight, Vector3} from 'three'
+import {CanvasLightParams, CanvasLightProperties, PlayAreaStore, PositionObject} from 'src/types/PlayerArea'
 export const usePlayAreaStore = defineStore('playArea', {
   state: (): PlayAreaStore => {
     return {
