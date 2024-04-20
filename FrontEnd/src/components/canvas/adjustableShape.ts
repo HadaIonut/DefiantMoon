@@ -57,6 +57,7 @@ const createCurveGeometry = (controlPoints: DraggablePoint[], tension: number, c
   controlPoints.forEach((pt) => {
     pts.push([pt.position.x, pt.position.z])
   })
+
   if (concaveHull) {
     pts = concaveman(pts, 1)
     if (!closed) pts.pop()
@@ -176,9 +177,6 @@ export const adjustableShape = ({
     shapeMesh.geometry = shapeGeometry
     updateAllLightsShadowCasting(scene)
   }
-  if (controlPoints.length !== 1) {
-    extrudeMesh()
-  }
   const onMouseDown = (event: MouseEvent) => {
     const controlPointsIntersection: DraggablePoint[] = rayCaster.intersectObjects(controlPoints) as unknown as DraggablePoint[]
     const centralPointIntersection: DraggablePoint[] = rayCaster.intersectObject(centralPoint) as unknown as DraggablePoint[]
@@ -212,13 +210,16 @@ export const adjustableShape = ({
       return false
     }
   }
-
   const onMouseUp = (event: MouseEvent) => {
     if (dragging && dragObject) {
       updateAllLightsShadowCasting(scene)
       // @ts-ignore
       renderer.shadowMap.autoUpdate = false
-      playAreaStore.updatePointLocation(dragObject?.uuid, shapeGroup.uuid, dragObject?.position)
+      if (dragObject.name === 'centerPoint') {
+        controlPoints.forEach((point) => {
+          playAreaStore.updatePointLocation(point.uuid, shapeGroup.uuid, point.position)
+        })
+      } else playAreaStore.updatePointLocation(dragObject?.uuid, shapeGroup.uuid, dragObject?.position)
     }
     controls.enableRotate = false
     dragObject = null
@@ -227,7 +228,6 @@ export const adjustableShape = ({
     onDragComplete()
     event.preventDefault()
   }
-
   const onMouseMove = (event: MouseEvent) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
@@ -262,6 +262,10 @@ export const adjustableShape = ({
       curveLine.geometry = curveGeometry
       extrudeMesh()
     }
+  }
+
+  if (controlPoints.length !== 1) {
+    extrudeMesh()
   }
 
   window.addEventListener('mousedown', onMouseDown, false)

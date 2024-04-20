@@ -161,7 +161,7 @@ const onPlayerLeft: WebsocketMessageCallback = ({user}: UserJoinOrLeftParams) =>
 
 useInfiniteScroll(
   messageDisplayArea,
-    async () => {
+  async () => {
     const lastTimeStamp = chatStore.getLatestTimestamp()
     const scrollHeightBeforeAdd = messageDisplayArea.value.ps.element.scrollHeight
 

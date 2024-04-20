@@ -149,9 +149,9 @@ const initCanvas = () => {
     parsedEvents.forEach((event) => {
       if (event?.newValue?.type === 'light' && event?.type === 'add') {
         canvasSpawnLight(scene, camera, renderer, event.key)
-      } else if (event.type === 'set' && event.key === 'currentDrawingId') {
+      } else if (event.type === 'add' && event.newValue.type === 'wall') {
         adjustableShape({
-          id: event.newValue,
+          id: event.key,
           scene,
           controls,
           rayCaster,
