@@ -53,7 +53,6 @@ const initGUI = () => {
     'ground size': playAreaStore.groundDimension,
     'grid size': playAreaStore.gridSize,
   }
-  // panel.add(settings, 'enable rotation').onChange((newValue) => controls.enableRotate = newValue)
   panel.add(settings, 'ground size', 0, 10000, 10).onChange((newValue) => {
     playAreaStore.groundDimension = newValue
   })
