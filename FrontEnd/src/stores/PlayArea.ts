@@ -37,6 +37,8 @@ export const usePlayAreaStore = defineStore('playArea', {
       }, 0)
     },
     handleContextMenu(position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) {
+      if (this.contextMenu.display === 'none' && Object.keys(position).length === 0) return
+
       if (visibility) this.contextMenu.display = visibility
       else {
         if (this.contextMenu.display === 'none') this.contextMenu.display = 'block'
@@ -74,7 +76,10 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.selectPlayer(playerId)
     },
     updateLightLocation(light: PointLight, newPosition: Vector3) {
-      this.canvasLights[light.uuid].position = newPosition
+      this.canvasLights[light.uuid] = {
+        ...this.canvasLights[light.uuid],
+        position: newPosition,
+      }
     },
     createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean) {
       this.currentDrawingId = MathUtils.generateUUID()
