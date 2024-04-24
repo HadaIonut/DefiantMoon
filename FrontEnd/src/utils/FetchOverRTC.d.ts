@@ -33,6 +33,7 @@ export type ConnectedSocket = {
 export type ChunkedData = {
   index: number,
   total: number,
+  transferId: string,
   data: string
 }
 export type ResponseWaitList = {

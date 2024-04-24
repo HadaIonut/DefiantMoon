@@ -5,6 +5,7 @@ const WebRTC = require('werift');
 const FileReader = require('filereader');
 const axios = require("axios");
 const FormData = require('form-data');
+const getRandomString = () => (Math.random() + 1).toString(36).substring(7)
 
 const polyfills = {fetch, WebSocket, WebRTC, FileReader};
 
@@ -36,23 +37,25 @@ ServerPeer.on('open', id => {
 
 const sendChunkedMessage = (message, connection) => {
   const file = new Blob([message], {type: 'text/plain'})
+  const transferId = getRandomString()
 
   file.arrayBuffer().then(buffer => {
     const chunkSize = 16 * 1024;
     let index = 0;
     const total = Math.floor(buffer.byteLength / chunkSize)
+    const stringified = btoa(
+      new Uint8Array(buffer)
+        .reduce((data, byte) => data + String.fromCharCode(byte), ''))
 
     while(buffer.byteLength) {
-      const chunk = buffer.slice(0, chunkSize);
-      const stringified = btoa(
-        new Uint8Array(chunk)
-          .reduce((data, byte) => data + String.fromCharCode(byte), ''))
+      const chunk = stringified.slice(chunkSize * 4 * index, chunkSize* 4 * (index + 1));
       buffer = buffer.slice(chunkSize, buffer.byteLength);
 
       connection.send(JSON.stringify({
         index,
         total,
-        data: stringified
+        transferId,
+        data: chunk
         }));
       index++
     }
