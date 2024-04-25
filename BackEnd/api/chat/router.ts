@@ -1,4 +1,3 @@
-import { Timestamp } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { Router } from "https://deno.land/x/oak@v11.1.0/router.ts";
 import { getCurrentUserId } from "../../auth/index.ts";
 import { getChatMessages, saveChatMessage } from "../../database/repos/chatMessages.ts";

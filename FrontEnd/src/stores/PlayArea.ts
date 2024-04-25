@@ -9,7 +9,6 @@ export const usePlayAreaStore = defineStore('playArea', {
       currentDrawingId: '',
       groundDimension: 1000,
       gridSize: 20,
-      shapes: {},
       contextMenu: {},
       canvasLights: {},
       canvasWalls: {},
@@ -82,8 +81,8 @@ export const usePlayAreaStore = defineStore('playArea', {
       }
     },
     createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean) {
-      this.currentDrawingId = MathUtils.generateUUID()
-      this.canvasWalls[this.currentDrawingId] = {
+      const newDrawingId = MathUtils.generateUUID()
+      this.canvasWalls[newDrawingId] = {
         controlPoints: {[MathUtils.generateUUID()]: {position: originPoint, type: 'controlPoint'}},
         tension,
         closed,
@@ -91,6 +90,7 @@ export const usePlayAreaStore = defineStore('playArea', {
         filled,
         type: 'wall',
       }
+      this.currentDrawingId = newDrawingId
     },
     addPointToShape(point: Vector3, shapeId: string) {
       this.canvasWalls[shapeId].controlPoints[MathUtils.generateUUID()] = {position: point, type: 'controlPoint'}

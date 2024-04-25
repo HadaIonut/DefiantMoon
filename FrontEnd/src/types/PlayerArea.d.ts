@@ -44,7 +44,6 @@ export type CanvasPlayerProperties = {
 export type PlayAreaStore = {
     drawMode: boolean
     currentDrawingId: string,
-    shapes: Record<string, any>
     groundDimension: number
     gridSize: number
     targetedObject?: DraggablePoint

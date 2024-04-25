@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import {onBeforeMount, onMounted} from 'vue'
+import {onBeforeMount} from 'vue'
 import {useUsersStore} from 'src/stores/users'
 import {useWindowsStore} from 'src/stores/windows'
 import {WindowStore} from 'src/types/windows'
 import {initWebRTCClient} from 'src/utils/fetchOverRTC'
+import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 
 const usersStore = useUsersStore()
+const canvasCollection = useCanvasCollectionStore()
 const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state
 
@@ -13,6 +15,7 @@ onBeforeMount(async () => {
   await initWebRTCClient('server')
 
   await usersStore.getWorldUsers()
+  await canvasCollection.getCanvasList()
 })
 </script>
 
