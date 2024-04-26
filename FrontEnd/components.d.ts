@@ -39,6 +39,7 @@ declare module '@vue/runtime-core' {
     RollResult: typeof import('./src/components/chatComponents/RollResult.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SceneSelection: typeof import('./src/components/SceneSelection.vue')['default']
     SimpleCloseActions: typeof import('./src/components/windowHeaderActions/SimpleCloseActions.vue')['default']
     SimpleRoll: typeof import('./src/components/chatComponents/SimpleRoll.vue')['default']
     SimpleWindowHeader: typeof import('./src/components/windowHeaders/SimpleWindowHeader.vue')['default']

@@ -25,6 +25,8 @@ onBeforeMount(async () => {
 
     <ActionsSidebar/>
 
+    <SceneSelection/>
+
     <div class="windows-container">
       <div v-auto-animate>
         <WindowComponent v-for="(window, key) in windowObject" :key="key" :windowData="window"

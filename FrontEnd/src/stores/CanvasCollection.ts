@@ -8,12 +8,14 @@ type CanvasName = {
 
 export type CanvasCollectionStore = {
   canvasList: CanvasName[]
+  active: string
 }
 
 export const useCanvasCollectionStore = defineStore('canvasCollection', {
   state: (): CanvasCollectionStore => {
     return {
       canvasList: [],
+      active: '',
     }
   },
   actions: {
@@ -22,6 +24,10 @@ export const useCanvasCollectionStore = defineStore('canvasCollection', {
         route: '/api/canvas',
         method: 'GET',
       })).data
+      this.active = this.canvasList[0].id
+    },
+    changeActiveCanvas(newId: string) {
+      this.active = newId
     },
   },
 })
