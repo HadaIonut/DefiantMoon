@@ -13,6 +13,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       canvasLights: {},
       canvasWalls: {},
       canvasPlayers: {},
+      id: '',
     }
   },
   actions: {
@@ -123,6 +124,15 @@ export const usePlayAreaStore = defineStore('playArea', {
       if (!activeId) return
       const position = state.canvasPlayers[activeId[0]].position
       return new Vector3(position.x, position.y, position.z)
+    },
+    getNetworkCanvas: (state) => {
+      return {
+        groundDimension: state.groundDimension,
+        gridSize: state.gridSize,
+        canvasLights: state.canvasLights,
+        canvasWalls: state.canvasWalls,
+        canvasPlayers: state.canvasPlayers,
+      }
     },
   },
   persist: true,

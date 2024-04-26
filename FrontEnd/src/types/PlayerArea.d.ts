@@ -55,6 +55,7 @@ export type PlayAreaStore = {
     canvasLights: Record<string, CanvasLightProperties>
     canvasWalls: Record<string, CanvasWallProperties>
     canvasPlayers: Record<string, CanvasPlayerProperties>
+    id: string
 }
 
 export type PositionObject = {

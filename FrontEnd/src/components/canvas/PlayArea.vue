@@ -23,6 +23,7 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import {canvasSpawnLight} from 'src/components/canvas/lightController'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {initGround} from 'src/components/canvas/groud'
+import {rtFetch} from 'src/utils/fetchOverRTC'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
@@ -186,6 +187,11 @@ playAreaStore.$subscribe((mutation) => {
           player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
         })
       }
+    })
+    rtFetch({
+      route: `/api/canvas/${playAreaStore.id}`,
+      method: 'PUT',
+      body: playAreaStore.getNetworkCanvas,
     })
   }
 })

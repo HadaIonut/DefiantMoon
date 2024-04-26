@@ -27,7 +27,7 @@ canvasRouter.post('/', async (context) => {
 })
 
 canvasRouter.put('/:canvasId', async (context) => {
-  const canvasData = context.request.body().value as unknown as Canvas
+  const canvasData = await context.request.body({type: 'json'}).value as unknown as Canvas
 
   await updateCanvas(new ObjectId(context.params.canvasId), canvasData)
   context.response.status = 200
