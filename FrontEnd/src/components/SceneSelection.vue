@@ -1,12 +1,28 @@
 <script setup lang="ts">
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 import {computed} from 'vue'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 const canvasCollectionStore = useCanvasCollectionStore()
+const playerAreaStore = usePlayAreaStore()
 
 const activeClass = computed(() => (currentId: string) => {
   return currentId === canvasCollectionStore.active ? 'marker-active' : 'marker-inactive'
 })
+
+const handleCanvasChange = async (newId: string) => {
+  const newCanvas = (await rtFetch({
+    route: `/api/canvas/${newId}`,
+    method: 'GET',
+  })).data
+
+  playerAreaStore.$patch((state) => {
+    Object.assign(state, newCanvas)
+  })
+
+  canvasCollectionStore.changeActiveCanvas(newId)
+}
 
 </script>
 
@@ -14,7 +30,7 @@ const activeClass = computed(() => (currentId: string) => {
   <div class="clickable selection-bar">
     <div class="element"
          v-for="canvas in canvasCollectionStore.canvasList"
-         :key="canvas.id" @click="() => canvasCollectionStore.changeActiveCanvas(canvas.id)">
+         :key="canvas.id" @click="() => handleCanvasChange(canvas.id)">
       {{canvas.name}}
       <span :class="`activity-marker ${activeClass(canvas.id)}`"/>
     </div>

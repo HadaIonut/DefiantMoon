@@ -44,6 +44,12 @@ const enableRotation = false
 
 const mouse = new Vector2()
 
+const handleDragComplete = () => {
+  if (!playAreaStore.getCurrentPlayerPosition) return
+
+  hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
+}
+
 const initGUI = () => {
   const panel = new GUI({width: 310})
   const settings = {
@@ -74,15 +80,12 @@ const initGUI = () => {
   })
 }
 
-const initCanvas = () => {
+const initEngine = () => {
   rayCaster = new Raycaster()
   plane = new Plane()
   plane.setFromCoplanarPoints(new Vector3(), new Vector3(1, 0, 0), new Vector3(0, 0, 1))
   camera = new OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 10000)
   camera.position.set(0, 700, 0)
-
-  scene = new Scene()
-  scene.background = new Color(0x333333)
 
   renderer = new WebGLRenderer({antialias: true})
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -96,12 +99,11 @@ const initCanvas = () => {
   controls = new OrbitControls(camera, renderer.domElement)
   controls.enableRotate = enableRotation
   controls.enabled = true
+}
 
-  const handleDragComplete = () => {
-    if (!playAreaStore.getCurrentPlayerPosition) return
-
-    hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
-  }
+const initCanvas = () => {
+  scene = new Scene()
+  scene.background = new Color(0x333333)
 
   initGUI()
   // @ts-ignore
@@ -141,10 +143,28 @@ const initCanvas = () => {
       onDragComplete: handleDragComplete,
     })
   })
+}
 
-  playAreaStore.$subscribe(({events}) => {
-    const parsedEvents = Array.isArray(events) ? events : [events]
-    console.log(events)
+const animate = () => {
+  stats.begin()
+  requestAnimationFrame(animate)
+
+  rayCaster.setFromCamera(mouse, camera)
+
+  renderer.render(scene, camera)
+  stats.end()
+}
+
+initEngine()
+initCanvas()
+animate()
+
+playAreaStore.$subscribe((mutation) => {
+  if (mutation.type === 'patch function') {
+    initCanvas()
+  }
+  if (mutation.type === 'direct') {
+    const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
     parsedEvents.forEach((event) => {
       if (event?.newValue?.type === 'light' && event?.type === 'add') {
         canvasSpawnLight(scene, camera, renderer, event.key)
@@ -167,23 +187,10 @@ const initCanvas = () => {
         })
       }
     })
-  })
+  }
+})
 
-  document.addEventListener('keydown', (event) => handleKeyNavigation(event, scene))
-}
-
-const animate = () => {
-  stats.begin()
-  requestAnimationFrame(animate)
-
-  rayCaster.setFromCamera(mouse, camera)
-
-  renderer.render(scene, camera)
-  stats.end()
-}
-
-initCanvas()
-animate()
+document.addEventListener('keydown', (event) => handleKeyNavigation(event, scene))
 
 </script>
 
