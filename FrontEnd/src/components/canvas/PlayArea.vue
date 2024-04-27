@@ -24,6 +24,9 @@ import {canvasSpawnLight} from 'src/components/canvas/lightController'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {initGround} from 'src/components/canvas/groud'
 import {rtFetch} from 'src/utils/fetchOverRTC'
+import {websocket} from 'src/websocket/websocket'
+import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
+import {useUsersStore} from 'src/stores/users'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
@@ -166,6 +169,7 @@ playAreaStore.$subscribe((mutation) => {
   }
   if (mutation.type === 'direct') {
     const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
+    console.log(parsedEvents)
     parsedEvents.forEach((event) => {
       if (event?.newValue?.type === 'light' && event?.type === 'add') {
         canvasSpawnLight(scene, camera, renderer, event.key)
@@ -197,7 +201,15 @@ playAreaStore.$subscribe((mutation) => {
 })
 
 document.addEventListener('keydown', (event) => handleKeyNavigation(event, scene))
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.SCENE_UPDATE, (message) => {
+  const userStore = useUsersStore()
 
+  if (message.source !== userStore.currentUser.id) {
+    playAreaStore.$patch((state) => {
+      Object.assign(state, message.data)
+    })
+  }
+})
 </script>
 
 <template>

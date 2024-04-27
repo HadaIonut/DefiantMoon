@@ -3,6 +3,7 @@ export enum WEBSOCKET_EMITABLE_EVENTS {
 }
 
 export enum WEBSOCKET_RECEIVABLE_EVENTS {
+    SCENE_UPDATE = 'scene/update',
     CHAT_MESSAGE = 'chat/message',
     CHAT_PLAYER_JOIN = 'chat/player-join',
     CHAT_PLAYER_LEFT = 'chat/player-left',

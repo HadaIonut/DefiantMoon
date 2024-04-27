@@ -100,7 +100,10 @@ export const usePlayAreaStore = defineStore('playArea', {
       delete this.canvasWalls[shapeId].controlPoints[pointId]
     },
     updatePointLocation(pointId: string, shapeId: string, newLocation: Vector3) {
-      this.canvasWalls[shapeId].controlPoints[pointId].position = newLocation
+      this.canvasWalls[shapeId].controlPoints[pointId] = {
+        ...this.canvasWalls[shapeId].controlPoints[pointId],
+        position: newLocation,
+      }
     },
     updatePlayerLocation(playerId: string, newLocation: Vector3) {
       this.canvasPlayers[playerId] = {
