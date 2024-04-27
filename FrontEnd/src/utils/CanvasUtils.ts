@@ -10,13 +10,13 @@ export type DragControlsParams = {
 }
 
 export const findLocationFromCoords = (x: number, y: number, camera: Camera, canvas: Scene): Vector3 => {
-  const reycaster = new THREE.Raycaster()
+  const raycaster = new THREE.Raycaster()
   const mouse = new THREE.Vector2()
   mouse.x = (x / window.innerWidth) * 2 - 1
   mouse.y = -(y / window.innerHeight) * 2 + 1
 
-  reycaster.setFromCamera(mouse, camera)
-  const intersectedObjects = reycaster.intersectObjects(canvas.children)
+  raycaster.setFromCamera(mouse, camera)
+  const intersectedObjects = raycaster.intersectObjects(canvas.children)
 
   if (intersectedObjects.length === 0) return new Vector3()
   return new THREE.Vector3(intersectedObjects[0].point.x, 0, intersectedObjects[0].point.z)
@@ -24,6 +24,25 @@ export const findLocationFromCoords = (x: number, y: number, camera: Camera, can
 
 export const getRandomInt = (max: number) => {
   return Math.ceil(Math.random() * max) * (Math.round(Math.random()) ? 1 : -1)
+}
+
+const handleDraggedEvent = ({primary, secondary, onDragComplete}: DragControlsParams) => {
+  const grid = 50
+  const halfGrd = grid / 2
+  primary.position.set(
+    Math.round((primary.position.x + halfGrd) / grid) * grid - halfGrd,
+    primary.position.y,
+    Math.round((primary.position.z + halfGrd) / grid) * grid - halfGrd,
+  )
+
+  if (secondary) {
+    secondary.position.set(primary.position.x, primary.position.y, primary.position.z)
+  }
+
+  // @ts-ignore
+  renderer.shadowMap.needsUpdate = true
+
+  onDragComplete?.(primary.position)
 }
 
 export const addDragControls = (camera: Camera, renderer: Renderer) => ({primary, secondary, onDragComplete}: DragControlsParams) => {
@@ -36,24 +55,7 @@ export const addDragControls = (camera: Camera, renderer: Renderer) => ({primary
     }
   })
 
-  controls.addEventListener('dragend', () => {
-    const grid = 50
-    const halfGrd = grid / 2
-    primary.position.set(
-      Math.round((primary.position.x + halfGrd) / grid) * grid - halfGrd,
-      primary.position.y,
-      Math.round((primary.position.z + halfGrd) / grid) * grid - halfGrd,
-    )
-
-    if (secondary) {
-      secondary.position.set(primary.position.x, primary.position.y, primary.position.z)
-    }
-
-    // @ts-ignore
-    renderer.shadowMap.needsUpdate = true
-
-    onDragComplete?.(primary.position)
-  })
+  controls.addEventListener('dragend', () => handleDraggedEvent({primary, secondary, onDragComplete}))
 }
 
 export const getActivePlayer = (canvas: Scene) => {
