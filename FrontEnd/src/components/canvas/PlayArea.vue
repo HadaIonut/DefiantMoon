@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Ref, ref, watch} from 'vue'
+import {onMounted, Ref, ref, toRaw, watch} from 'vue'
 import * as THREE from 'three'
 import {
   Camera,
@@ -27,6 +27,7 @@ import {rtFetch} from 'src/utils/fetchOverRTC'
 import {websocket} from 'src/websocket/websocket'
 import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
 import {useUsersStore} from 'src/stores/users'
+import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
@@ -53,7 +54,6 @@ const handleDragComplete = () => {
 
   hideNonVisibleLights(scene, playAreaStore.getCurrentPlayerPosition)
 }
-
 const initGUI = () => {
   const panel = new GUI({width: 310})
   const settings = {
@@ -83,7 +83,6 @@ const initGUI = () => {
     })
   })
 }
-
 const initEngine = () => {
   rayCaster = new Raycaster()
   plane = new Plane()
@@ -104,7 +103,6 @@ const initEngine = () => {
   controls.enableRotate = enableRotation
   controls.enabled = true
 }
-
 const initCanvas = () => {
   scene = new Scene()
   scene.background = new Color(0x333333)
@@ -148,7 +146,6 @@ const initCanvas = () => {
     })
   })
 }
-
 const animate = () => {
   stats.begin()
   requestAnimationFrame(animate)
@@ -158,59 +155,66 @@ const animate = () => {
   renderer.render(scene, camera)
   stats.end()
 }
+const subscribeToStore = () => {
+  playAreaStore.$subscribe((mutation) => {
+    if (mutation.type === 'patch function') {
+      initCanvas()
+    }
+    if (mutation.type === 'direct') {
+      const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
+      console.log(parsedEvents)
+      parsedEvents.forEach((event) => {
+        if (event?.newValue?.type === 'light' && event?.type === 'add') {
+          canvasSpawnLight(scene, camera, renderer, event.key)
+        } else if (event.type === 'add' && event.newValue.type === 'wall') {
+          adjustableShape({
+            id: event.key,
+            scene,
+            controls,
+            rayCaster,
+            plane,
+            mouse,
+            renderer,
+            onDragComplete: handleDragComplete,
+          })
+        } else if (event.type === 'add' && event.newValue.type === 'player') {
+          initCharacter(scene, camera, renderer, event.key)
+        } else if (event.type === 'set' && event.key === 'isActive') {
+          scene.getObjectsByProperty('name', 'player').forEach((player) => {
+            player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
+          })
+        }
+      })
+      rtFetch({
+        route: `/api/canvas/${playAreaStore.id}`,
+        method: 'PUT',
+        body: playAreaStore.getNetworkCanvas,
+      })
+    }
+  })
+}
+const subscribeToEvents = () => {
+  document.addEventListener('keydown', (event) => handleKeyNavigation(event, scene))
+  websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.SCENE_UPDATE, (message) => {
+    const userStore = useUsersStore()
+    const canvasCollectionStore = useCanvasCollectionStore()
 
-initEngine()
-initCanvas()
-animate()
+    if (message.source === userStore.currentUser.id) return
+    if (message.id !== canvasCollectionStore.active) return
 
-playAreaStore.$subscribe((mutation) => {
-  if (mutation.type === 'patch function') {
-    initCanvas()
-  }
-  if (mutation.type === 'direct') {
-    const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
-    console.log(parsedEvents)
-    parsedEvents.forEach((event) => {
-      if (event?.newValue?.type === 'light' && event?.type === 'add') {
-        canvasSpawnLight(scene, camera, renderer, event.key)
-      } else if (event.type === 'add' && event.newValue.type === 'wall') {
-        adjustableShape({
-          id: event.key,
-          scene,
-          controls,
-          rayCaster,
-          plane,
-          mouse,
-          renderer,
-          onDragComplete: handleDragComplete,
-        })
-      } else if (event.type === 'add' && event.newValue.type === 'player') {
-        initCharacter(scene, camera, renderer, event.key)
-      } else if (event.type === 'set' && event.key === 'isActive') {
-        scene.getObjectsByProperty('name', 'player').forEach((player) => {
-          player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
-        })
-      }
-    })
-    rtFetch({
-      route: `/api/canvas/${playAreaStore.id}`,
-      method: 'PUT',
-      body: playAreaStore.getNetworkCanvas,
-    })
-  }
-})
-
-document.addEventListener('keydown', (event) => handleKeyNavigation(event, scene))
-websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.SCENE_UPDATE, (message) => {
-  const userStore = useUsersStore()
-
-  if (message.source !== userStore.currentUser.id) {
     // TODO maybe re-rendering the entire scene very time an item is moved is a stupid ass idea
     playAreaStore.$patch((state) => {
       Object.assign(state, message.data)
     })
-  }
-})
+  })
+}
+
+initEngine()
+initCanvas()
+animate()
+subscribeToEvents()
+subscribeToStore()
+
 </script>
 
 <template>

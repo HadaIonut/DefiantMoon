@@ -2,7 +2,7 @@
 import {initWebSocket} from 'src/utils/fetchOverRTC'
 
 const ws = initWebSocket('/api/websocket')
-const WEBSOCKET_DEBUG = true
+const WEBSOCKET_DEBUG = false
 const eventsMap: WebsocketEvents = {}
 
 ws.onopen = () => {
