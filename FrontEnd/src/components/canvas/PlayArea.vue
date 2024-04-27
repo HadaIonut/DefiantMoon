@@ -205,6 +205,7 @@ websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.SCENE_UPDATE, (message) =
   const userStore = useUsersStore()
 
   if (message.source !== userStore.currentUser.id) {
+    // TODO maybe re-rendering the entire scene very time an item is moved is a stupid ass idea
     playAreaStore.$patch((state) => {
       Object.assign(state, message.data)
     })
