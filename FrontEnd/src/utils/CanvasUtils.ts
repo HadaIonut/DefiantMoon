@@ -9,14 +9,14 @@ export type DragControlsParams = {
   onDragComplete?: (position: Vector3) => void
 }
 
-export const findLocationFromCoords = (x: number, y: number, camera: Camera, scene: Scene): Vector3 => {
+export const findLocationFromCoords = (x: number, y: number, camera: Camera, canvas: Scene): Vector3 => {
   const reycaster = new THREE.Raycaster()
   const mouse = new THREE.Vector2()
   mouse.x = (x / window.innerWidth) * 2 - 1
   mouse.y = -(y / window.innerHeight) * 2 + 1
 
   reycaster.setFromCamera(mouse, camera)
-  const intersectedObjects = reycaster.intersectObjects(scene.children)
+  const intersectedObjects = reycaster.intersectObjects(canvas.children)
 
   if (intersectedObjects.length === 0) return new Vector3()
   return new THREE.Vector3(intersectedObjects[0].point.x, 0, intersectedObjects[0].point.z)
@@ -56,8 +56,8 @@ export const addDragControls = (camera: Camera, renderer: Renderer) => ({primary
   })
 }
 
-export const getActivePlayer = (scene: Scene) => {
-  const player = scene.getObjectsByProperty('name', 'player')
+export const getActivePlayer = (canvas: Scene) => {
+  const player = canvas.getObjectsByProperty('name', 'player')
   return player.filter((player) => player.userData.selected)[0]
 }
 

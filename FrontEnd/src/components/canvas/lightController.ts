@@ -12,20 +12,20 @@ import {
 } from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 
-export const updateAllLightsShadowCasting = (scene: Scene) => {
-  const lights = scene.getObjectsByProperty('type', 'PointLight')
+export const updateAllLightsShadowCasting = (canvas: Scene) => {
+  const lights = canvas.getObjectsByProperty('type', 'PointLight')
 
   lights.forEach((light) => {
-    light.castShadow = shouldCastShadow(light as PointLight, scene)
+    light.castShadow = shouldCastShadow(light as PointLight, canvas)
   })
 }
 
-const shouldCastShadow = (light: PointLight, scene: Scene) => {
-  const walls = scene.getObjectsByProperty('name', 'controlPoint')
+const shouldCastShadow = (light: PointLight, canvas: Scene) => {
+  const walls = canvas.getObjectsByProperty('name', 'controlPoint')
   return walls.reduce((acc, cur) => acc || cur.position.distanceTo(light.position) < light.distance, false)
 }
 
-const spawnLightIndicator = (position: Vector3, indicatorId: string | undefined, scene: Scene) => {
+const spawnLightIndicator = (position: Vector3, indicatorId: string | undefined, canvas: Scene) => {
   const geometry = new SphereGeometry(20)
   geometry.computeBoundsTree()
   const material = new MeshBasicMaterial({color: 'orange'})
@@ -34,35 +34,35 @@ const spawnLightIndicator = (position: Vector3, indicatorId: string | undefined,
   indicator.castShadow = false
   indicator.name = 'sourceLight'
   if (indicatorId) indicator.uuid = indicatorId
-  scene.add(indicator)
+  canvas.add(indicator)
 
   return indicator
 }
 
-export const canvasSpawnLight = (scene: Scene, camera: Camera, renderer: Renderer, lightId: string) => {
+export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Renderer, lightId: string) => {
   const playAreaStore = usePlayAreaStore()
   const {color, decay, distance, indicatorId, intensity, position} = playAreaStore.getLightProps(lightId)
 
-  const indicator = spawnLightIndicator(position, indicatorId, scene)
+  const indicator = spawnLightIndicator(position, indicatorId, canvas)
 
   const light = new PointLight(color, intensity, distance, decay)
   light.position.copy(position)
-  light.castShadow = shouldCastShadow(light, scene)
+  light.castShadow = shouldCastShadow(light, canvas)
   light.name = `sourceLight-${indicator.uuid}`
   if (lightId) light.uuid = lightId
 
-  scene.add(light)
+  canvas.add(light)
 
   const helper = new PointLightHelper(light)
-  scene.add(helper)
+  canvas.add(helper)
   // @ts-ignore
   renderer.shadowMap.needsUpdate = true
 
   addDragControls(camera, renderer)({
     primary: indicator, secondary: light, onDragComplete: (newPosition: Vector3) => {
-      const player = getActivePlayer(scene)
-      hideNonVisibleLights(scene, player.position)
-      light.castShadow = shouldCastShadow(light, scene)
+      const player = getActivePlayer(canvas)
+      hideNonVisibleLights(canvas, player.position)
+      light.castShadow = shouldCastShadow(light, canvas)
       playAreaStore.updateLightLocation(light, newPosition)
     },
   })

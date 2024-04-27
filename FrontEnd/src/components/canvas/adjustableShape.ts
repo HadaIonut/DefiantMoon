@@ -22,7 +22,7 @@ import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 export type AdjustableShapeInput = {
   id: string,
-  scene: Scene,
+  canvas: Scene,
   controls: OrbitControls,
   rayCaster: Raycaster,
   plane: Plane,
@@ -40,13 +40,13 @@ const findCenterOfObject = (points: Vector3[]) => {
   return new Vector3(xCenter, 0, zCenter)
 }
 
-const createCenterPoint = (controlPoints: DraggablePoint[], scene: Scene) => {
+const createCenterPoint = (controlPoints: DraggablePoint[], canvas: Scene) => {
   const points = controlPoints.reduce((acc: Vector3[], cur) => [...acc, cur.position], [])
 
   return createPoint([
     MathUtils.generateUUID(),
     findCenterOfObject(points),
-  ], scene, 'blue', 'centerPoint')
+  ], canvas, 'blue', 'centerPoint')
 }
 
 const createCurveGeometry = (controlPoints: DraggablePoint[], tension: number, centralPoint: DraggablePoint, concaveHull: boolean, closed: boolean) => {
@@ -78,7 +78,7 @@ const createCurveGeometry = (controlPoints: DraggablePoint[], tension: number, c
   return {curveGeometry, curve}
 }
 
-export const createPoint = ([uuid, position]: [string, Vector3], scene: Scene, color = 'white', objectName = 'controlPoint'): DraggablePoint => {
+export const createPoint = ([uuid, position]: [string, Vector3], canvas: Scene, color = 'white', objectName = 'controlPoint'): DraggablePoint => {
   const viewGeometry = new BoxGeometry(15, 50, 15, 1, 3, 1)
   viewGeometry.translate(0, .75, 0)
   const viewMaterial = new MeshBasicMaterial({color: color, wireframe: false, transparent: true, opacity: .5})
@@ -86,12 +86,12 @@ export const createPoint = ([uuid, position]: [string, Vector3], scene: Scene, c
   view.position.copy(position)
   view.uuid = uuid
   view.name = objectName
-  scene.add(view)
+  canvas.add(view)
   return view
 }
 export const adjustableShape = ({
   id,
-  scene,
+  canvas,
   controls,
   rayCaster,
   plane,
@@ -101,13 +101,13 @@ export const adjustableShape = ({
 }: AdjustableShapeInput) => {
   const playAreaStore = usePlayAreaStore()
   const {controlPoints: controlPointVectors, closed, concaveHull, filled, tension} = playAreaStore.canvasWalls[id]
-  let controlPoints = Object.entries(controlPointVectors).map((vect) => createPoint([vect[0], vect[1].position], scene))
+  let controlPoints = Object.entries(controlPointVectors).map((vect) => createPoint([vect[0], vect[1].position], canvas))
 
   const shapeGroup: Group = new Group()
   shapeGroup.add(...controlPoints)
   shapeGroup.uuid = id
 
-  const centralPoint = createCenterPoint(controlPoints, scene)
+  const centralPoint = createCenterPoint(controlPoints, canvas)
 
   const curveMaterial = new LineBasicMaterial({color: 'white'})
   let {curveGeometry, curve} = createCurveGeometry(controlPoints, tension, centralPoint, concaveHull, closed)
@@ -134,7 +134,7 @@ export const adjustableShape = ({
 
   shapeMesh.castShadow = true
   shapeMesh.name = 'Wall'
-  scene.add(shapeGroup)
+  canvas.add(shapeGroup)
 
   if (controlPoints.length !== 1) {
     // @ts-ignore
@@ -175,7 +175,7 @@ export const adjustableShape = ({
     shapeGeometry.translate(0, 0, 0)
     shapeMesh.geometry.dispose()
     shapeMesh.geometry = shapeGeometry
-    updateAllLightsShadowCasting(scene)
+    updateAllLightsShadowCasting(canvas)
   }
   const onMouseDown = (event: MouseEvent) => {
     const controlPointsIntersection: DraggablePoint[] = rayCaster.intersectObjects(controlPoints) as unknown as DraggablePoint[]
@@ -212,7 +212,7 @@ export const adjustableShape = ({
   }
   const onMouseUp = (event: MouseEvent) => {
     if (dragging && dragObject) {
-      updateAllLightsShadowCasting(scene)
+      updateAllLightsShadowCasting(canvas)
       // @ts-ignore
       renderer.shadowMap.autoUpdate = false
       if (dragObject.name === 'centerPoint') {
@@ -279,7 +279,7 @@ export const adjustableShape = ({
       if (event.key === 'contextMenu' || event.key === 'display' || event.key === 'drawMode') return
 
       if (event.type === 'add' && event.newValue.type === 'controlPoint' && playAreaStore.currentDrawingId === shapeGroup.uuid) {
-        const newPoint = createPoint([event.key, event.newValue.position], scene)
+        const newPoint = createPoint([event.key, event.newValue.position], canvas)
         shapeGroup.add(newPoint)
         controlPoints.push(newPoint)
         updateShape()

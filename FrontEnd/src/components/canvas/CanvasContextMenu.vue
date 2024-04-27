@@ -17,13 +17,13 @@ const drawModeToggleFunction = (event: MouseEvent) => {
 }
 
 const addRandomLight = () => {
-  playAreaStore.addLightToScene({
+  playAreaStore.addLightToCanvas({
     position: new Vector3(getRandomInt(500), 10, getRandomInt(500)),
   })
 }
 
 const addRandomPlayer = () => {
-  playAreaStore.addPlayerToScene(new Vector3(getRandomInt(500), 10, getRandomInt(500)))
+  playAreaStore.addPlayerToCanvas(new Vector3(getRandomInt(500), 10, getRandomInt(500)))
 }
 
 const objectDelete = () => {

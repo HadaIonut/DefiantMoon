@@ -49,7 +49,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.contextMenu.top = Number(position.top)
       this.contextMenu.left = Number(position.left)
     },
-    addLightToScene({
+    addLightToCanvas({
       decay = 1,
       distance = 300,
       intensity = 1000,
@@ -67,7 +67,7 @@ export const usePlayAreaStore = defineStore('playArea', {
         type: 'light',
       }
     },
-    addPlayerToScene(position: Vector3) {
+    addPlayerToCanvas(position: Vector3) {
       const playerId = MathUtils.generateUUID()
       this.canvasPlayers[playerId] = {
         isActive: true,

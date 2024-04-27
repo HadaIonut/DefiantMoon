@@ -37,7 +37,7 @@ canvasRouter.put('/:canvasId', async (context) => {
 
   await updateCanvas(new ObjectId(context.params.canvasId), canvasData)
 
-  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.SCENE_UPDATE, {
+  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_UPDATE, {
     source: userId,
     id:context.params.canvasId,
     data: canvasData

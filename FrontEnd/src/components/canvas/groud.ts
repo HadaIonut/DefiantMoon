@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {Scene} from 'three'
 
-export const initGround = (scene: Scene) => {
+export const initGround = (canvas: Scene) => {
   const playAreaStore = usePlayAreaStore()
 
   const groundTexture = new THREE.TextureLoader().load('./map.jpg')
@@ -16,11 +16,11 @@ export const initGround = (scene: Scene) => {
   ground.rotateX(-Math.PI / 2)
   ground.receiveShadow = true
 
-  scene.add(ground)
+  canvas.add(ground)
 
   let gridHelper = new THREE.GridHelper(playAreaStore.groundDimension, playAreaStore.gridSize)
   gridHelper.position.y += 5
-  scene.add(gridHelper)
+  canvas.add(gridHelper)
 
   playAreaStore.$subscribe(({events}) => {
     const parsedEvents = Array.isArray(events) ? events : [events]
@@ -31,13 +31,13 @@ export const initGround = (scene: Scene) => {
 
         gridHelper = new THREE.GridHelper(playAreaStore.groundDimension, playAreaStore.gridSize)
         gridHelper.position.y += 5
-        scene.add(gridHelper)
+        canvas.add(gridHelper)
       } else if (event.type === 'set' && event.key === 'gridSize') {
         gridHelper.removeFromParent()
 
         gridHelper = new THREE.GridHelper(playAreaStore.groundDimension, playAreaStore.gridSize)
         gridHelper.position.y += 5
-        scene.add(gridHelper)
+        canvas.add(gridHelper)
       }
     })
   })

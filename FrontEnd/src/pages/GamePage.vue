@@ -28,7 +28,7 @@ onBeforeMount(async () => {
 
     <ActionsSidebar/>
 
-    <SceneSelection/>
+    <CanvasSelection/>
 
     <div class="windows-container">
       <div v-auto-animate>

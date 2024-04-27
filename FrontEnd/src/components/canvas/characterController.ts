@@ -3,9 +3,9 @@ import {Camera, Renderer, Scene, Vector3} from 'three'
 import {addDragControls, getActivePlayer} from 'src/utils/CanvasUtils'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 
-export const hideNonVisibleLights = (scene: Scene, position: Vector3, viewDistance = 400) => {
-  const lights = scene.getObjectsByProperty('name', 'sourceLight')
-  const walls = scene.getObjectsByProperty('name', 'adjustableShape')
+export const hideNonVisibleLights = (canvas: Scene, position: Vector3, viewDistance = 400) => {
+  const lights = canvas.getObjectsByProperty('name', 'sourceLight')
+  const walls = canvas.getObjectsByProperty('name', 'adjustableShape')
     .map((group) => group.children)
     .reduce((acc, cur) => [...acc, ...cur], []).filter((el) => el.name === 'Wall')
 
@@ -13,7 +13,7 @@ export const hideNonVisibleLights = (scene: Scene, position: Vector3, viewDistan
     const raycaster = new THREE.Raycaster()
     const direction = new THREE.Vector3()
 
-    const lightSource = scene.getObjectByProperty('name', `sourceLight-${cur.uuid}`)
+    const lightSource = canvas.getObjectByProperty('name', `sourceLight-${cur.uuid}`)
 
     if (!lightSource) return
 
@@ -36,9 +36,9 @@ export const hideNonVisibleLights = (scene: Scene, position: Vector3, viewDistan
   }, [])
 }
 
-export const handleKeyNavigation = (event: KeyboardEvent, scene: Scene) => {
+export const handleKeyNavigation = (event: KeyboardEvent, canvas: Scene) => {
   const playerAreaStore = usePlayAreaStore()
-  const playerId = getActivePlayer(scene).uuid
+  const playerId = getActivePlayer(canvas).uuid
   const playerPosition = playerAreaStore.getCurrentPlayerPosition
   if (!playerPosition) return
 
@@ -56,14 +56,14 @@ export const handleKeyNavigation = (event: KeyboardEvent, scene: Scene) => {
     playerAreaStore.updatePlayerLocation(playerId, playerPosition)
   }
 
-  hideNonVisibleLights(scene, playerAreaStore.canvasPlayers[playerId].position)
+  hideNonVisibleLights(canvas, playerAreaStore.canvasPlayers[playerId].position)
 }
 
-export const initCharacter = (scene: Scene, camera: Camera, renderer: Renderer, playerId: string) => {
+export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer, playerId: string) => {
   const playerAreaStore = usePlayAreaStore()
   const {position, isActive} = playerAreaStore.canvasPlayers[playerId]
 
-  const otherPlayers = scene.getObjectsByProperty('name', 'player')
+  const otherPlayers = canvas.getObjectsByProperty('name', 'player')
   otherPlayers.forEach((player) => {
     player.userData.selected = false
   })
@@ -79,15 +79,15 @@ export const initCharacter = (scene: Scene, camera: Camera, renderer: Renderer, 
   cylinder.name = 'player'
   cylinder.uuid = playerId
 
-  scene.add(cylinder)
+  canvas.add(cylinder)
 
   cylinder.position.copy(position)
-  setTimeout(() => hideNonVisibleLights(scene, cylinder.position), 10)
+  setTimeout(() => hideNonVisibleLights(canvas, cylinder.position), 10)
 
   addDragControls(camera, renderer)({
     primary: cylinder, onDragComplete: (newPosition) => {
       playerAreaStore.selectPlayer(cylinder.uuid)
-      hideNonVisibleLights(scene, cylinder.position)
+      hideNonVisibleLights(canvas, cylinder.position)
       playerAreaStore.updatePlayerLocation(cylinder.uuid, newPosition)
     },
   })
@@ -97,11 +97,11 @@ export const initCharacter = (scene: Scene, camera: Camera, renderer: Renderer, 
     parsedEvents.forEach((event) => {
       if (event.type === 'set' && event.key === playerId) {
         cylinder.position.copy(event.newValue.position)
-        hideNonVisibleLights(scene, cylinder.position)
+        hideNonVisibleLights(canvas, cylinder.position)
       }
     })
   })
 
-  scene.add(cylinder)
+  canvas.add(cylinder)
   return cylinder
 }
