@@ -29,6 +29,9 @@ import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
 import {useUsersStore} from 'src/stores/users'
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 
+const playAreaStore = usePlayAreaStore()
+const canvasCollection = useCanvasCollectionStore()
+
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
 THREE.Mesh.prototype.raycast = acceleratedRaycast
@@ -43,7 +46,6 @@ const canvas: Ref<HTMLElement | null> = ref(null)
 const stats = new Stats()
 stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
-const playAreaStore = usePlayAreaStore()
 
 const enableRotation = false
 

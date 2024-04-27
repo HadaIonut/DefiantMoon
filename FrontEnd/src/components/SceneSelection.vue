@@ -12,14 +12,7 @@ const activeClass = computed(() => (currentId: string) => {
 })
 
 const handleCanvasChange = async (newId: string) => {
-  const newCanvas = (await rtFetch({
-    route: `/api/canvas/${newId}`,
-    method: 'GET',
-  })).data
-
-  playerAreaStore.$patch((state) => {
-    Object.assign(state, newCanvas)
-  })
+  await playerAreaStore.loadCanvas(newId)
 
   canvasCollectionStore.changeActiveCanvas(newId)
 }

@@ -5,8 +5,10 @@ import {useWindowsStore} from 'src/stores/windows'
 import {WindowStore} from 'src/types/windows'
 import {initWebRTCClient} from 'src/utils/fetchOverRTC'
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
+import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 const usersStore = useUsersStore()
+const playAreaStore = usePlayAreaStore()
 const canvasCollection = useCanvasCollectionStore()
 const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state
@@ -16,6 +18,7 @@ onBeforeMount(async () => {
 
   await usersStore.getWorldUsers()
   await canvasCollection.getCanvasList()
+  await playAreaStore.loadCanvas(canvasCollection.active)
 })
 </script>
 

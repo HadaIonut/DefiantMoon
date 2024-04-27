@@ -2,6 +2,7 @@ import {defineStore} from 'pinia'
 import {DraggablePoint} from 'src/components/canvas/adjustableShape'
 import {MathUtils, PointLight, Vector2, Vector3} from 'three'
 import {CanvasLightParams, CanvasLightProperties, PlayAreaStore, PositionObject} from 'src/types/PlayerArea'
+import {rtFetch} from 'src/utils/fetchOverRTC'
 export const usePlayAreaStore = defineStore('playArea', {
   state: (): PlayAreaStore => {
     return {
@@ -116,6 +117,16 @@ export const usePlayAreaStore = defineStore('playArea', {
         this.canvasPlayers[playerId].isActive = false
       })
       this.canvasPlayers[currentPlayerId].isActive = true
+    },
+    async loadCanvas(newId: string) {
+      const newCanvas = (await rtFetch({
+        route: `/api/canvas/${newId}`,
+        method: 'GET',
+      })).data
+
+      this.$patch((state) => {
+        Object.assign(state, newCanvas)
+      })
     },
   },
   getters: {
