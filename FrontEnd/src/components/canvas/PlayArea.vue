@@ -160,7 +160,8 @@ const animate = () => {
 const subscribeToStore = () => {
   playAreaStore.$subscribe((mutation) => {
     if (mutation.type === 'patch function') {
-      initCanvas()
+      console.log(mutation, 'patch')
+      // initCanvas()
     }
     if (mutation.type === 'direct') {
       const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
@@ -187,11 +188,6 @@ const subscribeToStore = () => {
           })
         }
       })
-      rtFetch({
-        route: `/api/canvas/${playAreaStore.id}`,
-        method: 'PUT',
-        body: playAreaStore.getNetworkCanvas,
-      })
     }
   })
 }
@@ -202,13 +198,22 @@ const subscribeToEvents = () => {
     const canvasCollectionStore = useCanvasCollectionStore()
 
     if (message.source === userStore.currentUser.id) return
-    if (message.id !== canvasCollectionStore.active) return
+    if (message.canvasId !== canvasCollectionStore.active) return
 
-    // TODO maybe re-rendering the entire scene very time an item is moved is a stupid ass idea
-    playAreaStore.$patch((state) => {
-      Object.assign(state, message.data)
-    })
+    if (message.playerId) {
+      handlePlayerNetworkEvent(message)
+    }
   })
+}
+
+const handlePlayerNetworkEvent = (message: Record<string, any>) => {
+  const newPosition = message.data.position
+
+  if (Object.keys(playAreaStore.canvasPlayers).includes(message.playerId)) {
+    playAreaStore.updatePlayerLocation(message.playerId, new Vector3(newPosition.x, newPosition.y, newPosition.z), true)
+  } else {
+    playAreaStore.addPlayerToCanvas(new Vector3(newPosition.x, newPosition.y, newPosition.z), message.playerId)
+  }
 }
 
 initEngine()

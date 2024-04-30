@@ -1,6 +1,6 @@
 import {Router} from "https://deno.land/x/oak@v11.1.0/router.ts";
 import {createCanvas, getCanvasById, getCanvasNameIdList, updateCanvas} from "../../database/repos/canvas.ts";
-import {Canvas} from "../../database/schemas/canvas.ts";
+import {Canvas, CanvasPlayerProperties} from "../../database/schemas/canvas.ts";
 import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/deps.ts";
 import {broadcastEvent} from "../websocket/utils.ts";
 import {WEBSOCKET_EMITABLE_EVENTS} from "../websocket/events.ts";
@@ -29,18 +29,25 @@ canvasRouter.post('/', async (context) => {
   context.response.status = 200
 })
 
-canvasRouter.put('/:canvasId', async (context) => {
+canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
   const userId = await getCurrentUserId(context);
-  const canvasData = await context.request.body({type: 'json'}).value as unknown as Canvas
+  const playerData = await context.request.body({type: 'json'}).value as unknown as CanvasPlayerProperties
+  const canvasData = await getCanvasById(context.params.canvasId)
+  if (!canvasData) return
 
-  console.log(context.params.canvasId)
+  canvasData.canvasPlayers[context.params.playerId] = playerData
+
+  console.log(`modify canvas: ${context.params.canvasId}`)
+  console.log(`modify player: ${context.params.playerId}`)
+  console.log(canvasData.canvasPlayers)
 
   await updateCanvas(new ObjectId(context.params.canvasId), canvasData)
 
   broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_UPDATE, {
     source: userId,
-    id:context.params.canvasId,
-    data: canvasData
+    canvasId: context.params.canvasId,
+    playerId: context.params.playerId,
+    data: playerData
   });
 
   context.response.status = 200

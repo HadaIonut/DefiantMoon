@@ -1,9 +1,13 @@
 import * as THREE from 'three'
 import {Camera, Renderer, Scene, Vector3} from 'three'
-import {addDragControls, getActivePlayer} from 'src/utils/CanvasUtils'
+import {addDragControls} from 'src/utils/CanvasUtils'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+export const hideNonVisibleLights = (canvas: Scene, viewDistance = 400) => {
+  const playAreaStore = usePlayAreaStore()
+  const [, player] = playAreaStore.getActivePlayer
+  const position = player.position
 
-export const hideNonVisibleLights = (canvas: Scene, position: Vector3, viewDistance = 400) => {
   const lights = canvas.getObjectsByProperty('name', 'sourceLight')
   const walls = canvas.getObjectsByProperty('name', 'adjustableShape')
     .map((group) => group.children)
@@ -38,9 +42,9 @@ export const hideNonVisibleLights = (canvas: Scene, position: Vector3, viewDista
 
 export const handleKeyNavigation = (event: KeyboardEvent, canvas: Scene) => {
   const playerAreaStore = usePlayAreaStore()
-  const playerId = getActivePlayer(canvas).uuid
+  const [playerId] = playerAreaStore.getActivePlayer
   const playerPosition = playerAreaStore.getCurrentPlayerPosition
-  if (!playerPosition) return
+  if (!playerPosition || !playerId) return
 
   if (event.key === 'ArrowUp') {
     playerPosition.add(new Vector3(0, 0, -50))
@@ -61,7 +65,7 @@ export const handleKeyNavigation = (event: KeyboardEvent, canvas: Scene) => {
 
 export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer, playerId: string) => {
   const playerAreaStore = usePlayAreaStore()
-  const {position, isActive} = playerAreaStore.canvasPlayers[playerId]
+  const {position} = playerAreaStore.canvasPlayers[playerId]
 
   const otherPlayers = canvas.getObjectsByProperty('name', 'player')
   otherPlayers.forEach((player) => {
@@ -72,10 +76,6 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
   const material = new THREE.MeshBasicMaterial({color: 0xffff00})
   const cylinder = new THREE.Mesh(geometry, material)
 
-  cylinder.userData = {
-    selected: isActive,
-  }
-
   cylinder.name = 'player'
   cylinder.uuid = playerId
 
@@ -84,10 +84,23 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
   cylinder.position.copy(position)
   setTimeout(() => hideNonVisibleLights(canvas, cylinder.position), 10)
 
+  const handleNetworkRequest = (canvasId: string, playerId: string, networkUpdate = false) => {
+    if (networkUpdate) {
+      playerAreaStore.canvasPlayers[playerId].networkUpdate = false
+      return
+    }
+
+    rtFetch({
+      route: `/api/canvas/${canvasId}/player/${playerId}`,
+      method: 'PATCH',
+      body: playerAreaStore.getNetworkPlayer(playerId),
+    })
+  }
+
   addDragControls(camera, renderer)({
     primary: cylinder, onDragComplete: (newPosition) => {
       playerAreaStore.selectPlayer(cylinder.uuid)
-      hideNonVisibleLights(canvas, cylinder.position)
+      hideNonVisibleLights(canvas)
       playerAreaStore.updatePlayerLocation(cylinder.uuid, newPosition)
     },
   })
@@ -97,7 +110,11 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
     parsedEvents.forEach((event) => {
       if (event.type === 'set' && event.key === playerId) {
         cylinder.position.copy(event.newValue.position)
-        hideNonVisibleLights(canvas, cylinder.position)
+        hideNonVisibleLights(canvas)
+        handleNetworkRequest(playerAreaStore.id, playerId, event.newValue.networkUpdate)
+      } else if (event.type === 'add' && event.newValue.type === 'player') {
+        console.log('adding player')
+        handleNetworkRequest(playerAreaStore.id, event.key)
       }
     })
   })

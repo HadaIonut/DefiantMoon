@@ -67,8 +67,8 @@ export const usePlayAreaStore = defineStore('playArea', {
         type: 'light',
       }
     },
-    addPlayerToCanvas(position: Vector3) {
-      const playerId = MathUtils.generateUUID()
+    addPlayerToCanvas(position: Vector3, uuid?:string) {
+      const playerId = uuid ?? MathUtils.generateUUID()
       this.canvasPlayers[playerId] = {
         isActive: true,
         position,
@@ -106,10 +106,13 @@ export const usePlayAreaStore = defineStore('playArea', {
         position: newLocation,
       }
     },
-    updatePlayerLocation(playerId: string, newLocation: Vector3) {
+    updatePlayerLocation(playerId: string, newLocation: Vector3, networkUpdate = false) {
+      newLocation.set(~~newLocation.x, ~~newLocation.y, ~~newLocation.z)
+
       this.canvasPlayers[playerId] = {
         ...this.canvasPlayers[playerId],
         position: newLocation,
+        networkUpdate,
       }
     },
     selectPlayer(currentPlayerId: string) {
@@ -133,11 +136,20 @@ export const usePlayAreaStore = defineStore('playArea', {
     getLightProps: (state) => (id: string): CanvasLightProperties=> {
       return state.canvasLights[id]
     },
+    getActivePlayer: (state) => {
+      return Object.entries(state.canvasPlayers).find(([, value]) => value.isActive) ?? []
+    },
     getCurrentPlayerPosition: (state) => {
-      const activeId = Object.entries(state.canvasPlayers).find(([key, value]) => value.isActive)
+      const activeId = Object.entries(state.canvasPlayers).find(([, value]) => value.isActive)
       if (!activeId) return
       const position = state.canvasPlayers[activeId[0]].position
       return new Vector3(position.x, position.y, position.z)
+    },
+    getNetworkPlayer: (state) => (playerId: string) => {
+      return {
+        position: state.canvasPlayers[playerId].position,
+        type: state.canvasPlayers[playerId].type,
+      }
     },
     getNetworkCanvas: (state) => {
       return {

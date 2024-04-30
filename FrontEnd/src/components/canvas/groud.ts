@@ -5,7 +5,7 @@ import {Scene} from 'three'
 export const initGround = (canvas: Scene) => {
   const playAreaStore = usePlayAreaStore()
 
-  const groundTexture = new THREE.TextureLoader().load('./map.jpg')
+  const groundTexture = new THREE.TextureLoader().load('')
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(playAreaStore.groundDimension, playAreaStore.groundDimension),
     new THREE.MeshStandardMaterial({

@@ -28,12 +28,12 @@ export const getCanvasNameIdList = async (): Promise<CanvasName[]> => {
   }, [])
 }
 
-export const getCanvasById = async (id: string) => {
+export const getCanvasById = async (id: string): Promise<CanvasSchema | null> => {
   const canvas = await canvasCollection.findOne({
     _id: new ObjectId(id)
   })
 
-  if (!canvas) return {}
+  if (!canvas) return null
 
   return {
     ...canvas,

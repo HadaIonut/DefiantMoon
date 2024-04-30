@@ -26,7 +26,7 @@ export const getRandomInt = (max: number) => {
   return Math.ceil(Math.random() * max) * (Math.round(Math.random()) ? 1 : -1)
 }
 
-const handleDraggedEvent = ({primary, secondary, onDragComplete}: DragControlsParams) => {
+const handleDraggedEvent = (renderer: Renderer, {primary, secondary, onDragComplete}: DragControlsParams) => {
   const grid = 50
   const halfGrd = grid / 2
   primary.position.set(
@@ -55,12 +55,12 @@ export const addDragControls = (camera: Camera, renderer: Renderer) => ({primary
     }
   })
 
-  controls.addEventListener('dragend', () => handleDraggedEvent({primary, secondary, onDragComplete}))
+  controls.addEventListener('dragend', () => handleDraggedEvent(renderer, {primary, secondary, onDragComplete}))
 }
 
 export const getActivePlayer = (canvas: Scene) => {
   const player = canvas.getObjectsByProperty('name', 'player')
-  return player.filter((player) => player.userData.selected)[0]
+  return player.filter((player) => player.userData.selected)[0] || player[0]
 }
 
 export const pointsAreEqual = (controlPoint: Vector3, point: Vector3) => {

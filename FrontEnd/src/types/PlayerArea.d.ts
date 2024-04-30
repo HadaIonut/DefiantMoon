@@ -39,6 +39,7 @@ export type CanvasPlayerProperties = {
     position: Vector3,
     isActive: boolean
     type: 'player' | 'enemy'
+    networkUpdate?: boolean
 }
 
 export type PlayAreaStore = {
