@@ -6,7 +6,9 @@ import {rtFetch} from 'src/utils/fetchOverRTC'
 export const hideNonVisibleLights = (canvas: Scene, viewDistance = 400) => {
   const playAreaStore = usePlayAreaStore()
   const [, player] = playAreaStore.getActivePlayer
-  const position = player.position
+  const position = player?.position
+
+  if (!position) return
 
   const lights = canvas.getObjectsByProperty('name', 'sourceLight')
   const walls = canvas.getObjectsByProperty('name', 'adjustableShape')
@@ -60,7 +62,7 @@ export const handleKeyNavigation = (event: KeyboardEvent, canvas: Scene) => {
     playerAreaStore.updatePlayerLocation(playerId, playerPosition)
   }
 
-  hideNonVisibleLights(canvas, playerAreaStore.canvasPlayers[playerId].position)
+  hideNonVisibleLights(canvas)
 }
 
 export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer, playerId: string) => {
@@ -82,7 +84,7 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
   canvas.add(cylinder)
 
   cylinder.position.copy(position)
-  setTimeout(() => hideNonVisibleLights(canvas, cylinder.position), 10)
+  setTimeout(() => hideNonVisibleLights(canvas), 10)
 
   const handleNetworkRequest = (canvasId: string, playerId: string, networkUpdate = false) => {
     if (networkUpdate) {
@@ -101,7 +103,7 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
     primary: cylinder, onDragComplete: (newPosition) => {
       playerAreaStore.selectPlayer(cylinder.uuid)
       hideNonVisibleLights(canvas)
-      playerAreaStore.updatePlayerLocation(cylinder.uuid, newPosition)
+      setTimeout(() => playerAreaStore.updatePlayerLocation(cylinder.uuid, newPosition), 0)
     },
   })
 
@@ -113,8 +115,13 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
         hideNonVisibleLights(canvas)
         handleNetworkRequest(playerAreaStore.id, playerId, event.newValue.networkUpdate)
       } else if (event.type === 'add' && event.newValue.type === 'player') {
-        console.log('adding player')
         handleNetworkRequest(playerAreaStore.id, event.key)
+      } else if (event.key === 'isActive') {
+        if (playerAreaStore.canvasPlayers[playerId].isActive) {
+          cylinder.material = new THREE.MeshBasicMaterial({color: 0xff0000})
+        } else {
+          cylinder.material = new THREE.MeshBasicMaterial({color: 0xffff00})
+        }
       }
     })
   })

@@ -119,6 +119,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       Object.keys(this.canvasPlayers).forEach((playerId) => {
         this.canvasPlayers[playerId].isActive = false
       })
+
       this.canvasPlayers[currentPlayerId].isActive = true
     },
     async loadCanvas(newId: string) {
