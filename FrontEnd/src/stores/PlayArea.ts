@@ -104,10 +104,9 @@ export const usePlayAreaStore = defineStore('playArea', {
       delete this.canvasWalls[shapeId].controlPoints[pointId]
     },
     updatePointLocation(pointId: string, shapeId: string, newLocation: Vector3) {
-      this.canvasWalls[shapeId].controlPoints[pointId] = {
-        ...this.canvasWalls[shapeId].controlPoints[pointId],
-        position: newLocation,
-      }
+      newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))
+
+      this.canvasWalls[shapeId].controlPoints[pointId].position = newLocation
     },
     updatePlayerLocation(playerId: string, newLocation: Vector3, networkUpdate = false) {
       newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))
@@ -174,6 +173,17 @@ export const usePlayAreaStore = defineStore('playArea', {
         canvasLights: state.canvasLights,
         canvasWalls: state.canvasWalls,
         canvasPlayers: state.canvasPlayers,
+      }
+    },
+    getNetworkWall: (state) => (wallId: string) => {
+      const {type, closed, concaveHull, controlPoints, filled, tension} = state.canvasWalls[wallId]
+      return {
+        type,
+        closed,
+        concaveHull,
+        controlPoints,
+        filled,
+        tension,
       }
     },
   },

@@ -1,6 +1,11 @@
 import {Router} from "https://deno.land/x/oak@v11.1.0/router.ts";
 import {createCanvas, getCanvasById, getCanvasNameIdList, updateCanvas} from "../../database/repos/canvas.ts";
-import {Canvas, CanvasLightProperties, CanvasPlayerProperties} from "../../database/schemas/canvas.ts";
+import {
+  Canvas,
+  CanvasLightProperties,
+  CanvasPlayerProperties,
+  CanvasWallProperties
+} from "../../database/schemas/canvas.ts";
 import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/deps.ts";
 import {broadcastEvent} from "../websocket/utils.ts";
 import {WEBSOCKET_EMITABLE_EVENTS} from "../websocket/events.ts";
@@ -28,7 +33,6 @@ canvasRouter.post('/', async (context) => {
   }
   context.response.status = 200
 })
-
 canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
   const userId = await getCurrentUserId(context);
   const playerData = await context.request.body({type: 'json'}).value as unknown as CanvasPlayerProperties
@@ -52,8 +56,6 @@ canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
 
   context.response.status = 200
 })
-
-
 canvasRouter.patch('/:canvasId/light/:lightId', async (context) => {
   const userId = await getCurrentUserId(context);
   const lightData = await context.request.body({type: 'json'}).value as unknown as CanvasLightProperties
@@ -73,6 +75,29 @@ canvasRouter.patch('/:canvasId/light/:lightId', async (context) => {
     canvasId: context.params.canvasId,
     lightId: context.params.lightId,
     data: lightData
+  });
+
+  context.response.status = 200
+})
+canvasRouter.patch('/:canvasId/wall/:wallId', async (context) => {
+  const userId = await getCurrentUserId(context);
+  const wallData = await context.request.body({type: 'json'}).value as unknown as CanvasWallProperties
+  const canvasData = await getCanvasById(context.params.canvasId)
+  if (!canvasData) return
+
+  canvasData.canvasWalls[context.params.wallId] = wallData
+
+  console.log(`modify canvas: ${context.params.canvasId}`)
+  console.log(`modify wall: ${context.params.wallId}`)
+  console.log(canvasData.canvasWalls)
+
+  await updateCanvas(new ObjectId(context.params.canvasId), canvasData)
+
+  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_UPDATE, {
+    source: userId,
+    canvasId: context.params.canvasId,
+    wallId: context.params.wallId,
+    data: wallData
   });
 
   context.response.status = 200

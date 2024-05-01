@@ -19,6 +19,9 @@ import {WallGeometry} from './WallGeometry'
 import {updateAllLightsShadowCasting} from './lightController'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+import {watch, watchEffect} from 'vue'
+import {storeToRefs} from 'pinia'
 
 export type AdjustableShapeInput = {
   id: string,
@@ -140,6 +143,19 @@ export const adjustableShape = ({
     // @ts-ignore
     curveLine.geometry.vertices.forEach((vertex) => {
       points.push(new THREE.Vector2(vertex.x, vertex.z)) // fill the array of points with Vector2() for re-use
+    })
+  }
+
+  const handleNetworkRequest = (canvasId: string, wallId: string, networkUpdate = false) => {
+    if (networkUpdate) {
+      playAreaStore.canvasPlayers[wallId].networkUpdate = false
+      return
+    }
+
+    rtFetch({
+      route: `/api/canvas/${canvasId}/wall/${wallId}`,
+      method: 'PATCH',
+      body: playAreaStore.getNetworkWall(wallId),
     })
   }
 
@@ -273,31 +289,34 @@ export const adjustableShape = ({
   window.addEventListener('mousemove', onMouseMove, false)
   window.addEventListener('contextmenu', (event) => event.preventDefault(), false)
 
-  playAreaStore.$subscribe(({events}) => {
-    const parsedEvents = Array.isArray(events) ? events : [events]
-    parsedEvents.forEach((event) => {
-      if (event.key === 'contextMenu' || event.key === 'display' || event.key === 'drawMode') return
+  watch(() => playAreaStore.canvasWalls[shapeGroup.uuid].controlPoints, (newValue) => {
+    const oldCount = controlPoints.length
+    const newCount = Object.keys(newValue).length
 
-      if (event.type === 'add' && event.newValue.type === 'controlPoint' && playAreaStore.currentDrawingId === shapeGroup.uuid) {
-        const newPoint = createPoint([event.key, event.newValue.position], canvas)
-        shapeGroup.add(newPoint)
-        controlPoints.push(newPoint)
-        updateShape()
-      }
-      if (event.type === 'delete' && event.oldValue.type === 'controlPoint' && playAreaStore.targetedObject?.parent?.uuid === shapeGroup.uuid) {
-        shapeGroup.children.find((el) => el.uuid === event.key)?.removeFromParent()
-        controlPoints = controlPoints.filter((point) => point.uuid !== event.key)
-        updateShape()
-      }
-      if (event.type === 'set' && event.newValue.type === 'wall' && event.key === shapeGroup.uuid) {
-        const curveObj = createCurveGeometry(controlPoints, event.newValue.tension, centralPoint, concaveHull, closed)
-        curveGeometry = curveObj.curveGeometry
-        curve = curveObj.curve
-        curveLine.geometry.dispose()
-        curveLine.geometry = curveGeometry
-        extrudeMesh()
-      }
-    })
-  })
+    if (newCount > oldCount) {
+      const [newPointKey, newPointValue] = Object.entries(newValue).pop()
+      if (!newPointKey || !newPointValue) return
+      console.log(newValue, newPointValue)
+      const newPoint = createPoint([newPointKey, newPointValue.position], canvas)
+
+      shapeGroup.add(newPoint)
+      controlPoints.push(newPoint)
+
+      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid )
+      updateShape()
+    } else if (newCount < oldCount) {
+      const controlPointsIds = controlPoints.map((point) => point.uuid)
+      const newObjectIds = Object.keys(newValue)
+      const deletedPointId = controlPointsIds.find((x) => !newObjectIds.includes(x))
+
+      shapeGroup.getObjectsByProperty('uuid', deletedPointId)[0]?.removeFromParent()
+      controlPoints = controlPoints.filter((point) => point.uuid !== deletedPointId)
+
+      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid)
+      updateShape()
+    } else {
+      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid)
+    }
+  }, {deep: true})
 }
 

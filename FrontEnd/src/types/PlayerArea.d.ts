@@ -35,6 +35,7 @@ export type CanvasWallProperties = {
     closed: boolean,
     concaveHull: boolean,
     type: 'wall'
+    networkUpdate?: boolean
 }
 
 export type CanvasPlayerProperties = {

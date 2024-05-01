@@ -105,6 +105,17 @@ const initEngine = () => {
   controls.enableRotate = enableRotation
   controls.enabled = true
 }
+
+const handleCanvasClick = (event: MouseEvent) => {
+  if (!playAreaStore.drawMode) return
+  const clickLocation = findLocationFromCoords(event.clientX, event.clientY, camera, canvas)
+
+  if (!playAreaStore.canvasWalls[playAreaStore.currentDrawingId]) {
+    playAreaStore.createNewWall(clickLocation, 0, false, false, false)
+    return
+  }
+  playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
+}
 const initCanvas = () => {
   canvas = new Scene()
   canvas.background = new Color(0x333333)
@@ -114,16 +125,7 @@ const initCanvas = () => {
   watch(canvasElement, (newValue: HTMLElement) => {
     if (!newValue) return
     newValue.appendChild(renderer.domElement)
-    newValue.addEventListener('click', (event) => {
-      if (!playAreaStore.drawMode) return
-      const clickLocation = findLocationFromCoords(event.clientX, event.clientY, camera, canvas)
-
-      if (!playAreaStore.canvasWalls[playAreaStore.currentDrawingId]) {
-        playAreaStore.createNewWall(clickLocation, 0, false, false, false)
-        return
-      }
-      playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
-    })
+    newValue.addEventListener('click', handleCanvasClick)
   })
   initGround(canvas)
 
@@ -204,8 +206,17 @@ const subscribeToEvents = () => {
       handlePlayerNetworkEvent(message)
     } else if (message.lightId) {
       handleLightNetworkEvent(message)
+    } else if (message.wallId) {
+      handleWallNetworkEvent(message)
     }
   })
+}
+const handleWallNetworkEvent = (message: Record<string, any>) => {
+  if (Object.keys(playAreaStore.canvasWalls).includes(message.wallId)) {
+    // Object.assign(playAreaStore.canvasWalls[message.wallId], message.data)
+  } else {
+    // playAreaStore.addPlayerToCanvas(new Vector3(newPosition.x, newPosition.y, newPosition.z), message.playerId)
+  }
 }
 const handlePlayerNetworkEvent = (message: Record<string, any>) => {
   const newPosition = message.data.position
