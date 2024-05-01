@@ -147,8 +147,9 @@ export const adjustableShape = ({
   }
 
   const handleNetworkRequest = (canvasId: string, wallId: string, networkUpdate = false) => {
+    console.log('sending update')
     if (networkUpdate) {
-      playAreaStore.canvasPlayers[wallId].networkUpdate = false
+      playAreaStore.canvasWalls[wallId].networkUpdate = false
       return
     }
 
@@ -290,32 +291,37 @@ export const adjustableShape = ({
   window.addEventListener('contextmenu', (event) => event.preventDefault(), false)
 
   watch(() => playAreaStore.canvasWalls[shapeGroup.uuid].controlPoints, (newValue) => {
+    console.log('watch', newValue)
     const oldCount = controlPoints.length
     const newCount = Object.keys(newValue).length
+    const controlPointsIds = controlPoints.map((point) => point.uuid)
+    const newObjectIds = Object.keys(newValue)
+    const networkUpdate = playAreaStore.canvasWalls[shapeGroup.uuid].networkUpdate
 
     if (newCount > oldCount) {
-      const [newPointKey, newPointValue] = Object.entries(newValue).pop()
+      const [newPointKey, newPointValue] = Object.entries(newValue).pop() ?? []
       if (!newPointKey || !newPointValue) return
-      console.log(newValue, newPointValue)
       const newPoint = createPoint([newPointKey, newPointValue.position], canvas)
 
       shapeGroup.add(newPoint)
       controlPoints.push(newPoint)
 
-      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid )
+      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, networkUpdate )
       updateShape()
     } else if (newCount < oldCount) {
-      const controlPointsIds = controlPoints.map((point) => point.uuid)
-      const newObjectIds = Object.keys(newValue)
       const deletedPointId = controlPointsIds.find((x) => !newObjectIds.includes(x))
 
       shapeGroup.getObjectsByProperty('uuid', deletedPointId)[0]?.removeFromParent()
       controlPoints = controlPoints.filter((point) => point.uuid !== deletedPointId)
 
-      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid)
+      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, networkUpdate)
       updateShape()
     } else {
-      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid)
+      controlPoints.forEach((point) => point.position.copy(newValue[point.uuid].position))
+      updateShape()
+      updateAllLightsShadowCasting(canvas)
+
+      handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, networkUpdate)
     }
   }, {deep: true})
 }

@@ -85,10 +85,10 @@ export const usePlayAreaStore = defineStore('playArea', {
         networkUpdate,
       }
     },
-    createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean) {
-      const newDrawingId = MathUtils.generateUUID()
+    createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean, wallId?: string, objectId?: string) {
+      const newDrawingId = objectId ?? MathUtils.generateUUID()
       this.canvasWalls[newDrawingId] = {
-        controlPoints: {[MathUtils.generateUUID()]: {position: originPoint, type: 'controlPoint'}},
+        controlPoints: {[wallId ?? MathUtils.generateUUID()]: {position: originPoint, type: 'controlPoint'}},
         tension,
         closed,
         concaveHull,
@@ -96,6 +96,11 @@ export const usePlayAreaStore = defineStore('playArea', {
         type: 'wall',
       }
       this.currentDrawingId = newDrawingId
+      rtFetch({
+        route: `/api/canvas/${this.id}/wall/${newDrawingId}`,
+        method: 'PATCH',
+        body: this.canvasWalls[newDrawingId],
+      })
     },
     addPointToShape(point: Vector3, shapeId: string) {
       this.canvasWalls[shapeId].controlPoints[MathUtils.generateUUID()] = {position: point, type: 'controlPoint'}
@@ -106,7 +111,13 @@ export const usePlayAreaStore = defineStore('playArea', {
     updatePointLocation(pointId: string, shapeId: string, newLocation: Vector3) {
       newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))
 
-      this.canvasWalls[shapeId].controlPoints[pointId].position = newLocation
+      this.canvasWalls[shapeId].controlPoints = {
+        ...this.canvasWalls[shapeId].controlPoints,
+        [pointId]: {
+          ...this.canvasWalls[shapeId].controlPoints[pointId],
+          position: newLocation,
+        },
+      }
     },
     updatePlayerLocation(playerId: string, newLocation: Vector3, networkUpdate = false) {
       newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))

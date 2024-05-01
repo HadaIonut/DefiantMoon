@@ -23,14 +23,12 @@ import Stats from 'three/examples/jsm/libs/stats.module'
 import {canvasSpawnLight} from 'src/components/canvas/lightController'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {initGround} from 'src/components/canvas/groud'
-import {rtFetch} from 'src/utils/fetchOverRTC'
 import {websocket} from 'src/websocket/websocket'
 import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
 import {useUsersStore} from 'src/stores/users'
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 
 const playAreaStore = usePlayAreaStore()
-const canvasCollection = useCanvasCollectionStore()
 
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
 THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
@@ -213,9 +211,12 @@ const subscribeToEvents = () => {
 }
 const handleWallNetworkEvent = (message: Record<string, any>) => {
   if (Object.keys(playAreaStore.canvasWalls).includes(message.wallId)) {
-    // Object.assign(playAreaStore.canvasWalls[message.wallId], message.data)
+    Object.assign(playAreaStore.canvasWalls[message.wallId], message.data)
+    playAreaStore.canvasWalls[message.wallId].networkUpdate = true
   } else {
-    // playAreaStore.addPlayerToCanvas(new Vector3(newPosition.x, newPosition.y, newPosition.z), message.playerId)
+    const [newWallOriginId, newWallOriginValue] = Object.entries(message.data.controlPoints)[0]
+    playAreaStore.createNewWall(newWallOriginValue.position, 0, false, false, false, newWallOriginId, message.wallId)
+    playAreaStore.canvasWalls[message.wallId].networkUpdate = true
   }
 }
 const handlePlayerNetworkEvent = (message: Record<string, any>) => {
