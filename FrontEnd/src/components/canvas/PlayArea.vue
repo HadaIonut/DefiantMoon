@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, Ref, ref, toRaw, watch} from 'vue'
+import {onMounted, onUnmounted, Ref, ref, toRaw, watch} from 'vue'
 import * as THREE from 'three'
 import {
   Camera,
@@ -16,7 +16,7 @@ import {
 import GUI from 'three/examples/jsm/libs/lil-gui.module.min'
 import {acceleratedRaycast, computeBoundsTree, disposeBoundsTree} from 'three-mesh-bvh'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-import {findLocationFromCoords} from 'src/utils/CanvasUtils'
+import {findLocationFromCoords, removeObjectsWithChildren} from 'src/utils/CanvasUtils'
 import {handleKeyNavigation, hideNonVisibleLights, initCharacter} from './characterController'
 import {adjustableShape} from 'src/components/canvas/adjustableShape'
 import Stats from 'three/examples/jsm/libs/stats.module'
@@ -36,7 +36,7 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast
 
 let camera: Camera
 let canvas: Scene
-let renderer: Renderer
+let renderer: WebGLRenderer
 let controls: OrbitControls
 let rayCaster: Raycaster
 let plane: Plane
@@ -52,7 +52,7 @@ const mouse = new Vector2()
 const handleDragComplete = () => {
   if (!playAreaStore.getCurrentPlayerPosition) return
 
-  hideNonVisibleLights(canvas, playAreaStore.getCurrentPlayerPosition)
+  hideNonVisibleLights(canvas)
 }
 const initGUI = () => {
   const panel = new GUI({width: 310})
@@ -158,10 +158,12 @@ const animate = () => {
   stats.end()
 }
 const subscribeToStore = () => {
+// TODO CLEAN UP THE FUCKING CLOWN FUCNTION
   playAreaStore.$subscribe((mutation) => {
     if (mutation.type === 'patch function') {
       console.log(mutation, 'patch')
-      // initCanvas()
+      removeObjectsWithChildren(canvas)
+      initCanvas()
     }
     if (mutation.type === 'direct') {
       const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
@@ -247,6 +249,10 @@ initCanvas()
 animate()
 subscribeToEvents()
 subscribeToStore()
+
+onUnmounted(() => {
+  removeObjectsWithChildren(canvas)
+})
 
 </script>
 
