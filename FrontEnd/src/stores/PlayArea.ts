@@ -56,8 +56,9 @@ export const usePlayAreaStore = defineStore('playArea', {
       color = 0xffffff,
       position,
       indicatorId = MathUtils.generateUUID(),
+      lightId = MathUtils.generateUUID(),
     }: CanvasLightParams) {
-      this.canvasLights[MathUtils.generateUUID()] = {
+      this.canvasLights[lightId] = {
         decay: decay,
         distance: distance,
         intensity: intensity,
@@ -76,10 +77,12 @@ export const usePlayAreaStore = defineStore('playArea', {
       }
       this.selectPlayer(playerId)
     },
-    updateLightLocation(light: PointLight, newPosition: Vector3) {
-      this.canvasLights[light.uuid] = {
-        ...this.canvasLights[light.uuid],
-        position: newPosition,
+    updateLightLocation(lightId: string, newPosition: Vector3, networkUpdate = false) {
+      newPosition.set(Math.round(newPosition.x), Math.round(newPosition.y), Math.round(newPosition.z))
+      this.canvasLights[lightId] = {
+        ...this.canvasLights[lightId],
+        position: JSON.parse(JSON.stringify(newPosition)),
+        networkUpdate,
       }
     },
     createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean) {
@@ -107,7 +110,7 @@ export const usePlayAreaStore = defineStore('playArea', {
       }
     },
     updatePlayerLocation(playerId: string, newLocation: Vector3, networkUpdate = false) {
-      newLocation.set(~~newLocation.x, ~~newLocation.y, ~~newLocation.z)
+      newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))
 
       this.canvasPlayers[playerId] = {
         ...this.canvasPlayers[playerId],
@@ -150,6 +153,18 @@ export const usePlayAreaStore = defineStore('playArea', {
       return {
         position: state.canvasPlayers[playerId].position,
         type: state.canvasPlayers[playerId].type,
+      }
+    },
+    getNetworkLight: (state) => (lightId: string) => {
+      const {position, distance, intensity, decay, color, indicatorId, type} = state.canvasLights[lightId]
+      return {
+        position,
+        distance,
+        intensity,
+        decay,
+        color,
+        indicatorId,
+        type,
       }
     },
     getNetworkCanvas: (state) => {

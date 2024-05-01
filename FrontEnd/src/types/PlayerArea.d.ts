@@ -8,7 +8,8 @@ export type CanvasLightProperties = {
     decay: number,
     color: number,
     indicatorId: string,
-    type: 'light'
+    type: 'light',
+    networkUpdate?: boolean
 }
 
 export type CanvasLightParams = {
@@ -18,6 +19,7 @@ export type CanvasLightParams = {
     decay?: number,
     color?: number,
     indicatorId?: string,
+    lightId?: string,
 }
 
 export type ControlPoint = {

@@ -11,6 +11,7 @@ import {
   SphereGeometry, Vector3,
 } from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {rtFetch} from 'src/utils/fetchOverRTC'
 
 export const updateAllLightsShadowCasting = (canvas: Scene) => {
   const lights = canvas.getObjectsByProperty('type', 'PointLight')
@@ -58,24 +59,40 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
   // @ts-ignore
   renderer.shadowMap.needsUpdate = true
 
+  const handleNetworkRequest = (canvasId: string, lightId: string, networkUpdate = false) => {
+    console.log('trying network update light')
+    if (networkUpdate) {
+      playAreaStore.canvasLights[lightId].networkUpdate = false
+      return
+    }
+
+    rtFetch({
+      route: `/api/canvas/${canvasId}/light/${lightId}`,
+      method: 'PATCH',
+      body: playAreaStore.getNetworkLight(lightId),
+    })
+  }
+
   addDragControls(camera, renderer)({
     primary: indicator, secondary: light, onDragComplete: (newPosition: Vector3) => {
-      const player = getActivePlayer(canvas)
-      hideNonVisibleLights(canvas, player.position)
+      hideNonVisibleLights(canvas)
       light.castShadow = shouldCastShadow(light, canvas)
-      playAreaStore.updateLightLocation(light, newPosition)
+      playAreaStore.updateLightLocation(light.uuid, newPosition)
     },
   })
 
-  playAreaStore.$subscribe((mutation) => {
-    const parsedMutation = Array.isArray(mutation) ? mutation : [mutation]
+  playAreaStore.$subscribe(({events}) => {
+    const parsedMutation = Array.isArray(events) ? events : [events]
 
-    parsedMutation.forEach((mutation) => {
-      if (mutation.events.key === 'color') {
-        light.color.set(mutation.events.newValue)
-      } else if (mutation.events.key === 'position' && mutation.events.target.indicatorId === indicator.uuid) {
-        light.position.copy(mutation.events.newValue)
-        indicator.position.copy(mutation.events.newValue)
+    parsedMutation.forEach((event) => {
+      if (event.key === 'color') {
+        light.color.set(event.newValue)
+      } else if (event.key === lightId && event.type === 'set') {
+        light.position.copy(event.newValue.position)
+        indicator.position.copy(event.newValue.position)
+        handleNetworkRequest(playAreaStore.id, lightId, event.newValue.networkUpdate)
+      } else if (event.type === 'add' && event.newValue.type === 'light') {
+        handleNetworkRequest(playAreaStore.id, event.key)
       }
     })
   })

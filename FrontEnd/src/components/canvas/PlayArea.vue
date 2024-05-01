@@ -202,10 +202,11 @@ const subscribeToEvents = () => {
 
     if (message.playerId) {
       handlePlayerNetworkEvent(message)
+    } else if (message.lightId) {
+      handleLightNetworkEvent(message)
     }
   })
 }
-
 const handlePlayerNetworkEvent = (message: Record<string, any>) => {
   const newPosition = message.data.position
 
@@ -213,6 +214,19 @@ const handlePlayerNetworkEvent = (message: Record<string, any>) => {
     playAreaStore.updatePlayerLocation(message.playerId, new Vector3(newPosition.x, newPosition.y, newPosition.z), true)
   } else {
     playAreaStore.addPlayerToCanvas(new Vector3(newPosition.x, newPosition.y, newPosition.z), message.playerId)
+  }
+}
+const handleLightNetworkEvent = (message: Record<string, any>) => {
+  const newPosition = message.data.position
+
+  if (Object.keys(playAreaStore.canvasLights).includes(message.lightId)) {
+    playAreaStore.updateLightLocation(message.lightId, new Vector3(newPosition.x, newPosition.y, newPosition.z), true)
+  } else {
+    playAreaStore.addLightToCanvas({
+      position: newPosition,
+      indicatorId: message.data.indicatorId,
+      lightId: message.lightId,
+    })
   }
 }
 

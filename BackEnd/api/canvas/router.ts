@@ -1,6 +1,6 @@
 import {Router} from "https://deno.land/x/oak@v11.1.0/router.ts";
 import {createCanvas, getCanvasById, getCanvasNameIdList, updateCanvas} from "../../database/repos/canvas.ts";
-import {Canvas, CanvasPlayerProperties} from "../../database/schemas/canvas.ts";
+import {Canvas, CanvasLightProperties, CanvasPlayerProperties} from "../../database/schemas/canvas.ts";
 import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/deps.ts";
 import {broadcastEvent} from "../websocket/utils.ts";
 import {WEBSOCKET_EMITABLE_EVENTS} from "../websocket/events.ts";
@@ -48,6 +48,31 @@ canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
     canvasId: context.params.canvasId,
     playerId: context.params.playerId,
     data: playerData
+  });
+
+  context.response.status = 200
+})
+
+
+canvasRouter.patch('/:canvasId/light/:lightId', async (context) => {
+  const userId = await getCurrentUserId(context);
+  const lightData = await context.request.body({type: 'json'}).value as unknown as CanvasLightProperties
+  const canvasData = await getCanvasById(context.params.canvasId)
+  if (!canvasData) return
+
+  canvasData.canvasLights[context.params.lightId] = lightData
+
+  console.log(`modify canvas: ${context.params.canvasId}`)
+  console.log(`modify light: ${context.params.lightId}`)
+  console.log(canvasData.canvasLights)
+
+  await updateCanvas(new ObjectId(context.params.canvasId), canvasData)
+
+  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_UPDATE, {
+    source: userId,
+    canvasId: context.params.canvasId,
+    lightId: context.params.lightId,
+    data: lightData
   });
 
   context.response.status = 200
