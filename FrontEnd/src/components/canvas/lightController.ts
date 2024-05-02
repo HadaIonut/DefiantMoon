@@ -12,6 +12,7 @@ import {
 } from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {rtFetch} from 'src/utils/fetchOverRTC'
+import {handleNetworkRequest} from 'src/components/canvas/canvasSpawn'
 
 export const updateAllLightsShadowCasting = (canvas: Scene) => {
   const lights = canvas.getObjectsByProperty('type', 'PointLight')
@@ -59,20 +60,6 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
   // @ts-ignore
   renderer.shadowMap.needsUpdate = true
 
-  const handleNetworkRequest = (canvasId: string, lightId: string, networkUpdate = false) => {
-    console.log('trying network update light')
-    if (networkUpdate) {
-      playAreaStore.canvasLights[lightId].networkUpdate = false
-      return
-    }
-
-    rtFetch({
-      route: `/api/canvas/${canvasId}/light/${lightId}`,
-      method: 'PATCH',
-      body: playAreaStore.getNetworkLight(lightId),
-    })
-  }
-
   addDragControls(camera, renderer)({
     primary: indicator, secondary: light, onDragComplete: (newPosition: Vector3) => {
       hideNonVisibleLights(canvas)
@@ -91,8 +78,8 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
         light.position.copy(event.newValue.position)
         indicator.position.copy(event.newValue.position)
         handleNetworkRequest(playAreaStore.id, lightId, event.newValue.networkUpdate)
-      } else if (event.type === 'add' && event.newValue.type === 'light') {
-        handleNetworkRequest(playAreaStore.id, event.key)
+      } else if (event.type === 'add' && event.newValue.type === 'light' && event.key === lightId) {
+        console.log(event)
       }
     })
   })

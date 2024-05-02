@@ -5,6 +5,8 @@ import {adjustableShape} from 'src/components/canvas/adjustableShape'
 import {Scene} from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {removeObjectsWithChildren} from 'src/utils/CanvasUtils'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+import {PlayAreaStore} from 'src/types/PlayerArea'
 
 export const handleDragComplete = (canvas: Scene) => () => {
   const playAreaStore = usePlayAreaStore()
@@ -13,22 +15,45 @@ export const handleDragComplete = (canvas: Scene) => () => {
   hideNonVisibleLights(canvas)
 }
 
+export const handleNetworkRequest = (objectId: string, objectName: string, storeProperty: keyof PlayAreaStore, functionGetter: string) => {
+  const playAreaStore = usePlayAreaStore()
+
+  if ((playAreaStore[storeProperty] as Record<string, any>)[objectId].networkUpdate) {
+    playAreaStore[storeProperty][objectId].networkUpdate = false
+    return
+  }
+  rtFetch({
+    route: `/api/canvas/${playAreaStore.id}/${objectName}/${objectId}`,
+    method: 'PATCH',
+    body: (playAreaStore[functionGetter as keyof typeof playAreaStore] as Function)?.(objectId),
+  })
+}
+
 export const canvasSpawn: StoreEventMaps[] = [{
   storeFunctionName: 'addLightToCanvas',
-  spawnFunction: (spawnedId, {canvas, camera, renderer}) => canvasSpawnLight(canvas, camera, renderer, spawnedId),
+  spawnFunction: (spawnedId, {canvas, camera, renderer}) => {
+    canvasSpawnLight(canvas, camera, renderer, spawnedId)
+    handleNetworkRequest(spawnedId, 'light', 'canvasLights', 'getNetworkLight')
+  },
 }, {
   storeFunctionName: 'addPlayerToCanvas',
-  spawnFunction: (spawnedId, {canvas, camera, renderer}) => initCharacter(canvas, camera, renderer, spawnedId),
+  spawnFunction: (spawnedId, {canvas, camera, renderer}) => {
+    initCharacter(canvas, camera, renderer, spawnedId)
+    handleNetworkRequest(spawnedId, 'player', 'canvasPlayers', 'getNetworkPlayer')
+  },
 }, {
   storeFunctionName: 'createNewWall',
-  spawnFunction: (spawnedId, {canvas, controls, renderer, rayCaster, mouse, plane}) => adjustableShape({
-    id: spawnedId,
-    canvas: canvas,
-    controls,
-    rayCaster,
-    plane,
-    mouse,
-    renderer,
-    onDragComplete: handleDragComplete(canvas),
-  }),
+  spawnFunction: (spawnedId, {canvas, controls, renderer, rayCaster, mouse, plane}) => {
+    adjustableShape({
+      id: spawnedId,
+      canvas: canvas,
+      controls,
+      rayCaster,
+      plane,
+      mouse,
+      renderer,
+      onDragComplete: handleDragComplete(canvas),
+    })
+    handleNetworkRequest(spawnedId, 'wall', 'canvasWalls', 'getNetworkWall')
+  },
 }]

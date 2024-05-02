@@ -117,7 +117,7 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
       } else if (event.type === 'add' && event.newValue.type === 'player') {
         handleNetworkRequest(playerAreaStore.id, event.key)
       } else if (event.key === 'isActive') {
-        if (playerAreaStore.canvasPlayers[playerId].isActive) {
+        if (playerAreaStore.canvasPlayers[playerId]?.isActive) {
           cylinder.material = new THREE.MeshBasicMaterial({color: 0xff0000})
         } else {
           cylinder.material = new THREE.MeshBasicMaterial({color: 0xffff00})

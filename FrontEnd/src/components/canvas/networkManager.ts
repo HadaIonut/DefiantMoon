@@ -23,7 +23,7 @@ export const handleObjectSpawn = (canvasEntries: StoreEventMaps[], canvasData: C
   return playAreaStore.$onAction(({name, after}) => {
     after((resolvedReturn) => {
       const triggered = canvasEntries.find((entry) => entry.storeFunctionName === name)
-      if (!triggered) return
+      if (!triggered || !resolvedReturn) return
 
       triggered.spawnFunction(resolvedReturn, canvasData)
     })

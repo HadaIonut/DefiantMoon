@@ -54,16 +54,19 @@ export const validateAccessToken = (accessToken: string) => {
 export const authMiddleWare: Middleware = async (context: Context, next: () => Promise<unknown>) => {
 
     const accessToken = await context.cookies.get("accessToken");
+    console.log(accessToken)
     if (!accessToken) {
-        context.response.status = 401;
+        context.response.status = 403;
         return
     }
     try {
         const payload = await validateAccessToken(accessToken);
+        console.log(payload, context.state.userId)
         context.state.userId = payload.userId;
         await next();
         delete context.state.userId;
     } catch (_) {
+        console.log(_)
         context.response.status = 401;
         return
     }

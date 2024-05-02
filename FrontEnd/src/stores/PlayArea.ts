@@ -97,29 +97,27 @@ export const usePlayAreaStore = defineStore('playArea', {
         type: 'wall',
       }
       this.currentDrawingId = newDrawingId
-      rtFetch({
-        route: `/api/canvas/${this.id}/wall/${newDrawingId}`,
-        method: 'PATCH',
-        body: this.canvasWalls[newDrawingId],
-      })
+      // rtFetch({
+      //   route: `/api/canvas/${this.id}/wall/${newDrawingId}`,
+      //   method: 'PATCH',
+      //   body: this.canvasWalls[newDrawingId],
+      // })
       return newDrawingId
     },
-    addPointToShape(point: Vector3, shapeId: string) {
-      this.canvasWalls[shapeId].controlPoints[MathUtils.generateUUID()] = {position: point, type: 'controlPoint'}
+    addPointToShape(point: Vector3, shapeId: string, pointId = MathUtils.generateUUID()) {
+      point.set(Math.round(point.x), Math.round(point.y), Math.round(point.z))
+
+      this.canvasWalls[shapeId].controlPoints[pointId] = {position: point, type: 'controlPoint'}
+      return {shapeId, pointId}
     },
     removePointFromShape(pointId: string, shapeId: string) {
       delete this.canvasWalls[shapeId].controlPoints[pointId]
+      return {shapeId, pointId}
     },
     updatePointLocation(pointId: string, shapeId: string, newLocation: Vector3) {
       newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))
-
-      this.canvasWalls[shapeId].controlPoints = {
-        ...this.canvasWalls[shapeId].controlPoints,
-        [pointId]: {
-          ...this.canvasWalls[shapeId].controlPoints[pointId],
-          position: newLocation,
-        },
-      }
+      this.canvasWalls[shapeId].controlPoints[pointId].position = newLocation
+      return {shapeId, pointId}
     },
     updatePlayerLocation(playerId: string, newLocation: Vector3, networkUpdate = false) {
       newLocation.set(Math.round(newLocation.x), Math.round(newLocation.y), Math.round(newLocation.z))
