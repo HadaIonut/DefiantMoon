@@ -49,6 +49,7 @@ const handleCanvasChange = async (newId: string) => {
 
   &:hover {
     background: mix($tertiary, $secondary, 50%);
+    transition: background-color 0.1s ease-in-out;
   }
 }
 

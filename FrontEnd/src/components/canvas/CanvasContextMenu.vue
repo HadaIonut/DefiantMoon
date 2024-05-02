@@ -102,11 +102,10 @@ onClickOutside(contextMenuRef, () => {
   transform: translateX(-50%) scaleY(0);
   transform-origin: top;
   overflow: hidden;
-  transition: transform 0.3s ease-in-out, top 0.3s ease-in-out, left 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 
   &--visible {
     transform: translateX(-50%) scaleY(1);
-
   }
 }
 
