@@ -1,5 +1,5 @@
 import {hideNonVisibleLights} from './characterController'
-import {addDragControls, getActivePlayer} from 'src/utils/CanvasUtils'
+import {addDragControls} from 'src/utils/CanvasUtils'
 import {
   Camera,
   Mesh,
@@ -8,11 +8,12 @@ import {
   PointLightHelper,
   Renderer,
   Scene,
-  SphereGeometry, Vector3,
+  SphereGeometry,
+  Vector3,
 } from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
-import {rtFetch} from 'src/utils/fetchOverRTC'
 import {handleNetworkRequest} from 'src/components/canvas/canvasSpawn'
+import {CanvasLightProperties} from 'src/types/PlayerArea'
 
 export const updateAllLightsShadowCasting = (canvas: Scene) => {
   const lights = canvas.getObjectsByProperty('type', 'PointLight')
@@ -68,25 +69,15 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
     },
   })
 
-  const unsubscribeMethod = playAreaStore.$onAction(({name, after}) => {
+  return playAreaStore.$onAction(({name, after}) => {
+    after((resolvedReturn) => {
+      if (name === 'updateLightLocation' && resolvedReturn === lightId) {
+        const lightValue = playAreaStore.canvasLights[resolvedReturn as keyof CanvasLightProperties]
 
-  })
-
-  playAreaStore.$subscribe(({events}) => {
-    const parsedMutation = Array.isArray(events) ? events : [events]
-
-    parsedMutation.forEach((event) => {
-      if (event.key === 'color') {
-        light.color.set(event.newValue)
-      } else if (event.key === lightId && event.type === 'set') {
-        light.position.copy(event.newValue.position)
-        indicator.position.copy(event.newValue.position)
+        light.position.copy(lightValue.position)
+        indicator.position.copy(lightValue.position)
         handleNetworkRequest(lightId, 'light', 'canvasLights', 'getNetworkLight')
-      } else if (event.type === 'add' && event.newValue.type === 'light' && event.key === lightId) {
-        console.log(event)
       }
     })
   })
-
-  return unsubscribeMethod
 }

@@ -91,6 +91,7 @@ export const usePlayAreaStore = defineStore('playArea', {
         position: JSON.parse(JSON.stringify(newPosition)),
         networkUpdate,
       }
+      return lightId
     },
     createNewWall(originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean, wallId?: string, objectId?: string) {
       const newDrawingId = objectId ?? MathUtils.generateUUID()
@@ -103,11 +104,6 @@ export const usePlayAreaStore = defineStore('playArea', {
         type: 'wall',
       }
       this.currentDrawingId = newDrawingId
-      // rtFetch({
-      //   route: `/api/canvas/${this.id}/wall/${newDrawingId}`,
-      //   method: 'PATCH',
-      //   body: this.canvasWalls[newDrawingId],
-      // })
       return newDrawingId
     },
     addPointToShape(point: Vector3, shapeId: string, pointId = MathUtils.generateUUID()) {
