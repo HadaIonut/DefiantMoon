@@ -4,7 +4,7 @@ import {usePlayAreaStore} from 'src/stores/PlayArea'
 
 export type StoreEventMaps = {
   storeFunctionName: string,
-  spawnFunction: (spawnedId: string, canvasData: CanvasData) => void
+  spawnFunction: (spawnedId: unknown, canvasData: CanvasData) => void
 }
 
 type CanvasData = {

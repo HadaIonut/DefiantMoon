@@ -36,7 +36,6 @@ const addPointsToObject = () => {
   if (playAreaStore.targetedObject?.parent?.name === 'adjustableShape') {
     playAreaStore.addPointsToObject()
   }
-
   playAreaStore.handleContextMenu({})
 }
 
@@ -56,7 +55,9 @@ const contextMenuStyle = computed(() => {
   `
 })
 
-onClickOutside(contextMenuRef, () => playAreaStore.handleContextMenu({}, undefined, 'none'))
+onClickOutside(contextMenuRef, () => {
+  playAreaStore.handleContextMenu({}, undefined, 'none')
+})
 
 </script>
 

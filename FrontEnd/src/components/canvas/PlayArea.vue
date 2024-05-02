@@ -29,6 +29,7 @@ import {useUsersStore} from 'src/stores/users'
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 import {handleObjectSpawn, StoreEventMaps} from 'src/components/canvas/networkManager'
 import {canvasSpawn, handleDragComplete} from 'src/components/canvas/canvasSpawn'
+import {ControlPoint} from 'src/types/PlayerArea'
 
 const playAreaStore = usePlayAreaStore()
 
@@ -46,9 +47,7 @@ const canvasElement: Ref<HTMLElement | null> = ref(null)
 const stats = new Stats()
 stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
-let storeUnsubscribe: () => void
-let unsubscribeList = []
-
+let unsubscribeList: (() => void)[] = []
 
 const enableRotation = false
 
@@ -170,32 +169,9 @@ const subscribeToStore = () => {
       unsubscribeList = []
       initCanvas()
     }
-    // if (mutation.type === 'direct') {
-    //   const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
-    //   console.log(parsedEvents)
-    //   parsedEvents.forEach((event) => {
-    //     if (event?.newValue?.type === 'light' && event?.type === 'add') {
-    //       canvasSpawnLight(canvas, camera, renderer, event.key)
-    //     } else if (event.type === 'add' && event.newValue.type === 'wall') {
-    //       adjustableShape({
-    //         id: event.key,
-    //         canvas: canvas,
-    //         controls,
-    //         rayCaster,
-    //         plane,
-    //         mouse,
-    //         renderer,
-    //         onDragComplete: handleDragComplete,
-    //       })
-    //     } else if (event.type === 'add' && event.newValue.type === 'player') {
-    //       initCharacter(canvas, camera, renderer, event.key)
-    //     } else if (event.type === 'set' && event.key === 'isActive') {
-    //       canvas.getObjectsByProperty('name', 'player').forEach((player) => {
-    //         player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
-    //       })
-    //     }
-    //   })
-    // }
+    if (mutation.type === 'direct') {
+      console.log(mutation)
+    }
   })
 }
 const subscribeToEvents = () => {
@@ -221,7 +197,7 @@ const handleWallNetworkEvent = (message: Record<string, any>) => {
     console.log('existing wall update')
     playAreaStore.updateWall(message.wallId, message.data, true)
   } else {
-    const [newWallOriginId, newWallOriginValue] = Object.entries(message.data.controlPoints)[0]
+    const [newWallOriginId, newWallOriginValue] = Object.entries(message.data.controlPoints)[0] as [string, ControlPoint]
     playAreaStore.createNewWall(newWallOriginValue.position, 0, false, false, false, newWallOriginId, message.wallId)
     playAreaStore.canvasWalls[message.wallId].networkUpdate = true
   }

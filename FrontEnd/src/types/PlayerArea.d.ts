@@ -29,7 +29,11 @@ export type ControlPoint = {
 
 
 export type CanvasWallProperties = {
-    controlPoints: Record<string, ControlPoint>,
+    controlPoints: Record<string, ControlPoint> & {networkUpdate?: boolean},
+    // controlPoints: {
+    //     [key: string]: ControlPoint
+    //     networkUpdate?: boolean
+    // },
     tension: number,
     filled: boolean,
     closed: boolean,

@@ -18,6 +18,7 @@ export const handleNetworkRequest = (objectId: string, objectName: string, store
   const playAreaStore = usePlayAreaStore()
 
   if ((playAreaStore[storeProperty] as Record<string, any>)[objectId].networkUpdate) {
+    // @ts-ignore
     playAreaStore[storeProperty][objectId].networkUpdate = false
     return
   }
@@ -31,20 +32,20 @@ export const handleNetworkRequest = (objectId: string, objectName: string, store
 export const canvasSpawn: StoreEventMaps[] = [{
   storeFunctionName: 'addLightToCanvas',
   spawnFunction: (spawnedId, {canvas, camera, renderer}) => {
-    canvasSpawnLight(canvas, camera, renderer, spawnedId)
-    handleNetworkRequest(spawnedId, 'light', 'canvasLights', 'getNetworkLight')
+    canvasSpawnLight(canvas, camera, renderer, spawnedId as string)
+    handleNetworkRequest(spawnedId as string, 'light', 'canvasLights', 'getNetworkLight')
   },
 }, {
   storeFunctionName: 'addPlayerToCanvas',
   spawnFunction: (spawnedId, {canvas, camera, renderer}) => {
-    initCharacter(canvas, camera, renderer, spawnedId)
-    handleNetworkRequest(spawnedId, 'player', 'canvasPlayers', 'getNetworkPlayer')
+    initCharacter(canvas, camera, renderer, spawnedId as string)
+    handleNetworkRequest(spawnedId as string, 'player', 'canvasPlayers', 'getNetworkPlayer')
   },
 }, {
   storeFunctionName: 'createNewWall',
   spawnFunction: (spawnedId, {canvas, controls, renderer, rayCaster, mouse, plane}) => {
     adjustableShape({
-      id: spawnedId,
+      id: spawnedId as string,
       canvas: canvas,
       controls,
       rayCaster,
@@ -53,6 +54,6 @@ export const canvasSpawn: StoreEventMaps[] = [{
       renderer,
       onDragComplete: handleDragComplete(canvas),
     })
-    handleNetworkRequest(spawnedId, 'wall', 'canvasWalls', 'getNetworkWall')
+    handleNetworkRequest(spawnedId as string, 'wall', 'canvasWalls', 'getNetworkWall')
   },
 }]

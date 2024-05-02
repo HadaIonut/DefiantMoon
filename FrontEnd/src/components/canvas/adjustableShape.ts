@@ -226,7 +226,7 @@ export const adjustableShape = ({
           top: event.clientY,
           left: event.clientX,
           // @ts-ignore
-        }, centralPointIntersection?.[0]?.object ?? controlPointsIntersection?.[0]?.object)
+        }, centralPointIntersection?.[0]?.object ?? controlPointsIntersection?.[0]?.object, 'block')
       }
       event.preventDefault()
       return false
