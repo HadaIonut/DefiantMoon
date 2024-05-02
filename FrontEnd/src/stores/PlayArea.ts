@@ -52,8 +52,9 @@ export const usePlayAreaStore = defineStore('playArea', {
         else this.contextMenu.display = 'none'
       }
       if (targetedObject) this.setTargetObject(targetedObject)
-      this.contextMenu.top = Number(position.top)
-      this.contextMenu.left = Number(position.left)
+      if (!position.top || !position.left) return
+      this.contextMenu.top = Number(position.top) ?? position.top
+      this.contextMenu.left = Number(position.left) ?? position.left
     },
     addLightToCanvas({
       decay = 1,

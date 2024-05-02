@@ -117,7 +117,6 @@ const initCanvas = () => {
   canvas = new Scene()
   canvas.background = new Color(0x333333)
 
-
   initGUI()
   // @ts-ignore
   watch(canvasElement, (newValue: HTMLElement) => {

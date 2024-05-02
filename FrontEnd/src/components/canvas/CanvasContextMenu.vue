@@ -49,10 +49,14 @@ const removePointFromObject = () => {
 
 const contextMenuStyle = computed(() => {
   return `
-    display: ${playAreaStore.contextMenu.display};
     top: ${playAreaStore.contextMenu.top}px;
     left: ${playAreaStore.contextMenu.left}px;
   `
+})
+
+const visibility = computed(() => {
+  if (playAreaStore.contextMenu.display === 'block') return 'contextMenu--visible'
+  return ''
 })
 
 onClickOutside(contextMenuRef, () => {
@@ -75,23 +79,53 @@ onClickOutside(contextMenuRef, () => {
       :style="`position: absolute; top: 140px; color: white; background: darkslategray `"
       @click="addRandomPlayer">add random player
     </div>
-    <div class="contextMenu" :style="contextMenuStyle" ref="contextMenuRef">
-      <div style="cursor: pointer;" @click="addPointsToObject">add points</div>
-      <div style="cursor: pointer;" @click="removePointFromObject"
-           v-if="playAreaStore.targetedObject?.name === 'controlPoint'">remove point
+    <div :class="`contextMenu ${visibility}`" :style="contextMenuStyle" ref="contextMenuRef">
+      <div class="option-container">
+        <div @click="addPointsToObject">add points</div>
+        <div @click="removePointFromObject"
+             v-if="playAreaStore.targetedObject?.name === 'controlPoint'">remove point
+        </div>
+        <div @click="objectDelete">delete object</div>
       </div>
-      <div style="cursor: pointer;" @click="objectDelete">delete object</div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .contextMenu {
-  display: none;
   position: absolute;
   top: 0;
   left: 0;
-  background: #888888;
-  transform: translateX(-50%)
+  background: $tertiary;
+  border: 1px solid $accent;
+  border-radius: 6px;
+  transform: translateX(-50%) scaleY(0);
+  transform-origin: top;
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out, top 0.3s ease-in-out, left 0.3s ease-in-out;
+
+  &--visible {
+    transform: translateX(-50%) scaleY(1);
+
+  }
+}
+
+.option-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+
+  & > div {
+    cursor: pointer;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+  & > :hover {
+    background: mix($tertiary, $secondary, 50%);
+    transition: background-color 0.2s ease-in-out;
+  }
+
 }
 </style>

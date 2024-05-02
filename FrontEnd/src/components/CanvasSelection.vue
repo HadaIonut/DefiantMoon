@@ -42,13 +42,13 @@ const handleCanvasChange = async (newId: string) => {
 
 .element {
   padding: 5px;
-  background: $darker-tertiary;
+  background: $tertiary;
   border: 1px solid $accent;
   border-radius: 6px;
   position: relative;
 
   &:hover {
-    background: mix($darker-tertiary, $secondary, 50%);
+    background: mix($tertiary, $secondary, 50%);
   }
 }
 
