@@ -3,6 +3,7 @@ import {Camera, Renderer, Scene, Vector3} from 'three'
 import {addDragControls} from 'src/utils/CanvasUtils'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {rtFetch} from 'src/utils/fetchOverRTC'
+
 export const hideNonVisibleLights = (canvas: Scene, viewDistance = 400) => {
   const playAreaStore = usePlayAreaStore()
   const [, player] = playAreaStore.getActivePlayer
@@ -88,9 +89,11 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
 
   const handleNetworkRequest = (canvasId: string, playerId: string, networkUpdate = false) => {
     if (networkUpdate) {
+      console.log('skipping update')
       playerAreaStore.canvasPlayers[playerId].networkUpdate = false
       return
     }
+    console.log('player update network')
 
     rtFetch({
       route: `/api/canvas/${canvasId}/player/${playerId}`,
@@ -106,26 +109,36 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
       setTimeout(() => playerAreaStore.updatePlayerLocation(cylinder.uuid, newPosition), 0)
     },
   })
+  canvas.add(cylinder)
+  // playerAreaStore.$subscribe(({events}) => {
+  //   const parsedEvents = Array.isArray(events) ? events : [events]
+  //   parsedEvents.forEach((event) => {
+  //     if (event.type === 'set' && event.key === playerId) {
+  //       cylinder.position.copy(event.newValue.position)
+  //       hideNonVisibleLights(canvas)
+  //       handleNetworkRequest(playerAreaStore.id, playerId, event.newValue.networkUpdate)
+  //     } else if (event.type === 'add' && event.newValue.type === 'player') {
+  //       handleNetworkRequest(playerAreaStore.id, event.key)
+  //     } else if (event.key === 'isActive') {
+  //       if (playerAreaStore.canvasPlayers[playerId]?.isActive) {
+  //         cylinder.material = new THREE.MeshBasicMaterial({color: 0xff0000})
+  //       } else {
+  //         cylinder.material = new THREE.MeshBasicMaterial({color: 0xffff00})
+  //       }
+  //     }
+  //   })
+  // })
 
-  playerAreaStore.$subscribe(({events}) => {
-    const parsedEvents = Array.isArray(events) ? events : [events]
-    parsedEvents.forEach((event) => {
-      if (event.type === 'set' && event.key === playerId) {
-        cylinder.position.copy(event.newValue.position)
+
+  return playerAreaStore.$onAction(({name, after}) => {
+    after((resolvedReturn) => {
+      if (name === 'updatePlayerLocation' && resolvedReturn === cylinder.uuid) {
+        console.log('updating the canvas')
+        const player = playerAreaStore.canvasPlayers[resolvedReturn]
+        cylinder.position.copy(player.position)
         hideNonVisibleLights(canvas)
-        handleNetworkRequest(playerAreaStore.id, playerId, event.newValue.networkUpdate)
-      } else if (event.type === 'add' && event.newValue.type === 'player') {
-        handleNetworkRequest(playerAreaStore.id, event.key)
-      } else if (event.key === 'isActive') {
-        if (playerAreaStore.canvasPlayers[playerId]?.isActive) {
-          cylinder.material = new THREE.MeshBasicMaterial({color: 0xff0000})
-        } else {
-          cylinder.material = new THREE.MeshBasicMaterial({color: 0xffff00})
-        }
+        handleNetworkRequest(playerAreaStore.id, playerId, player.networkUpdate)
       }
     })
   })
-
-  canvas.add(cylinder)
-  return cylinder
 }

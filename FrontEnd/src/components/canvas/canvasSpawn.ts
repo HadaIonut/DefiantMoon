@@ -4,7 +4,6 @@ import {hideNonVisibleLights, initCharacter} from 'src/components/canvas/charact
 import {adjustableShape} from 'src/components/canvas/adjustableShape'
 import {Scene} from 'three'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
-import {removeObjectsWithChildren} from 'src/utils/CanvasUtils'
 import {rtFetch} from 'src/utils/fetchOverRTC'
 import {PlayAreaStore} from 'src/types/PlayerArea'
 

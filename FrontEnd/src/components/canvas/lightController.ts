@@ -68,6 +68,10 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
     },
   })
 
+  const unsubscribeMethod = playAreaStore.$onAction(({name, after}) => {
+
+  })
+
   playAreaStore.$subscribe(({events}) => {
     const parsedMutation = Array.isArray(events) ? events : [events]
 
@@ -77,10 +81,12 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
       } else if (event.key === lightId && event.type === 'set') {
         light.position.copy(event.newValue.position)
         indicator.position.copy(event.newValue.position)
-        handleNetworkRequest(playAreaStore.id, lightId, event.newValue.networkUpdate)
+        handleNetworkRequest(lightId, 'light', 'canvasLights', 'getNetworkLight')
       } else if (event.type === 'add' && event.newValue.type === 'light' && event.key === lightId) {
         console.log(event)
       }
     })
   })
+
+  return unsubscribeMethod
 }

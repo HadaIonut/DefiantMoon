@@ -1,16 +1,22 @@
 import * as THREE from 'three'
 import {
   BoxGeometry,
-  BufferGeometry, CatmullRomCurve3, DoubleSide, ExtrudeGeometry,
+  BufferGeometry,
+  CatmullRomCurve3,
+  DoubleSide,
+  ExtrudeGeometry,
   Group,
   Line,
-  LineBasicMaterial, MathUtils,
+  LineBasicMaterial,
+  MathUtils,
   Mesh,
-  MeshBasicMaterial, Object3D,
+  MeshBasicMaterial,
+  Object3D,
   Plane,
   Raycaster,
   Renderer,
-  Scene, Shape,
+  Scene,
+  Shape,
   Vector2,
   Vector3,
 } from 'three'
@@ -20,8 +26,7 @@ import {updateAllLightsShadowCasting} from './lightController'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {rtFetch} from 'src/utils/fetchOverRTC'
-import {watch, watchEffect} from 'vue'
-import {storeToRefs} from 'pinia'
+import {CanvasWallProperties} from 'src/types/PlayerArea'
 
 export type AdjustableShapeInput = {
   id: string,
@@ -290,13 +295,12 @@ export const adjustableShape = ({
   window.addEventListener('mousemove', onMouseMove, false)
   window.addEventListener('contextmenu', (event) => event.preventDefault(), false)
 
-  playAreaStore.$onAction(({name, after}) => {
+  return playAreaStore.$onAction(({name, after}) => {
     after((resolvedReturn) => {
       if (!resolvedReturn) return
-      const {shapeId, pointId} = resolvedReturn as {shapeId: string, pointId:string}
+      const {shapeId, pointId} = resolvedReturn as { shapeId: string, pointId: string }
       if (shapeId !== shapeGroup.uuid) return
       const {networkUpdate} = playAreaStore.canvasWalls[shapeId].controlPoints
-
 
       if (name === 'addPointToShape') {
         const newPointValue = playAreaStore.canvasWalls[shapeId].controlPoints[pointId]
@@ -306,10 +310,10 @@ export const adjustableShape = ({
         shapeGroup.add(newPoint)
         controlPoints.push(newPoint)
 
-        handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, !!networkUpdate )
+        handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, !!networkUpdate)
         updateShape()
       } else if (name === 'removePointFromShape') {
-        const {shapeId, pointId} = resolvedReturn as {shapeId: string, pointId:string}
+        const {shapeId, pointId} = resolvedReturn as { shapeId: string, pointId: string }
         const {networkUpdate} = playAreaStore.canvasWalls[shapeId].controlPoints
 
         shapeGroup.getObjectsByProperty('uuid', pointId)[0]?.removeFromParent()
@@ -318,7 +322,7 @@ export const adjustableShape = ({
         handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, !!networkUpdate)
         updateShape()
       } else if (name === 'updatePointLocation') {
-        const {shapeId, pointId} = resolvedReturn as {shapeId: string, pointId:string}
+        const {shapeId, pointId} = resolvedReturn as { shapeId: string, pointId: string }
         const {networkUpdate} = playAreaStore.canvasWalls[shapeId].controlPoints
         const newPointValue = playAreaStore.canvasWalls[shapeId].controlPoints[pointId]
 
@@ -326,6 +330,18 @@ export const adjustableShape = ({
           if (point.uuid !== pointId) return
 
           controlPoints[index].position.copy(newPointValue.position)
+        })
+
+        updateShape()
+        updateAllLightsShadowCasting(canvas)
+
+        handleNetworkRequest(playAreaStore.id, shapeGroup.uuid, !!networkUpdate)
+      } else if (name === 'updateWall') {
+        console.log('trying to update entire wall', networkUpdate)
+        const editedWallPoints = playAreaStore.canvasWalls[shapeId].controlPoints
+
+        controlPoints.forEach((point, index) => {
+          controlPoints[index].position.copy(editedWallPoints[point.uuid].position)
         })
 
         updateShape()

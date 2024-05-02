@@ -47,6 +47,8 @@ const stats = new Stats()
 stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
 let storeUnsubscribe: () => void
+let unsubscribeList = []
+
 
 const enableRotation = false
 
@@ -116,6 +118,7 @@ const initCanvas = () => {
   canvas = new Scene()
   canvas.background = new Color(0x333333)
 
+
   initGUI()
   // @ts-ignore
   watch(canvasElement, (newValue: HTMLElement) => {
@@ -126,15 +129,15 @@ const initCanvas = () => {
   initGround(canvas)
 
   Object.keys(playAreaStore.canvasPlayers).forEach((playerId) => {
-    initCharacter(canvas, camera, renderer, playerId)
+    unsubscribeList.push(initCharacter(canvas, camera, renderer, playerId))
   })
 
   Object.keys(playAreaStore.canvasLights).forEach((key) => {
-    canvasSpawnLight(canvas, camera, renderer, key)
+    unsubscribeList.push(canvasSpawnLight(canvas, camera, renderer, key))
   })
 
   Object.keys(playAreaStore.canvasWalls).forEach((key) => {
-    adjustableShape({
+    unsubscribeList.push(adjustableShape({
       id: key,
       canvas: canvas,
       controls,
@@ -143,10 +146,10 @@ const initCanvas = () => {
       mouse,
       renderer,
       onDragComplete: handleDragComplete(canvas),
-    })
+    }))
   })
 
-  storeUnsubscribe = handleObjectSpawn(canvasSpawn, {canvas, camera, controls, rayCaster, plane, mouse, renderer})
+  unsubscribeList.push(handleObjectSpawn(canvasSpawn, {canvas, camera, controls, rayCaster, plane, mouse, renderer}))
 }
 const animate = () => {
   stats.begin()
@@ -163,7 +166,8 @@ const subscribeToStore = () => {
     if (mutation.type === 'patch function') {
       console.log(mutation, 'patch')
       removeObjectsWithChildren(canvas)
-      storeUnsubscribe()
+      unsubscribeList.forEach((method) => method())
+      unsubscribeList = []
       initCanvas()
     }
     // if (mutation.type === 'direct') {
@@ -214,8 +218,8 @@ const subscribeToEvents = () => {
 }
 const handleWallNetworkEvent = (message: Record<string, any>) => {
   if (Object.keys(playAreaStore.canvasWalls).includes(message.wallId)) {
-    Object.assign(playAreaStore.canvasWalls[message.wallId], message.data)
-    playAreaStore.canvasWalls[message.wallId].networkUpdate = true
+    console.log('existing wall update')
+    playAreaStore.updateWall(message.wallId, message.data, true)
   } else {
     const [newWallOriginId, newWallOriginValue] = Object.entries(message.data.controlPoints)[0]
     playAreaStore.createNewWall(newWallOriginValue.position, 0, false, false, false, newWallOriginId, message.wallId)
@@ -226,6 +230,7 @@ const handlePlayerNetworkEvent = (message: Record<string, any>) => {
   const newPosition = message.data.position
 
   if (Object.keys(playAreaStore.canvasPlayers).includes(message.playerId)) {
+    console.log('network loading')
     playAreaStore.updatePlayerLocation(message.playerId, new Vector3(newPosition.x, newPosition.y, newPosition.z), true)
   } else {
     playAreaStore.addPlayerToCanvas(new Vector3(newPosition.x, newPosition.y, newPosition.z), message.playerId)
