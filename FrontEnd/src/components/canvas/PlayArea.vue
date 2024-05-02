@@ -27,6 +27,8 @@ import {websocket} from 'src/websocket/websocket'
 import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
 import {useUsersStore} from 'src/stores/users'
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
+import {handleObjectSpawn, StoreEventMaps} from 'src/components/canvas/networkManager'
+import {canvasSpawn, handleDragComplete} from 'src/components/canvas/canvasSpawn'
 
 const playAreaStore = usePlayAreaStore()
 
@@ -44,16 +46,12 @@ const canvasElement: Ref<HTMLElement | null> = ref(null)
 const stats = new Stats()
 stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
 document.body.appendChild(stats.dom)
+let storeUnsubscribe: () => void
 
 const enableRotation = false
 
 const mouse = new Vector2()
 
-const handleDragComplete = () => {
-  if (!playAreaStore.getCurrentPlayerPosition) return
-
-  hideNonVisibleLights(canvas)
-}
 const initGUI = () => {
   const panel = new GUI({width: 310})
   const settings = {
@@ -144,9 +142,11 @@ const initCanvas = () => {
       plane,
       mouse,
       renderer,
-      onDragComplete: handleDragComplete,
+      onDragComplete: handleDragComplete(canvas),
     })
   })
+
+  storeUnsubscribe = handleObjectSpawn(canvasSpawn, {canvas, camera, controls, rayCaster, plane, mouse, renderer})
 }
 const animate = () => {
   stats.begin()
@@ -158,39 +158,40 @@ const animate = () => {
   stats.end()
 }
 const subscribeToStore = () => {
-// TODO CLEAN UP THE FUCKING CLOWN FUCNTION
+  // TODO CLEAN UP THE FUCKING CLOWN FUCNTION
   playAreaStore.$subscribe((mutation) => {
     if (mutation.type === 'patch function') {
       console.log(mutation, 'patch')
       removeObjectsWithChildren(canvas)
+      storeUnsubscribe()
       initCanvas()
     }
-    if (mutation.type === 'direct') {
-      const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
-      console.log(parsedEvents)
-      parsedEvents.forEach((event) => {
-        if (event?.newValue?.type === 'light' && event?.type === 'add') {
-          canvasSpawnLight(canvas, camera, renderer, event.key)
-        } else if (event.type === 'add' && event.newValue.type === 'wall') {
-          adjustableShape({
-            id: event.key,
-            canvas: canvas,
-            controls,
-            rayCaster,
-            plane,
-            mouse,
-            renderer,
-            onDragComplete: handleDragComplete,
-          })
-        } else if (event.type === 'add' && event.newValue.type === 'player') {
-          initCharacter(canvas, camera, renderer, event.key)
-        } else if (event.type === 'set' && event.key === 'isActive') {
-          canvas.getObjectsByProperty('name', 'player').forEach((player) => {
-            player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
-          })
-        }
-      })
-    }
+    // if (mutation.type === 'direct') {
+    //   const parsedEvents = Array.isArray(mutation.events) ? mutation.events : [mutation.events]
+    //   console.log(parsedEvents)
+    //   parsedEvents.forEach((event) => {
+    //     if (event?.newValue?.type === 'light' && event?.type === 'add') {
+    //       canvasSpawnLight(canvas, camera, renderer, event.key)
+    //     } else if (event.type === 'add' && event.newValue.type === 'wall') {
+    //       adjustableShape({
+    //         id: event.key,
+    //         canvas: canvas,
+    //         controls,
+    //         rayCaster,
+    //         plane,
+    //         mouse,
+    //         renderer,
+    //         onDragComplete: handleDragComplete,
+    //       })
+    //     } else if (event.type === 'add' && event.newValue.type === 'player') {
+    //       initCharacter(canvas, camera, renderer, event.key)
+    //     } else if (event.type === 'set' && event.key === 'isActive') {
+    //       canvas.getObjectsByProperty('name', 'player').forEach((player) => {
+    //         player.userData.selected = playAreaStore.canvasPlayers[player.uuid].isActive
+    //       })
+    //     }
+    //   })
+    // }
   })
 }
 const subscribeToEvents = () => {

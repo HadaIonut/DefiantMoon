@@ -67,15 +67,16 @@ export const usePlayAreaStore = defineStore('playArea', {
         indicatorId: indicatorId,
         type: 'light',
       }
+      return lightId
     },
-    addPlayerToCanvas(position: Vector3, uuid?:string) {
-      const playerId = uuid ?? MathUtils.generateUUID()
+    addPlayerToCanvas(position: Vector3, playerId = MathUtils.generateUUID()) {
       this.canvasPlayers[playerId] = {
         isActive: true,
         position,
         type: 'player',
       }
       this.selectPlayer(playerId)
+      return playerId
     },
     updateLightLocation(lightId: string, newPosition: Vector3, networkUpdate = false) {
       newPosition.set(Math.round(newPosition.x), Math.round(newPosition.y), Math.round(newPosition.z))
@@ -101,6 +102,7 @@ export const usePlayAreaStore = defineStore('playArea', {
         method: 'PATCH',
         body: this.canvasWalls[newDrawingId],
       })
+      return newDrawingId
     },
     addPointToShape(point: Vector3, shapeId: string) {
       this.canvasWalls[shapeId].controlPoints[MathUtils.generateUUID()] = {position: point, type: 'controlPoint'}
