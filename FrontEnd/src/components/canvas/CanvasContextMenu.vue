@@ -10,22 +10,6 @@ const playAreaStore = usePlayAreaStore()
 
 const contextMenuRef = ref(null)
 
-// @ts-ignore
-const drawModeToggleFunction = (event: MouseEvent) => {
-  event.stopPropagation()
-  playAreaStore.toggleDrawMode()
-}
-
-const addRandomLight = () => {
-  playAreaStore.addLightToCanvas({
-    position: new Vector3(getRandomInt(500), 10, getRandomInt(500)),
-  })
-}
-
-const addRandomPlayer = () => {
-  playAreaStore.addPlayerToCanvas(new Vector3(getRandomInt(500), 10, getRandomInt(500)))
-}
-
 const objectDelete = () => {
   if (playAreaStore.targetedObject?.parent?.name === 'adjustableShape') playAreaStore.deleteTargetObject()
 
@@ -67,18 +51,6 @@ onClickOutside(contextMenuRef, () => {
 
 <template>
   <div>
-    <div
-      :style="`position: absolute; top: 100px; color: white; background:${playAreaStore.drawMode ? 'pink' : 'darkslategray'} `"
-      @click="drawModeToggleFunction">wall draw
-    </div>
-    <div
-      :style="`position: absolute; top: 120px; color: white; background: darkslategray `"
-      @click="addRandomLight">add random light
-    </div>
-    <div
-      :style="`position: absolute; top: 140px; color: white; background: darkslategray `"
-      @click="addRandomPlayer">add random player
-    </div>
     <div :class="`contextMenu ${visibility}`" :style="contextMenuStyle" ref="contextMenuRef">
       <div class="option-container">
         <div @click="addPointsToObject">add points</div>

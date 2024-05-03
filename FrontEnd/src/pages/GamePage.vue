@@ -27,6 +27,7 @@ onBeforeMount(async () => {
     <PlayArea/>
 
     <ActionsSidebar/>
+    <CanvasSidebar/>
 
     <CanvasSelection/>
 

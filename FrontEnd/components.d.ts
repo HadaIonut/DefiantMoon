@@ -15,6 +15,7 @@ declare module '@vue/runtime-core' {
     ButtonComponent: typeof import('./src/components/ButtonComponent.vue')['default']
     CanvasContextMenu: typeof import('./src/components/canvas/CanvasContextMenu.vue')['default']
     CanvasSelection: typeof import('./src/components/CanvasSelection.vue')['default']
+    CanvasSidebar: typeof import('./src/components/CanvasSidebar.vue')['default']
     ChatMessageComponent: typeof import('./src/components/chatComponents/ChatMessageComponent.vue')['default']
     ChatToolbar: typeof import('./src/components/chatComponents/ChatToolbar.vue')['default']
     ChatWindowBody: typeof import('./src/components/windowBodies/ChatWindowBody.vue')['default']
