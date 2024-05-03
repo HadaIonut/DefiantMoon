@@ -26,7 +26,7 @@ import {updateAllLightsShadowCasting} from './lightController'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {rtFetch} from 'src/utils/fetchOverRTC'
-import {CanvasWallProperties} from 'src/types/PlayerArea'
+import {CanvasWallProperties, ControlPoint} from 'src/types/PlayerArea'
 
 export type AdjustableShapeInput = {
   id: string,
@@ -109,7 +109,9 @@ export const adjustableShape = ({
 }: AdjustableShapeInput) => {
   const playAreaStore = usePlayAreaStore()
   const {controlPoints: controlPointVectors, closed, concaveHull, filled, tension} = playAreaStore.canvasWalls[id]
-  let controlPoints = Object.entries(controlPointVectors).map((vect) => createPoint([vect[0], vect[1].position], canvas))
+  let controlPoints = (Object.entries(controlPointVectors)
+    .filter((vect) => typeof vect[1] !== 'boolean') as [string, ControlPoint][])
+    .map((vect) => createPoint([vect[0], vect[1].position], canvas))
 
   const shapeGroup: Group = new Group()
   shapeGroup.add(...controlPoints)

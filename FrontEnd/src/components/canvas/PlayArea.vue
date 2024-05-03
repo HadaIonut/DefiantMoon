@@ -3,7 +3,7 @@ import {onMounted, onUnmounted, Ref, ref, toRaw, watch} from 'vue'
 import * as THREE from 'three'
 import {
   Camera,
-  Color,
+  Color, Object3D,
   OrthographicCamera,
   PCFSoftShadowMap,
   Plane,
@@ -30,6 +30,8 @@ import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 import {handleObjectSpawn, StoreEventMaps} from 'src/components/canvas/networkManager'
 import {canvasSpawn, handleDragComplete} from 'src/components/canvas/canvasSpawn'
 import {ControlPoint} from 'src/types/PlayerArea'
+import {getCenteredWindow} from 'src/utils/utils'
+import {useWindowsStore} from 'src/stores/windows'
 
 const playAreaStore = usePlayAreaStore()
 
@@ -113,6 +115,44 @@ const handleCanvasClick = (event: MouseEvent) => {
   }
   playAreaStore.addPointToShape(clickLocation, playAreaStore.currentDrawingId)
 }
+
+const handleCanvasDoubleClick = (event: MouseEvent) => {
+  const windowStore = useWindowsStore()
+  const clickableElementNames = ['sourceLight', 'player', 'adjustableShape']
+  const clickableElements = clickableElementNames.reduce((acc: Object3D[], cur) => {
+    return [...acc, ...canvas.getObjectsByProperty('name', cur)]
+  }, [])
+
+  const clickLocation = findLocationFromCoords(event.clientX, event.clientY, camera, canvas)
+  clickLocation.setY(30)
+  const rayCaster = new Raycaster(clickLocation, new Vector3(0, -1, 0))
+  const intersection = rayCaster.intersectObjects(clickableElements)[0]
+  let intersectionObject = intersection?.object
+  if (!intersectionObject) return
+  if (intersectionObject?.name === 'sourceLight') {
+    intersectionObject = canvas.getObjectsByProperty('name', `sourceLight-${intersectionObject.uuid}`)[0]
+  } else if (intersectionObject?.name === 'wall' || intersectionObject?.name === 'controlPoint' || intersectionObject?.name === 'centerPoint') {
+    intersectionObject = intersectionObject.parent as Object3D
+  }
+
+  windowStore.addNewWindow(`canvasElementConfig-${intersectionObject.uuid}`,
+    {
+      componentType: 'SimpleHeader',
+      componentData: intersectionObject.name.split('-')[0],
+
+    },
+    {
+      componentType: 'CanvasElementConfig',
+      componentData: {id: intersectionObject.uuid, name: intersectionObject.name.split('-')[0]},
+    },
+    {
+      icon: 'shirt', actionName: 'CanvasElementConfig',
+    },
+    getCenteredWindow(500, 200),
+  )
+
+  console.log(intersection)
+}
 const initCanvas = () => {
   canvas = new Scene()
   canvas.background = new Color(0x333333)
@@ -123,6 +163,7 @@ const initCanvas = () => {
     if (!newValue) return
     newValue.appendChild(renderer.domElement)
     newValue.addEventListener('click', handleCanvasClick)
+    newValue.addEventListener('dblclick', handleCanvasDoubleClick)
   })
   initGround(canvas)
 
@@ -159,7 +200,6 @@ const animate = () => {
   stats.end()
 }
 const subscribeToStore = () => {
-  // TODO CLEAN UP THE FUCKING CLOWN FUCNTION
   playAreaStore.$subscribe((mutation) => {
     if (mutation.type === 'patch function') {
       console.log(mutation, 'patch')

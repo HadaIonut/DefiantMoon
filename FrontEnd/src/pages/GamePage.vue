@@ -25,16 +25,14 @@ onBeforeMount(async () => {
 <template>
   <div class="page-container">
     <PlayArea/>
-
     <ActionsSidebar/>
     <CanvasSidebar/>
-
     <CanvasSelection/>
 
     <div class="windows-container">
       <div v-auto-animate>
-        <WindowComponent v-for="(window, key) in windowObject" :key="key" :windowData="window"
-                         :windowKey="key">
+        <WindowComponent v-for="(window, key) in windowObject" :key="key" :windowData="window as unknown as Window"
+                         :windowKey="key as unknown as string">
           <template #header>
             <WindowHeaderRenderer :componentToRender="window.header.componentType"
                                   :headerData="window.header.componentData"/>
@@ -42,7 +40,7 @@ onBeforeMount(async () => {
           <template #header-actions>
             <WindowActionsRender :componentToRender="window.headerActions.componentType"
                                  :headerData="window.headerActions.componentData"
-                                 :windowKey="key"/>
+                                 :windowKey="key as unknown as string"/>
           </template>
           <template #body>
             <WindowBodyRenderer :componentToRender="window.body.componentType" :windowData="window"

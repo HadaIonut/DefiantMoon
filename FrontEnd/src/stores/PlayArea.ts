@@ -9,6 +9,7 @@ import {
   PositionObject,
 } from 'src/types/PlayerArea'
 import {rtFetch} from 'src/utils/fetchOverRTC'
+import {pointsAreEqual} from 'src/utils/CanvasUtils'
 export const usePlayAreaStore = defineStore('playArea', {
   state: (): PlayAreaStore => {
     return {
@@ -87,6 +88,10 @@ export const usePlayAreaStore = defineStore('playArea', {
     },
     updateLightLocation(lightId: string, newPosition: Vector3, networkUpdate = false) {
       newPosition.set(Math.round(newPosition.x), Math.round(newPosition.y), Math.round(newPosition.z))
+      const oldPosition = this.canvasLights[lightId].position
+
+      if (pointsAreEqual(oldPosition, newPosition)) return
+
       this.canvasLights[lightId] = {
         ...this.canvasLights[lightId],
         position: JSON.parse(JSON.stringify(newPosition)),
