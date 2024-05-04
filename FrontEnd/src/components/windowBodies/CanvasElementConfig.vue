@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {usePlayAreaStore} from 'src/stores/PlayArea'
-import {computed, toRaw} from 'vue'
 
 type MapTypes = Record<string, 'canvasLights' | 'canvasPlayers' | 'canvasWalls'>
 
@@ -21,7 +20,7 @@ const objectToFunctionMap = {
   'canvasPlayers': playAreaStore.updatePlayer,
 }
 
-const filteredKeyWords = ['id', 'type', 'networkUpdate']
+const filteredKeyWords = ['id', 'type', 'networkupdate']
 
 const currentEntry = (variable: any) => {
   // @ts-ignore
@@ -38,7 +37,7 @@ const entityName = nameToObjectMap[props.bodyData.name]
 const variablesToConfig = Object.keys(playAreaStore[entityName][props.bodyData.id])
   .filter((entry) => !containedAnyInArray(entry, filteredKeyWords))
 
-const handleInputChange = (event: InputEvent, changedField: string) => {
+const handleInputChange = (event: Event, changedField: string) => {
   const target = event.target as HTMLInputElement
   let newValue
   switch (target.type) {
@@ -67,7 +66,7 @@ const handleInputChange = (event: InputEvent, changedField: string) => {
     <div v-for="variable in variablesToConfig" :key="variable">
       <div v-if="typeof currentEntry(variable) !== 'object'">
         <span>{{variable}}</span>
-        <input v-if="variable === 'color'" type="color" :value="`${currentEntry(variable).toString(16)}`"
+        <input v-if="variable === 'color'" type="color" :value="`#${currentEntry(variable).toString(16)}`"
                 @input="event => handleInputChange(event, variable)">
         <input v-else-if="typeof currentEntry(variable) === 'boolean'" type="checkbox" :value="currentEntry(variable)"
                @input="event => handleInputChange(event, variable)">

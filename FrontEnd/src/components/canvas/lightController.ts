@@ -81,6 +81,12 @@ export const canvasSpawnLight = (canvas: Scene, camera: Camera, renderer: Render
         light.distance = lightValue.distance
         light.intensity = lightValue.intensity
         handleNetworkRequest(lightId, 'light', 'canvasLights', 'getNetworkLight')
+      } else if (name === 'updateLightLocation' && resolvedReturn === lightId) {
+        const lightValue = playAreaStore.canvasLights[resolvedReturn as keyof CanvasLightProperties]
+
+        light.position.copy(lightValue.position)
+        indicator.position.copy(lightValue.position)
+        handleNetworkRequest(lightId, 'light', 'canvasLights', 'getNetworkLight')
       }
     })
   })
