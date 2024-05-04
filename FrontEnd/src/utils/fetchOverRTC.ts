@@ -8,6 +8,7 @@ import type {
   SocketMessage,
   WebRTCRequest,
   WebRTCResponse,
+  // @ts-ignore
 } from 'src/utils/FetchOverRTC.d.ts'
 import {getCookie, getRandomString, isArray, isFile, jsonToFormData, toBase64} from 'src/utils/utils'
 
@@ -105,7 +106,10 @@ const axiosWrapper = (params: WebRTCRequest) => {
   })
 }
 export const rtFetch = async (params: WebRTCRequest) => {
-  return usesWebRTC.then(() => sendMessage(params)).catch(() => axiosWrapper(params))
+  return usesWebRTC.then(() => sendMessage(params)).catch((e) => {
+    console.error(e)
+    return axiosWrapper(params)
+  })
 }
 const handleSocketCommunications = (data: SocketMessage) => {
   if (data.event === 'sys') {

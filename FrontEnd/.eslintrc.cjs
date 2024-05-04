@@ -23,6 +23,7 @@ module.exports = {
     'guard-for-in': 'off',
     'linebreak-style': 'off',
     'indent': ['warn', 2],
-    'prefer-promise-reject-errors': 'off'
+    'prefer-promise-reject-errors': 'off',
+    'require-jsdoc': 'off'
   },
 };

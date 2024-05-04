@@ -3,7 +3,7 @@ import {onBeforeMount} from 'vue'
 import {useUsersStore} from 'src/stores/users'
 import {useWindowsStore} from 'src/stores/windows'
 import {WindowStore} from 'src/types/windows'
-import {initWebRTCClient} from 'src/utils/fetchOverRTC'
+import {initWebRTCClient, rtFetch} from 'src/utils/fetchOverRTC'
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 

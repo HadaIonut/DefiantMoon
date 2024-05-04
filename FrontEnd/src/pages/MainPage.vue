@@ -59,7 +59,9 @@ const dropdownInitialValue = computed(() => {
 </script>
 
 <template>
-  <div class="page-container" @keydown="login">
+  <div class="page-container" @keydown="(event) => {
+    if (event.key === 'Enter') login()
+  }">
     <div class="login-form-container">
       <FormOptionComponent :label="$t('login.userDropdown.label')">
         <DropdownComponent :options="players" :initial="dropdownInitialValue" @change="onDropdownChange"/>
