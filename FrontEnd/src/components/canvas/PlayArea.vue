@@ -242,20 +242,24 @@ const handleWallNetworkEvent = (message: Record<string, any>) => {
   }
 }
 const handlePlayerNetworkEvent = (message: Record<string, any>) => {
-  const newPosition = message.data.position
+  let newPosition = message.data.position
+  newPosition = new Vector3(newPosition.x, newPosition.y, newPosition.z)
+  message.data.position = newPosition
 
   if (Object.keys(playAreaStore.canvasPlayers).includes(message.playerId)) {
     console.log('network loading')
-    playAreaStore.updatePlayerLocation(message.playerId, new Vector3(newPosition.x, newPosition.y, newPosition.z), true)
+    playAreaStore.updatePlayer(message.playerId, message.data, true)
   } else {
     playAreaStore.addPlayerToCanvas(new Vector3(newPosition.x, newPosition.y, newPosition.z), message.playerId)
   }
 }
 const handleLightNetworkEvent = (message: Record<string, any>) => {
-  const newPosition = message.data.position
+  let newPosition = message.data.position
+  newPosition = new Vector3(newPosition.x, newPosition.y, newPosition.z)
+  message.data.position = newPosition
 
   if (Object.keys(playAreaStore.canvasLights).includes(message.lightId)) {
-    playAreaStore.updateLightLocation(message.lightId, new Vector3(newPosition.x, newPosition.y, newPosition.z), true)
+    playAreaStore.updateLight(message.lightId, message.data, true)
   } else {
     playAreaStore.addLightToCanvas({
       position: newPosition,

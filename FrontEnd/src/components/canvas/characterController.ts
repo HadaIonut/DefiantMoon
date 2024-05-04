@@ -132,7 +132,7 @@ export const initCharacter = (canvas: Scene, camera: Camera, renderer: Renderer,
 
   return playerAreaStore.$onAction(({name, after}) => {
     after((resolvedReturn) => {
-      if (name === 'updatePlayerLocation' && resolvedReturn === cylinder.uuid) {
+      if (name === 'updatePlayer' && resolvedReturn === cylinder.uuid) {
         console.log('updating the canvas')
         const player = playerAreaStore.canvasPlayers[resolvedReturn]
         cylinder.position.copy(player.position)

@@ -3,7 +3,7 @@ import {DraggablePoint} from 'src/components/canvas/adjustableShape'
 import {MathUtils, PointLight, Vector2, Vector3} from 'three'
 import {
   CanvasLightParams,
-  CanvasLightProperties,
+  CanvasLightProperties, CanvasPlayerProperties,
   CanvasWallProperties,
   PlayAreaStore,
   PositionObject,
@@ -158,6 +158,16 @@ export const usePlayAreaStore = defineStore('playArea', {
       this.$patch((state) => {
         Object.assign(state, newCanvas)
       })
+    },
+    updatePlayer(playerId: string, data: CanvasPlayerProperties, networkUpdate = false) {
+      this.canvasPlayers[playerId] = data
+      this.canvasPlayers[playerId].networkUpdate = networkUpdate
+      return playerId
+    },
+    updateLight(lightId: string, data: CanvasLightParams, networkUpdate = false) {
+      this.canvasLights[lightId] = data
+      this.canvasLights[lightId].networkUpdate = networkUpdate
+      return lightId
     },
   },
   getters: {
