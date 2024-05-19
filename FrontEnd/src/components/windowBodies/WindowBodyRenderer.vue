@@ -14,23 +14,24 @@ const props = defineProps<WindowBodyRendererProps>()
 <template>
   <v-switch :case="props.componentToRender">
     <template #Chat>
-      <ChatWindowBody :windowData="props.windowData"/>
+      <ChatWindowBody :windowData="props.windowData" />
     </template>
     <template #ActorList>
-      <ActorListWindowBody/>
+      <ActorListWindowBody />
     </template>
     <template #ItemList>
-      <ItemListWindowBody/>
+      <ItemListWindowBody />
     </template>
     <template #MonsterWindow>
-      <MonsterWindowBody :bodyData="props.bodyData"/>
+      <MonsterWindowBody :bodyData="props.bodyData" />
     </template>
     <template #CanvasElementConfig>
-      <CanvasElementConfig :bodyData="props.bodyData"/>
+      <CanvasElementConfig :bodyData="props.bodyData" />
+    </template>
+    <template #NewCanvasConfig>
+      <NewCanvasBody :bodyData="props.bodyData" />
     </template>
   </v-switch>
 </template>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

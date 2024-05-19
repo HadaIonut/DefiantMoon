@@ -3,9 +3,12 @@ import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
 import {computed} from 'vue'
 import {rtFetch} from 'src/utils/fetchOverRTC'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {useWindowsStore} from 'src/stores/windows'
+import {getCenteredWindow} from 'src/utils/utils'
 
 const canvasCollectionStore = useCanvasCollectionStore()
 const playerAreaStore = usePlayAreaStore()
+const windowStore = useWindowsStore()
 
 const activeClass = computed(() => (currentId: string) => {
   return currentId === canvasCollectionStore.active ? 'marker-active' : 'marker-inactive'
@@ -17,15 +20,33 @@ const handleCanvasChange = async (newId: string) => {
   canvasCollectionStore.changeActiveCanvas(newId)
 }
 
+const handleCanvasCreation = () => {
+  windowStore.addNewWindow('newCanvasConfig',
+    {
+      componentType: 'SimpleHeader',
+      componentData: 'New Canvas Window',
+    },
+    {
+      componentType: 'NewCanvasConfig',
+      componentData: {},
+    },
+    {
+      icon: 'shirt', actionName: 'NewCanvasConfig',
+    },
+    getCenteredWindow(500, 500),
+  )
+}
 </script>
 
 <template>
   <div class="clickable selection-bar">
-    <div class="element"
-         v-for="canvas in canvasCollectionStore.canvasList"
-         :key="canvas.id" @click="() => handleCanvasChange(canvas.id)">
-      {{canvas.name}}
-      <span :class="`activity-marker ${activeClass(canvas.id)}`"/>
+    <div class="element" v-for="canvas in canvasCollectionStore.canvasList" :key="canvas.id"
+      @click="() => handleCanvasChange(canvas.id)">
+      {{ canvas.name }}
+      <span :class="`activity-marker ${activeClass(canvas.id)}`" />
+    </div>
+    <div class="element" @click="() => handleCanvasCreation()">
+      +
     </div>
   </div>
 </template>

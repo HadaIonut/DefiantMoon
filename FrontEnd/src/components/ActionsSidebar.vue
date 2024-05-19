@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import {WindowStore} from 'src/types/windows'
 import {useWindowsStore} from 'src/stores/windows'
+import {WindowStore} from 'src/types/windows'
 
 const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state
 
 const actionClick = (windowKey: string) => windowStore.openWindow(windowKey)
-
 </script>
 
 <template>
   <div class="sidebar">
     <perfect-scrollbar>
       <div class="icon-container" v-for="(item, key) in windowObject" :key="item.action.icon"
-           @click="() => actionClick(key.toString())">
-        <font-awesome-icon :icon="`fa-solid fa-${item.action.icon}`" size="3x"/>
+        @click="() => actionClick(key.toString())">
+        <font-awesome-icon :icon="`fa-solid fa-${item.action.icon}`" size="3x" />
         <span :class="`activity-marker ${item.status !== 'closed' ? 'marker-' + item.status : ''}`"></span>
       </div>
     </perfect-scrollbar>

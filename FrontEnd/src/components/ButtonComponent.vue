@@ -5,8 +5,7 @@ interface ButtonProps {
 
 const props = defineProps<ButtonProps>()
 
-const emit = defineEmits<{(e: 'click'): void}>()
-
+const emit = defineEmits<{(e: 'click'): void }>()
 const onClick = () => emit('click')
 </script>
 

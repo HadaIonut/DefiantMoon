@@ -1,5 +1,5 @@
-import {Router} from "https://deno.land/x/oak@v11.1.0/router.ts";
-import {createCanvas, getCanvasById, getCanvasNameIdList, updateCanvas} from "../../database/repos/canvas.ts";
+import { Router } from "https://deno.land/x/oak@v11.1.0/router.ts";
+import { createCanvas, getCanvasById, getCanvasNameIdList, updateCanvas } from "../../database/repos/canvas.ts";
 import {
   Canvas,
   CanvasLightProperties,
@@ -7,9 +7,9 @@ import {
   CanvasWallProperties
 } from "../../database/schemas/canvas.ts";
 import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/deps.ts";
-import {broadcastEvent} from "../websocket/utils.ts";
-import {WEBSOCKET_EMITABLE_EVENTS} from "../websocket/events.ts";
-import {getCurrentUserId} from "../../auth/index.ts";
+import { broadcastEvent } from "../websocket/utils.ts";
+import { WEBSOCKET_EMITABLE_EVENTS } from "../websocket/events.ts";
+import { getCurrentUserId } from "../../auth/index.ts";
 
 const canvasRouter = new Router()
 
@@ -24,7 +24,7 @@ canvasRouter.get('/:canvasId', async (context) => {
 })
 
 canvasRouter.post('/', async (context) => {
-  const canvasData = await context.request.body({type: 'json'}).value as unknown as Canvas
+  const canvasData = await context.request.body({ type: 'json' }).value as unknown as Canvas
 
   const canvasId = await createCanvas(canvasData)
 
@@ -35,10 +35,10 @@ canvasRouter.post('/', async (context) => {
 })
 canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
   const userId = await getCurrentUserId(context);
-  const playerData = await context.request.body({type: 'json'}).value as unknown as CanvasPlayerProperties
+  const playerData = await context.request.body({ type: 'json' }).value as unknown as CanvasPlayerProperties
   const canvasData = await getCanvasById(context.params.canvasId)
   if (!canvasData) return
-
+  console.log(canvasData)
   canvasData.canvasPlayers[context.params.playerId] = playerData
 
   console.log(`modify canvas: ${context.params.canvasId}`)
@@ -58,7 +58,7 @@ canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
 })
 canvasRouter.patch('/:canvasId/light/:lightId', async (context) => {
   const userId = await getCurrentUserId(context);
-  const lightData = await context.request.body({type: 'json'}).value as unknown as CanvasLightProperties
+  const lightData = await context.request.body({ type: 'json' }).value as unknown as CanvasLightProperties
   const canvasData = await getCanvasById(context.params.canvasId)
   if (!canvasData) return
 
@@ -81,7 +81,7 @@ canvasRouter.patch('/:canvasId/light/:lightId', async (context) => {
 })
 canvasRouter.patch('/:canvasId/wall/:wallId', async (context) => {
   const userId = await getCurrentUserId(context);
-  const wallData = await context.request.body({type: 'json'}).value as unknown as CanvasWallProperties
+  const wallData = await context.request.body({ type: 'json' }).value as unknown as CanvasWallProperties
   const canvasData = await getCanvasById(context.params.canvasId)
   if (!canvasData) return
 
