@@ -28,12 +28,33 @@ const handleCanvasRemove = async (index: number) => {
   canvasCollectionStore.canvasList.splice(index, 1)
 }
 const handleCanvasUpdate = (index: number) => {
-  // await rtFetch({
-  //   route: `/api/canvas/${canvasCollectionStore.canvasList[index].id}`,
-  //   method: 'PATCH'
-  // })
+  const canvasId = canvasCollectionStore.canvasList[index].id
+  rtFetch({
+    route: `/api/canvas/${canvasId}`,
+    method: 'GET',
+  }).then(({ data }) => {
+    console.log(data)
+    windowStore.addNewWindow('newCanvasConfig',
+      {
+        componentType: 'SimpleHeader',
+        componentData: 'New Canvas Window',
+      },
+      {
+        componentType: 'NewCanvasConfig',
+        componentData: {
+          initialName: data.name,
+          initialGroundDimension: data.groundDimension,
+          initialGridSize: data.initialGridSize,
+          bodyId: canvasId,
+        },
+      },
+      {
+        icon: 'shirt', actionName: 'NewCanvasConfig',
+      },
+      getCenteredWindow(500, 300),
+    )
+  })
 }
-
 const canvasActions = [{
   displayedText: 'Update Canvas',
   onClickFunction: handleCanvasUpdate,

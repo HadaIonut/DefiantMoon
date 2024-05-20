@@ -3,15 +3,30 @@ import { useCanvasCollectionStore } from 'src/stores/CanvasCollection'
 import { usePlayAreaStore } from 'src/stores/PlayArea'
 import { ref } from 'vue'
 
+export interface NewCanvasBody {
+  bodyData: {
+    initialName?: string,
+    initialGroundDimension?: number,
+    initialGridSize?: number,
+    bodyId?: string
+  }
+}
+
+const props = defineProps<NewCanvasBody>()
+
 const canvasCollectionStore = useCanvasCollectionStore()
 const playAreaStore = usePlayAreaStore()
-const canvasName = ref('')
-const groundDimension = ref(1000)
-const gridSize = ref(20)
+const canvasName = ref(props.bodyData.initialName ?? '')
+const groundDimension = ref(props.bodyData.initialGroundDimension ?? 1000)
+const gridSize = ref(props.bodyData.initialGridSize ?? 20)
 
 const submitCanvas = async () => {
-  canvasCollectionStore.createNewCanvas(canvasName.value, groundDimension.value, gridSize.value)
-  playAreaStore.loadCanvas(canvasCollectionStore.active)
+  if (props.bodyData.bodyId) {
+    canvasCollectionStore.updateCanvas(props.bodyData.bodyId, canvasName.value, groundDimension.value, gridSize.value)
+  } else {
+    canvasCollectionStore.createNewCanvas(canvasName.value, groundDimension.value, gridSize.value)
+    playAreaStore.loadCanvas(canvasCollectionStore.active)
+  }
 }
 
 </script>

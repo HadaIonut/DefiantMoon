@@ -1,5 +1,5 @@
-import {defineStore} from 'pinia'
-import {rtFetch} from 'src/utils/fetchOverRTC'
+import { defineStore } from 'pinia'
+import { rtFetch } from 'src/utils/fetchOverRTC'
 
 type CanvasName = {
   id: string;
@@ -44,8 +44,21 @@ export const useCanvasCollectionStore = defineStore('canvasCollection', {
           canvasPlayers: {},
         },
       })).data.canvasId
-      this.canvasList.push({id: result, name})
+      this.canvasList.push({ id: result, name })
       this.active = result
+    },
+    async updateCanvas(id: string, name: string, groundDimension: number, gridSize: number) {
+      const changedCanvasIndex = this.canvasList.findIndex((canvas) => canvas.id === id)
+      this.canvasList[changedCanvasIndex].name = name
+      rtFetch({
+        route: `/api/canvas/${id}`,
+        method: 'PATCH',
+        body: {
+          name,
+          groundDimension,
+          gridSize,
+        },
+      })
     },
   },
 })

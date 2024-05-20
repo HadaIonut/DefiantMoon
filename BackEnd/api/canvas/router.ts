@@ -34,6 +34,7 @@ canvasRouter.delete('/:canvasId', async (context) => {
   });
 })
 canvasRouter.patch('/:canvasId', async (context) => {
+  console.log("canvas patch")
   const userId = await getCurrentUserId(context);
   const newCanvasData = await context.request.body({ type: 'json' }).value as unknown as Canvas
   const oldCanvasData = await getCanvasById(context.params.canvasId)
