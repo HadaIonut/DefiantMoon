@@ -26,7 +26,7 @@ const visibility = computed(() => props.visible ? 'contextMenu--visible' : '')
 <style lang="scss">
 .contextMenu {
   position: absolute;
-  top: 30px;
+  top: 32px;
   left: 50%;
   background: $tertiary;
   border: 1px solid $accent;

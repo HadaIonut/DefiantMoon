@@ -17,25 +17,47 @@ canvasRouter.get('/', async (context) => {
   context.response.body = await getCanvasNameIdList()
   context.response.status = 200
 })
-
 canvasRouter.get('/:canvasId', async (context) => {
   context.response.body = await getCanvasById(context.params.canvasId);
   context.response.status = 200
 })
 canvasRouter.delete('/:canvasId', async (context) => {
+  const userId = await getCurrentUserId(context);
+
   deleteCanvasById(context.params.canvasId)
 
   context.response.status = 200
+
+  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_LIST_UPDATE, {
+    source: userId,
+    data: await getCanvasNameIdList()
+  });
+})
+canvasRouter.patch('/:canvasId', async (context) => {
+  const userId = await getCurrentUserId(context);
+  const newCanvasData = await context.request.body({ type: 'json' }).value as unknown as Canvas
+  const oldCanvasData = await getCanvasById(context.params.canvasId)
+  updateCanvas(new ObjectId(context.params.canvasId), {...oldCanvasData, ...newCanvasData})
+
+  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_LIST_UPDATE, {
+    source: userId,
+    data: await getCanvasNameIdList()
+  });
 })
 canvasRouter.post('/', async (context) => {
   const canvasData = await context.request.body({ type: 'json' }).value as unknown as Canvas
-
+  const userId = await getCurrentUserId(context);
   const canvasId = await createCanvas(canvasData)
 
   context.response.body = {
     canvasId
   }
   context.response.status = 200
+
+  broadcastEvent(WEBSOCKET_EMITABLE_EVENTS.CANVAS_LIST_UPDATE, {
+    source: userId,
+    data: await getCanvasNameIdList()
+  });
 })
 canvasRouter.patch('/:canvasId/player/:playerId', async (context) => {
   const userId = await getCurrentUserId(context);

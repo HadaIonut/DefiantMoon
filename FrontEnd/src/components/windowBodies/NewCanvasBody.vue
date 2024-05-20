@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
-import {ref} from 'vue'
+import { useCanvasCollectionStore } from 'src/stores/CanvasCollection'
+import { usePlayAreaStore } from 'src/stores/PlayArea'
+import { ref } from 'vue'
 
 const canvasCollectionStore = useCanvasCollectionStore()
+const playAreaStore = usePlayAreaStore()
 const canvasName = ref('')
 const groundDimension = ref(1000)
 const gridSize = ref(20)
 
 const submitCanvas = async () => {
   canvasCollectionStore.createNewCanvas(canvasName.value, groundDimension.value, gridSize.value)
+  playAreaStore.loadCanvas(canvasCollectionStore.active)
 }
 
 </script>

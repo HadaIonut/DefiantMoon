@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
-import {computed, ref} from 'vue'
-import {usePlayAreaStore} from 'src/stores/PlayArea'
-import {useWindowsStore} from 'src/stores/windows'
-import {getCenteredWindow} from 'src/utils/utils'
-import {onClickOutside} from '@vueuse/core'
-import {rtFetch} from 'src/utils/fetchOverRTC'
+import { useCanvasCollectionStore } from 'src/stores/CanvasCollection'
+import { computed, ref } from 'vue'
+import { usePlayAreaStore } from 'src/stores/PlayArea'
+import { useWindowsStore } from 'src/stores/windows'
+import { getCenteredWindow } from 'src/utils/utils'
+import { onClickOutside } from '@vueuse/core'
+import { rtFetch } from 'src/utils/fetchOverRTC'
+import { websocket } from 'src/websocket/websocket'
+import { WEBSOCKET_RECEIVABLE_EVENTS } from 'src/websocket/events'
+import { useUsersStore } from 'src/stores/users'
 
 const canvasCollectionStore = useCanvasCollectionStore()
 const playerAreaStore = usePlayAreaStore()
@@ -15,6 +18,7 @@ const activeClass = computed(() => (currentId: string) => {
 })
 const activeIndex = ref(-1)
 const contextRef = ref(null)
+const userStore = useUsersStore()
 
 const handleCanvasRemove = async (index: number) => {
   await rtFetch({
@@ -23,7 +27,12 @@ const handleCanvasRemove = async (index: number) => {
   })
   canvasCollectionStore.canvasList.splice(index, 1)
 }
-const handleCanvasUpdate = () => { }
+const handleCanvasUpdate = (index: number) => {
+  // await rtFetch({
+  //   route: `/api/canvas/${canvasCollectionStore.canvasList[index].id}`,
+  //   method: 'PATCH'
+  // })
+}
 
 const canvasActions = [{
   displayedText: 'Update Canvas',
@@ -61,7 +70,11 @@ const handleRightClick = (index: number) => {
 onClickOutside(contextRef, () => {
   activeIndex.value = -1
 })
-
+websocket.addEventListener(WEBSOCKET_RECEIVABLE_EVENTS.CANVAS_LIST_UPDATE, (message) => {
+  if (message.source === userStore.currentUser.id) return
+  console.log('here', userStore.currentUser.id, message.source)
+  canvasCollectionStore.canvasList = message.data
+})
 </script>
 
 <template>
