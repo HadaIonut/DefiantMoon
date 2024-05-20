@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {usePlayAreaStore} from 'src/stores/PlayArea'
-import {ConfigurableCanvasElements} from 'src/types/PlayerArea'
 
 type MapTypes = Record<string, 'canvasLights' | 'canvasPlayers' | 'canvasWalls'>
 
@@ -23,9 +22,9 @@ const objectToFunctionMap = {
 
 const filteredKeyWords = ['id', 'type', 'networkupdate']
 
-const currentEntry = (variable: keyof ConfigurableCanvasElements) => {
-  const configElement = (playAreaStore[entityName])
-  return configElement[props.bodyData.id][variable]
+const currentEntry = (variable: any) => {
+  // @ts-ignore
+  return playAreaStore[entityName][props.bodyData.id][variable]
 }
 
 const containedAnyInArray = (testString: string, testArray: string[]): boolean => {
@@ -35,7 +34,7 @@ const containedAnyInArray = (testString: string, testArray: string[]): boolean =
 const props = defineProps<{ bodyData: { id: string, name: string } }>()
 const entityName = nameToObjectMap[props.bodyData.name]
 
-const variablesToConfig = (Object.keys(playAreaStore[entityName][props.bodyData.id]) as (keyof ConfigurableCanvasElements)[])
+const variablesToConfig = Object.keys(playAreaStore[entityName][props.bodyData.id])
   .filter((entry) => {
     const contained = !containedAnyInArray(entry, filteredKeyWords)
     const isObject = typeof currentEntry(entry) === 'object'

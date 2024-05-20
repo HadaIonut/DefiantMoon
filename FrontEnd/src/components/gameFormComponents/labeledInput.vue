@@ -8,7 +8,6 @@ export interface InputProps {
 
 const props = defineProps<InputProps>()
 const model = defineModel()
-// console.log(props, !!model.value)
 </script>
 <template>
   <div class="element">

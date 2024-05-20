@@ -21,6 +21,7 @@ declare module '@vue/runtime-core' {
     ChatToolbar: typeof import('./src/components/chatComponents/ChatToolbar.vue')['default']
     ChatWindowBody: typeof import('./src/components/windowBodies/ChatWindowBody.vue')['default']
     ComplexRoll: typeof import('./src/components/chatComponents/ComplexRoll.vue')['default']
+    ContextMenu: typeof import('./src/components/contextMenu.vue')['default']
     DefaultIcon: typeof import('./src/components/customIcons/DefaultIcon.vue')['default']
     DiceD10Icon: typeof import('./src/components/customIcons/DiceD10Icon.vue')['default']
     DiceD12Icon: typeof import('./src/components/customIcons/DiceD12Icon.vue')['default']

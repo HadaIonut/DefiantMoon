@@ -3,8 +3,6 @@
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {computed, ref} from 'vue'
 import {onClickOutside} from '@vueuse/core'
-import {getRandomInt} from 'src/utils/CanvasUtils'
-import {Vector3} from 'three'
 
 const playAreaStore = usePlayAreaStore()
 
@@ -50,15 +48,12 @@ onClickOutside(contextMenuRef, () => {
 </script>
 
 <template>
-  <div>
-    <div :class="`contextMenu ${visibility}`" :style="contextMenuStyle" ref="contextMenuRef">
-      <div class="option-container">
-        <div @click="addPointsToObject">add points</div>
-        <div @click="removePointFromObject"
-             v-if="playAreaStore.targetedObject?.name === 'controlPoint'">remove point
-        </div>
-        <div @click="objectDelete">delete object</div>
+  <div :class="`contextMenu ${visibility}`" :style="contextMenuStyle" ref="contextMenuRef">
+    <div class="option-container">
+      <div @click="addPointsToObject">add points</div>
+      <div @click="removePointFromObject" v-if="playAreaStore.targetedObject?.name === 'controlPoint'">remove point
       </div>
+      <div @click="objectDelete">delete object</div>
     </div>
   </div>
 </template>
@@ -88,12 +83,13 @@ onClickOutside(contextMenuRef, () => {
   margin-top: 5px;
   margin-bottom: 5px;
 
-  & > div {
+  &>div {
     cursor: pointer;
     padding: 3px 10px;
     border-radius: 6px;
   }
-  & > :hover {
+
+  &> :hover {
     background: mix($tertiary, $secondary, 50%);
     transition: background-color 0.2s ease-in-out;
   }

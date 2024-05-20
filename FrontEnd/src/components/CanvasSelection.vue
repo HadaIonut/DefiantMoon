@@ -1,19 +1,33 @@
 <script setup lang="ts">
 import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
-import {computed} from 'vue'
-import {rtFetch} from 'src/utils/fetchOverRTC'
+import {computed, ref} from 'vue'
 import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {useWindowsStore} from 'src/stores/windows'
 import {getCenteredWindow} from 'src/utils/utils'
+import {onClickOutside} from '@vueuse/core'
 
 const canvasCollectionStore = useCanvasCollectionStore()
 const playerAreaStore = usePlayAreaStore()
 const windowStore = useWindowsStore()
-
 const activeClass = computed(() => (currentId: string) => {
   return currentId === canvasCollectionStore.active ? 'marker-active' : 'marker-inactive'
 })
+const activeIndex = ref(-1)
+const contextRef = ref(null)
 
+const handleCanvasRemove = () => {
+  console.log('remove')
+}
+const handleCanvasUpdate = () => { }
+
+
+const canvasActions = [{
+  displayedText: 'Update Canvas',
+  onClickFunction: handleCanvasUpdate,
+}, {
+  displayedText: 'Delete Canvas',
+  onClickFunction: handleCanvasRemove,
+}]
 const handleCanvasChange = async (newId: string) => {
   await playerAreaStore.loadCanvas(newId)
 
@@ -33,17 +47,27 @@ const handleCanvasCreation = () => {
     {
       icon: 'shirt', actionName: 'NewCanvasConfig',
     },
-    getCenteredWindow(500, 500),
+    getCenteredWindow(500, 300),
   )
 }
+const handleRightClick = (index: number) => {
+  if (activeIndex.value === index) activeIndex.value = -1
+  else activeIndex.value = index
+}
+onClickOutside(contextRef, () => {
+  activeIndex.value = -1
+})
+
 </script>
 
 <template>
   <div class="clickable selection-bar">
-    <div class="element" v-for="canvas in canvasCollectionStore.canvasList" :key="canvas.id"
-      @click="() => handleCanvasChange(canvas.id)">
-      {{ canvas.name }}
-      <span :class="`activity-marker ${activeClass(canvas.id)}`" />
+    <div class="element-container" v-for="(canvas, index) in canvasCollectionStore.canvasList" :key="canvas.id">
+      <div class="element" @click="() => handleCanvasChange(canvas.id)" @contextmenu="() => handleRightClick(index)">
+        {{ canvas.name }}
+        <span :class="`activity-marker ${activeClass(canvas.id)}`" />
+      </div>
+      <contextMenu :options="canvasActions" :visible="index === activeIndex" ref="contextRef" />
     </div>
     <div class="element" @click="() => handleCanvasCreation()">
       +
@@ -61,7 +85,13 @@ const handleCanvasCreation = () => {
   gap: 5px;
 }
 
+.element-container {
+  position: relative
+}
+
 .element {
+  position: relative;
+  width: fit-content;
   padding: 5px;
   background: $tertiary;
   border: 1px solid $accent;
@@ -72,6 +102,10 @@ const handleCanvasCreation = () => {
     background: mix($tertiary, $secondary, 50%);
     transition: background-color 0.1s ease-in-out;
   }
+}
+
+.contextMenuContainer {
+  position: relative;
 }
 
 .activity-marker {
