@@ -2,25 +2,27 @@
 import {computed, ref} from 'vue'
 
 export interface ContextMenuProps {
-  options: Array<{ displayedText: string, onClickFunction: () => void }>,
+  options: Array<{ displayedText: string, onClickFunction: (index: number) => void }>,
   visible: boolean,
+  tabIndex: number
 }
 const props = defineProps<ContextMenuProps>()
 const conextRef = ref(null)
 
 const visibility = computed(() => props.visible ? 'contextMenu--visible' : '')
-
 </script>
+
 <template>
   <div :class="`contextMenu ${visibility}`" ref="conextRef">
     <div class="option-container">
       <div class="element" v-for="(option, index) in props.options" :key="index"
-        @click="() => option.onClickFunction()">
+        @click="() => option.onClickFunction(props.tabIndex)">
         {{ option.displayedText }}
       </div>
     </div>
   </div>
 </template>
+
 <style lang="scss">
 .contextMenu {
   position: absolute;

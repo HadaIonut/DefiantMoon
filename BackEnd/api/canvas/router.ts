@@ -1,5 +1,5 @@
 import { Router } from "https://deno.land/x/oak@v11.1.0/router.ts";
-import { createCanvas, getCanvasById, getCanvasNameIdList, updateCanvas } from "../../database/repos/canvas.ts";
+import { createCanvas, deleteCanvasById, getCanvasById, getCanvasNameIdList, updateCanvas } from "../../database/repos/canvas.ts";
 import {
   Canvas,
   CanvasLightProperties,
@@ -22,7 +22,11 @@ canvasRouter.get('/:canvasId', async (context) => {
   context.response.body = await getCanvasById(context.params.canvasId);
   context.response.status = 200
 })
+canvasRouter.delete('/:canvasId', async (context) => {
+  deleteCanvasById(context.params.canvasId)
 
+  context.response.status = 200
+})
 canvasRouter.post('/', async (context) => {
   const canvasData = await context.request.body({ type: 'json' }).value as unknown as Canvas
 

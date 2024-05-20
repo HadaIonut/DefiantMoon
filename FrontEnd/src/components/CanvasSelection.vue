@@ -5,6 +5,7 @@ import {usePlayAreaStore} from 'src/stores/PlayArea'
 import {useWindowsStore} from 'src/stores/windows'
 import {getCenteredWindow} from 'src/utils/utils'
 import {onClickOutside} from '@vueuse/core'
+import {rtFetch} from 'src/utils/fetchOverRTC'
 
 const canvasCollectionStore = useCanvasCollectionStore()
 const playerAreaStore = usePlayAreaStore()
@@ -15,11 +16,14 @@ const activeClass = computed(() => (currentId: string) => {
 const activeIndex = ref(-1)
 const contextRef = ref(null)
 
-const handleCanvasRemove = () => {
-  console.log('remove')
+const handleCanvasRemove = async (index: number) => {
+  await rtFetch({
+    route: `/api/canvas/${canvasCollectionStore.canvasList[index].id}`,
+    method: 'DELETE',
+  })
+  canvasCollectionStore.canvasList.splice(index, 1)
 }
 const handleCanvasUpdate = () => { }
-
 
 const canvasActions = [{
   displayedText: 'Update Canvas',
@@ -67,7 +71,7 @@ onClickOutside(contextRef, () => {
         {{ canvas.name }}
         <span :class="`activity-marker ${activeClass(canvas.id)}`" />
       </div>
-      <contextMenu :options="canvasActions" :visible="index === activeIndex" ref="contextRef" />
+      <contextMenu :tabIndex="index" :options="canvasActions" :visible="index === activeIndex" ref="contextRef" />
     </div>
     <div class="element" @click="() => handleCanvasCreation()">
       +

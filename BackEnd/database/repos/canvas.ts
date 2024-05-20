@@ -40,3 +40,10 @@ export const getCanvasById = async (id: string): Promise<CanvasSchema | null> =>
     id: canvas._id
   }
 }
+export const deleteCanvasById = async (id: string) => {
+  const result = await canvasCollection.deleteOne({
+    _id: new ObjectId(id)
+  })
+
+  return result
+}
