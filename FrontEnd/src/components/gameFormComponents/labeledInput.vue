@@ -15,7 +15,7 @@ const model = defineModel()
     <span>
       {{ props.labelText }}
     </span>
-    <input v-if="model" v-model="model" :type="props.inputType" :value="props.value">
+    <input v-if="model !== undefined" v-model="model" :type="props.inputType">
     <input v-else :type="props.inputType" :value="props.value">
   </div>
 </template>

@@ -1,6 +1,6 @@
-import {MathUtils, Vector2, Vector3} from 'three'
-import {DraggablePoint} from 'src/components/canvas/adjustableShape'
-import {ComputedRef, Ref} from 'vue'
+import { MathUtils, Vector2, Vector3 } from 'three'
+import { DraggablePoint } from 'src/components/canvas/adjustableShape'
+import { ComputedRef, Ref } from 'vue'
 
 export type CanvasLightProperties = {
   position: Vector3,
@@ -27,7 +27,6 @@ export type ControlPoint = {
   position: Vector3,
   type: 'controlPoint'
 }
-
 
 export type CanvasWallProperties = {
   controlPoints: Record<string, ControlPoint> & { networkUpdate?: boolean },
@@ -96,7 +95,7 @@ export type LightsStore = {
 export type WallStore = {
   canvasWalls: Ref<Record<string, CanvasWallProperties>>
   currentDrawingId: Ref<string>,
-  createNewWall: (originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean, wallId ?: string, objectId ?: string) => void
+  createNewWall: (originPoint: Vector3, tension: number, filled: boolean, closed: boolean, concaveHull: boolean, wallId?: string, objectId?: string) => void
   addPointToShape: (point: Vector3, shapeId: string, pointId = MathUtils.generateUUID()) => void
   removePointFromShape: (pointId: string, shapeId: string) => void
   updatePointLocation: (pointId: string, shapeId: string, newLocation: Vector3) => void
@@ -126,7 +125,7 @@ export type PlayAreaStore = {
   setTargetObject: (newValue: DraggablePoint) => void
   deleteTargetObject: () => void
   addPointsToObject: () => void
-  handleContextMenu: (position: PositionObject, targetedObject ?: DraggablePoint, visibility ?: string) => void
+  handleContextMenu: (position: PositionObject, targetedObject?: DraggablePoint, visibility?: string) => void
   loadCanvas: (newId: string) => void
   getNetworkCanvas: ComputedRef<NetworkCanvas>
 } & WallStore & LightsStore & PlayerStore
