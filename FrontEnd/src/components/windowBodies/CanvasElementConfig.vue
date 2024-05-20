@@ -31,11 +31,16 @@ const containedAnyInArray = (testString: string, testArray: string[]): boolean =
   return testArray.reduce((acc, cur) => acc || testString.toLowerCase().includes(cur), false)
 }
 
-const props = defineProps<{ bodyData: {id: string, name: string} }>()
+const props = defineProps<{ bodyData: { id: string, name: string } }>()
 const entityName = nameToObjectMap[props.bodyData.name]
 
 const variablesToConfig = Object.keys(playAreaStore[entityName][props.bodyData.id])
-  .filter((entry) => !containedAnyInArray(entry, filteredKeyWords))
+  .filter((entry) => {
+    const contained = !containedAnyInArray(entry, filteredKeyWords)
+    const isObject = typeof currentEntry(entry) === 'object'
+
+    return contained && !isObject
+  })
 
 const handleInputChange = (event: Event, changedField: string) => {
   const target = event.target as HTMLInputElement
@@ -59,24 +64,20 @@ const handleInputChange = (event: Event, changedField: string) => {
   })
 }
 
+const getInputType = (variable: string) => {
+  if (variable === 'color') return 'color'
+  else if (typeof currentEntry(variable) === 'boolean') return 'checkbox'
+  else return typeof currentEntry(variable)
+}
+
+const getValue = (variable: string) => {
+  if (variable === 'color') return `#${currentEntry(variable).toString(16)}`
+  else return currentEntry(variable)
+}
 </script>
 
 <template>
-  <div>
-    <div v-for="variable in variablesToConfig" :key="variable">
-      <div v-if="typeof currentEntry(variable) !== 'object'">
-        <span>{{variable}}</span>
-        <input v-if="variable === 'color'" type="color" :value="`#${currentEntry(variable).toString(16)}`"
-                @input="event => handleInputChange(event, variable)">
-        <input v-else-if="typeof currentEntry(variable) === 'boolean'" type="checkbox" :value="currentEntry(variable)"
-               @input="event => handleInputChange(event, variable)">
-        <input v-else :type="typeof currentEntry(variable)" :value="currentEntry(variable)"
-               @input="event => handleInputChange(event, variable)">
-      </div>
-    </div>
-  </div>
+  <labeledInput :labelText="variable" :inputType="getInputType(variable)" :value="getValue(variable)"
+    v-for="variable in variablesToConfig" :key="variable"
+    @input="(event: Event) => handleInputChange(event, variable)" />
 </template>
-
-<style scoped lang="scss">
-
-</style>

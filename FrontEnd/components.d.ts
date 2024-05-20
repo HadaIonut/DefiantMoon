@@ -35,6 +35,7 @@ declare module '@vue/runtime-core' {
     InlineRoll: typeof import('./src/components/InlineRoll.vue')['default']
     InputComponent: typeof import('./src/components/InputComponent.vue')['default']
     ItemListWindowBody: typeof import('./src/components/windowBodies/ItemListWindowBody.vue')['default']
+    LabeledInput: typeof import('./src/components/gameFormComponents/labeledInput.vue')['default']
     MainPage: typeof import('./src/pages/MainPage.vue')['default']
     MonsterWindowBody: typeof import('./src/components/windowBodies/MonsterWindowBody.vue')['default']
     NewCanvasBody: typeof import('./src/components/windowBodies/NewCanvasBody.vue')['default']

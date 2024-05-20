@@ -11,31 +11,30 @@ const submitCanvas = async () => {
   canvasCollectionStore.createNewCanvas(canvasName.value, groundDimension.value, gridSize.value)
 }
 
-
 </script>
 <template>
   <div>
-    <div class="element">
-      <span>
-        Canvas Name
-      </span>
-      <input v-model="canvasName" type="text">
-    </div>
-
-    <div class="element">
-      <span>
-        Ground Dimension
-      </span>
-      <input v-model="groundDimension" type="number">
-    </div>
-
-    <div class="element">
-      <span>
-        Grid Size
-      </span>
-      <input v-model="gridSize" type="number">
-    </div>
-    <button type="button" @click="() => submitCanvas()">Add Canvas</button>
+    <labeledInput inputType="string" labelText="Canvas Name" v-model="canvasName" />
+    <labeledInput inputType="number" labelText="Ground Dimension" v-model="groundDimension" />
+    <labeledInput inputType="number" labelText="Grid Size" v-model="gridSize" />
+    <button class="submit-button" type="button" @click="() => submitCanvas()">Add Canvas</button>
   </div>
 </template>
-<style></style>
+
+<style lang="scss">
+.submit-button {
+  padding: 10px;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  border: none;
+  background: $tertiary;
+  color: $text;
+  font: bold;
+  cursor: pointer;
+
+  &:hover {
+    background: $lighter-tertiary;
+    transition: background 0.2s ease-in-out;
+  }
+}
+</style>
