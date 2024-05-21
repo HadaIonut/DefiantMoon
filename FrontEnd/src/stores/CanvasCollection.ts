@@ -58,7 +58,7 @@ export const useCanvasCollectionStore = defineStore('canvasCollection', {
           groundDimension,
           gridSize,
         },
-      })
+      }).catch((e) => console.error(e))
     },
   },
 })

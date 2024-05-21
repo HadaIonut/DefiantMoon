@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { useCanvasCollectionStore } from 'src/stores/CanvasCollection'
-import { computed, ref } from 'vue'
-import { usePlayAreaStore } from 'src/stores/PlayArea'
-import { useWindowsStore } from 'src/stores/windows'
-import { getCenteredWindow } from 'src/utils/utils'
-import { onClickOutside } from '@vueuse/core'
-import { rtFetch } from 'src/utils/fetchOverRTC'
-import { websocket } from 'src/websocket/websocket'
-import { WEBSOCKET_RECEIVABLE_EVENTS } from 'src/websocket/events'
-import { useUsersStore } from 'src/stores/users'
+import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
+import {computed, ref} from 'vue'
+import {usePlayAreaStore} from 'src/stores/PlayArea'
+import {useWindowsStore} from 'src/stores/windows'
+import {getCenteredWindow} from 'src/utils/utils'
+import {onClickOutside} from '@vueuse/core'
+import {rtFetch} from 'src/utils/fetchOverRTC'
+import {websocket} from 'src/websocket/websocket'
+import {WEBSOCKET_RECEIVABLE_EVENTS} from 'src/websocket/events'
+import {useUsersStore} from 'src/stores/users'
+import {generateUUID} from 'three/src/math/MathUtils'
 
 const canvasCollectionStore = useCanvasCollectionStore()
 const playerAreaStore = usePlayAreaStore()
@@ -32,12 +33,12 @@ const handleCanvasUpdate = (index: number) => {
   rtFetch({
     route: `/api/canvas/${canvasId}`,
     method: 'GET',
-  }).then(({ data }) => {
+  }).then(({data}) => {
     console.log(data)
-    windowStore.addNewWindow('newCanvasConfig',
+    windowStore.addNewWindow(`configCanvas-${generateUUID()}`,
       {
         componentType: 'SimpleHeader',
-        componentData: 'New Canvas Window',
+        componentData: 'Configure Canvas',
       },
       {
         componentType: 'NewCanvasConfig',
@@ -69,7 +70,7 @@ const handleCanvasChange = async (newId: string) => {
 }
 
 const handleCanvasCreation = () => {
-  windowStore.addNewWindow('newCanvasConfig',
+  windowStore.addNewWindow(`newCanvasConfig`,
     {
       componentType: 'SimpleHeader',
       componentData: 'New Canvas Window',
