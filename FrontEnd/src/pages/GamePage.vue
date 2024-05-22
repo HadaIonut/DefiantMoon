@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import {onBeforeMount} from 'vue'
-import {useUsersStore} from 'src/stores/users'
-import {useWindowsStore} from 'src/stores/windows'
-import {WindowStore} from 'src/types/windows'
-import {initWebRTCClient, rtFetch} from 'src/utils/fetchOverRTC'
-import {useCanvasCollectionStore} from 'src/stores/CanvasCollection'
-import {usePlayAreaStore} from 'src/stores/PlayArea'
+import { onBeforeMount } from 'vue'
+import { useUsersStore } from 'src/stores/users'
+import { useWindowsStore } from 'src/stores/windows'
+import { WindowStore } from 'src/types/windows'
+import { initWebRTCClient, rtFetch } from 'src/utils/fetchOverRTC'
+import { useCanvasCollectionStore } from 'src/stores/CanvasCollection'
+import { usePlayAreaStore } from 'src/stores/PlayArea'
 
 const usersStore = useUsersStore()
 const playAreaStore = usePlayAreaStore()
@@ -14,6 +14,7 @@ const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state
 
 onBeforeMount(async () => {
+  debugger
   await initWebRTCClient('server')
 
   await usersStore.getWorldUsers()
@@ -24,27 +25,26 @@ onBeforeMount(async () => {
 
 <template>
   <div class="page-container">
-    <PlayArea/>
-    <ActionsSidebar/>
-    <CanvasSidebar/>
-    <CanvasSelection/>
+    <PlayArea />
+    <ActionsSidebar />
+    <CanvasSidebar />
+    <CanvasSelection />
 
     <div class="windows-container">
       <div v-auto-animate>
         <WindowComponent v-for="(window, key) in windowObject" :key="key" :windowData="window as unknown as Window"
-                         :windowKey="key as unknown as string">
+          :windowKey="key as unknown as string">
           <template #header>
             <WindowHeaderRenderer :componentToRender="window.header.componentType"
-                                  :headerData="window.header.componentData"/>
+              :headerData="window.header.componentData" />
           </template>
           <template #header-actions>
             <WindowActionsRender :componentToRender="window.headerActions.componentType"
-                                 :headerData="window.headerActions.componentData"
-                                 :windowKey="key as unknown as string"/>
+              :headerData="window.headerActions.componentData" :windowKey="key as unknown as string" />
           </template>
           <template #body>
             <WindowBodyRenderer :componentToRender="window.body.componentType" :windowData="window"
-                                :bodyData="window.body.componentData"/>
+              :bodyData="window.body.componentData" />
           </template>
         </WindowComponent>
       </div>
@@ -72,7 +72,7 @@ onBeforeMount(async () => {
   height: 100%;
   pointer-events: none;
 
-  & > * {
+  &>* {
     pointer-events: all;
   }
 }
