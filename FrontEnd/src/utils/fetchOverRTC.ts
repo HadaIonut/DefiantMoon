@@ -8,8 +8,7 @@ import type {
 	SocketMessage,
 	WebRTCRequest,
 	WebRTCResponse,
-	// @ts-ignore
-} from "src/utils/FetchOverRTC.d.ts";
+} from "src/utils/FetchOverRTCTypes";
 import {
 	getCookie,
 	getRandomString,
@@ -18,28 +17,74 @@ import {
 	jsonToFormData,
 	toBase64,
 } from "src/utils/utils";
+import { spawnPromise } from "src/utils/promiseUtils";
 
-let clientConnectionResolve: (
-	value: DataConnection | PromiseLike<DataConnection>,
-) => void;
-let clientConnectionReject: (value: unknown) => void;
-export const clientConnection = new Promise<DataConnection>(
-	(resolve, reject) => {
-		clientConnectionReject = reject;
-		clientConnectionResolve = resolve;
-	},
-);
-export let clientPeer: Peer | null = null;
+let [clientConnectionResolve, clientConnectionReject, clientConnection] =
+	spawnPromise<DataConnection>();
+let [usesWebRTCResolve, usesWebRTCReject, usesWebRTC] = spawnPromise<unknown>();
 
-let usesWebRTCResolve: (value: unknown) => void;
-let usesWebRTCReject: (value: unknown) => void;
-export const usesWebRTC = new Promise((resolve, reject) => {
-	usesWebRTCResolve = resolve;
-	usesWebRTCReject = reject;
-});
 export let myId: string = "";
 let connectedSocket: ConnectedSocket;
 const responseWaitList: ResponseWaitList = {};
+
+export const rtFetch = async (params: WebRTCRequest) => {
+	return usesWebRTC
+		.then(() => sendMessage(params))
+		.catch((e) => {
+			console.error(e);
+			console.trace();
+			return axiosWrapper(params);
+		});
+};
+
+export const initWebRTCClient = (serverId: string) => {
+	const clientPeer = new Peer({
+		host: "localhost",
+		port: 9000,
+		path: "/",
+		secure: false,
+		config: {
+			iceServers: [
+				{
+					urls: "stun:stun.l.google.com:19302",
+				},
+			],
+		},
+	});
+
+	clientPeer.on("open", (peerId: string) =>
+		handlePeerOpen(peerId, serverId, clientPeer),
+	);
+	clientPeer.on("error", (err) => {
+		usesWebRTCReject(err);
+	});
+
+	return usesWebRTC;
+};
+
+const handlePeerOpen = (peerId: string, serverId: string, clientPeer: Peer) => {
+	console.log("Client: peer id ", peerId);
+
+	const connect = clientPeer.connect(serverId, {
+		serialization: "none",
+		reliable: true,
+	});
+
+	connect.on("open", async () => {
+		const reader = chunkReader();
+		connect.on("data", reader);
+		connect.on("error", console.error);
+		clientConnectionResolve(connect);
+
+		usesWebRTCResolve(true);
+	});
+
+	connect.on("error", (err) => {
+		clientConnectionReject(err);
+		usesWebRTCReject(err);
+	});
+};
+
 const fileChunks: Record<string, string[]> = {};
 const chunkCounter: Record<string, number> = {};
 
@@ -66,6 +111,42 @@ const receiveChunks = async (data: string) => {
 			chunkCounter[message.transferId] = 1;
 		else chunkCounter[message.transferId]++;
 	}
+};
+
+const chunkReader = () => {
+	const fileChunks: Record<string, string[]> = {};
+	const chunkCounter: Record<string, number> = {};
+
+	return async (receivedChunk: string) => {
+		const { transferId, index, total, data }: ChunkedData =
+			JSON.parse(receivedChunk);
+
+		if (!fileChunks[transferId]) fileChunks[transferId] = [];
+		let currentFile = fileChunks[transferId];
+
+		currentFile[index] = data;
+
+		if (total === chunkCounter[transferId] || total === 0) {
+			const biteChunks: ArrayBuffer[] = [];
+			currentFile.forEach((fileChunk) => {
+				const binaryChunk = atob(fileChunk);
+				const chunkUint8 = Uint8Array.from(binaryChunk, (char) =>
+					char.charCodeAt(0),
+				);
+				biteChunks.push(chunkUint8);
+			});
+
+			const file = new Blob(biteChunks);
+			handleDataChannel(await file.text());
+
+			delete fileChunks[transferId];
+			delete chunkCounter[transferId];
+		} else if (chunkCounter[transferId] === undefined) {
+			chunkCounter[transferId] = 1;
+		} else {
+			chunkCounter[transferId]++;
+		}
+	};
 };
 
 const formatBodyRTC = async (body: any, bodyType: string) => {
@@ -143,16 +224,6 @@ const axiosWrapper = (params: WebRTCRequest) => {
 	});
 };
 
-export const rtFetch = async (params: WebRTCRequest) => {
-	return usesWebRTC
-		.then(() => sendMessage(params))
-		.catch((e) => {
-			console.error(e);
-			console.trace();
-			return axiosWrapper(params);
-		});
-};
-
 const handleSocketCommunications = (data: SocketMessage) => {
 	if (data.event === "sys") {
 		switch (data.payload.status) {
@@ -213,47 +284,4 @@ export const initWebSocket = (socketRoute: string) => {
 	} else {
 		return new WebSocket(`ws://localhost:5173${socketRoute}`);
 	}
-};
-
-export const initWebRTCClient = (serverId: string) => {
-	clientPeer = new Peer({
-		host: "localhost",
-		port: 9000,
-		path: "/",
-		secure: false,
-		config: {
-			iceServers: [
-				{
-					urls: "stun:stun.l.google.com:19302",
-				},
-			],
-		},
-	});
-
-	clientPeer.on("open", (id2) => {
-		if (!clientPeer) return;
-
-		console.log("Client: peer id ", id2);
-		myId = id2;
-		const connect = clientPeer.connect(serverId, {
-			serialization: "none",
-			reliable: true,
-		});
-
-		connect.on("open", async () => {
-			connect.on("data", receiveChunks);
-			connect.on("error", console.error);
-			clientConnectionResolve(connect);
-
-			usesWebRTCResolve(true);
-		});
-		connect.on("error", (err) => {
-			clientConnectionReject(err);
-			usesWebRTCReject(err);
-		});
-	});
-	clientPeer.on("error", (err) => {
-		usesWebRTCReject(err);
-	});
-	return usesWebRTC;
 };
