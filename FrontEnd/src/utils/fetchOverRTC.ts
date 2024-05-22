@@ -23,7 +23,6 @@ let [clientConnectionResolve, clientConnectionReject, clientConnection] =
 	spawnPromise<DataConnection>();
 let [usesWebRTCResolve, usesWebRTCReject, usesWebRTC] = spawnPromise<unknown>();
 
-export let myId: string = "";
 let connectedSocket: ConnectedSocket;
 const responseWaitList: ResponseWaitList = {};
 
@@ -83,34 +82,6 @@ const handlePeerOpen = (peerId: string, serverId: string, clientPeer: Peer) => {
 		clientConnectionReject(err);
 		usesWebRTCReject(err);
 	});
-};
-
-const fileChunks: Record<string, string[]> = {};
-const chunkCounter: Record<string, number> = {};
-
-const receiveChunks = async (data: string) => {
-	const message: ChunkedData = JSON.parse(data);
-	if (!fileChunks[message.transferId]) fileChunks[message.transferId] = [];
-	fileChunks[message.transferId][message.index] = message.data;
-
-	if (
-		message.total === chunkCounter[message.transferId] ||
-		message.total === 0
-	) {
-		const biteChunks: ArrayBuffer[] = [];
-		fileChunks[message.transferId].forEach((chunk) =>
-			biteChunks.push(Uint8Array.from(atob(chunk), (c) => c.charCodeAt(0))),
-		);
-		const file = new Blob(biteChunks);
-		handleDataChannel(await file.text());
-
-		delete fileChunks[message.transferId];
-		delete chunkCounter[message.transferId];
-	} else {
-		if (chunkCounter[message.transferId] === undefined)
-			chunkCounter[message.transferId] = 1;
-		else chunkCounter[message.transferId]++;
-	}
 };
 
 const chunkReader = () => {
