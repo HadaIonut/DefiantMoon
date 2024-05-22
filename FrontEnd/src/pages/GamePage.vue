@@ -14,7 +14,6 @@ const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state
 
 onBeforeMount(async () => {
-  debugger
   await initWebRTCClient('server')
 
   await usersStore.getWorldUsers()

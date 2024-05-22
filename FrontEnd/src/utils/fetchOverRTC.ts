@@ -61,6 +61,24 @@ export const initWebRTCClient = (serverId: string) => {
 	return usesWebRTC;
 };
 
+export const initWebSocket = (socketRoute: string) => {
+	if (usesWebRTC) {
+		const sockResponse = sendMessage({
+			method: "GET",
+			route: socketRoute,
+			contentType: "socket-init",
+		});
+
+		connectedSocket = {
+			socketId: getRandomString(),
+		};
+
+		return connectedSocket;
+	} else {
+		return new WebSocket(`ws://localhost:5173${socketRoute}`);
+	}
+};
+
 const handlePeerOpen = (peerId: string, serverId: string, clientPeer: Peer) => {
 	console.log("Client: peer id ", peerId);
 
@@ -235,20 +253,3 @@ const axiosWrapper = (params: WebRTCRequest) => {
 		data: formattedBody,
 	});
 };
-
-export const initWebSocket = (socketRoute: string) =>
-	usesWebRTC
-		.then(() => {
-			sendMessage({
-				method: "GET",
-				route: socketRoute,
-				contentType: "socket-init",
-			});
-
-			connectedSocket = {
-				socketId: getRandomString(),
-			};
-
-			return connectedSocket;
-		})
-		.catch(() => new WebSocket(`ws://localhost:5173${socketRoute}`));
