@@ -120,79 +120,11 @@ const chunkReader = () => {
 	};
 };
 
-const formatBodyRTC = async (body: any, bodyType: string) => {
-	switch (bodyType) {
-		case "application/json":
-			return body;
-		case "multipart/form-data":
-			const formatted: any = {};
+const handleDataChannel = (message: string) => {
+	const { protocol, data } = JSON.parse(message);
 
-			for (const [key, value] of Object.entries(body)) {
-				if (isArray(value) && isFile((value as File[])[0])) {
-					formatted[key] = [] as string[];
-					for (const image of value as File[]) {
-						formatted[key].push(await toBase64(image));
-					}
-				} else {
-					formatted[key] = value;
-				}
-			}
-
-			return formatted;
-	}
-};
-
-const sendMessage = ({
-	method,
-	route,
-	body,
-	contentType,
-}: WebRTCRequest): Promise<WebRTCResponse> => {
-	return new Promise(async (resolve, reject) => {
-		const message = {
-			method,
-			route,
-			body,
-			contentType: contentType ?? "application/json",
-			authToken: getCookie("accessToken"),
-		};
-		const formattedBody = await formatBodyRTC(
-			message.body,
-			message.contentType,
-		);
-		const data = {
-			...message,
-			body: formattedBody,
-			requestId: getRandomString(),
-		};
-
-		responseWaitList[data.requestId] = [resolve, reject];
-
-		clientConnection.then((connection) =>
-			connection.send(
-				JSON.stringify({
-					protocol: "http",
-					data,
-				}),
-			),
-		);
-	});
-};
-
-const axiosWrapper = (params: WebRTCRequest) => {
-	const formattedBody =
-		params.contentType === "multipart/form-data"
-			? jsonToFormData(params.body)
-			: params.body;
-
-	return axios({
-		method: params.method,
-		headers: {
-			"Content-Type": params.contentType,
-		},
-		url: params.route,
-		data: formattedBody,
-	});
+	if (protocol === "websocket") handleSocketCommunications(data);
+	if (protocol === "http") handleHTTPCommunications(data);
 };
 
 const handleSocketCommunications = (data: SocketMessage) => {
@@ -216,10 +148,8 @@ const handleHTTPCommunications = (data: WebRTCResponse) => {
 	const [resolve, reject] = responseWaitList[data.requestId];
 
 	if (data.isOk) {
-		if (data.setCookie) {
-			document.cookie = `accessToken=${data.setCookie}`;
-		}
-		// @ts-ignore
+		if (data.setCookie) document.cookie = `accessToken=${data.setCookie}`;
+		//@ts-ignore
 		delete data.setCookie;
 
 		resolve(data);
@@ -230,29 +160,95 @@ const handleHTTPCommunications = (data: WebRTCResponse) => {
 	delete responseWaitList[data.requestId];
 };
 
-const handleDataChannel = (message: string) => {
-	const parsedMessage = JSON.parse(message);
+const sendMessage = ({
+	method,
+	route,
+	body,
+	contentType,
+}: WebRTCRequest): Promise<WebRTCResponse> => {
+	return new Promise(async (resolve, reject) => {
+		const formattedBody = await formatBodyRTC(
+			body,
+			contentType ?? "application/json",
+		);
 
-	if (parsedMessage.protocol === "websocket")
-		handleSocketCommunications(parsedMessage.data);
-	if (parsedMessage.protocol === "http")
-		handleHTTPCommunications(parsedMessage.data);
-};
-
-export const initWebSocket = (socketRoute: string) => {
-	if (usesWebRTC) {
-		const sockResponse = sendMessage({
-			method: "GET",
-			route: socketRoute,
-			contentType: "socket-init",
-		});
-
-		connectedSocket = {
-			socketId: getRandomString(),
+		const data = {
+			method,
+			route,
+			body: formattedBody,
+			contentType: contentType ?? "application/json",
+			authToken: getCookie("accessToken"),
+			requestId: getRandomString(),
 		};
 
-		return connectedSocket;
-	} else {
-		return new WebSocket(`ws://localhost:5173${socketRoute}`);
+		responseWaitList[data.requestId] = [resolve, reject];
+
+		clientConnection.then((connection) =>
+			connection.send(
+				JSON.stringify({
+					protocol: "http",
+					data,
+				}),
+			),
+		);
+	});
+};
+
+const formatBodyRTC = async (body: any, bodyType: string) => {
+	switch (bodyType) {
+		case "application/json":
+			return body;
+		case "multipart/form-data":
+			return formatFormData(body);
 	}
 };
+
+const formatFormData = async (body: any) => {
+	const formatted: any = {};
+
+	for (const [key, value] of Object.entries(body)) {
+		if (isArray(value) && isFile((value as File[])[0])) {
+			formatted[key] = [] as string[];
+			for (const image of value as File[]) {
+				formatted[key].push(await toBase64(image));
+			}
+		} else {
+			formatted[key] = value;
+		}
+	}
+
+	return formatted;
+};
+
+const axiosWrapper = (params: WebRTCRequest) => {
+	const formattedBody =
+		params.contentType === "multipart/form-data"
+			? jsonToFormData(params.body)
+			: params.body;
+
+	return axios({
+		method: params.method,
+		headers: {
+			"Content-Type": params.contentType,
+		},
+		url: params.route,
+		data: formattedBody,
+	});
+};
+
+export const initWebSocket = (socketRoute: string) =>
+	usesWebRTC
+		.then(() => {
+			sendMessage({
+				method: "GET",
+				route: socketRoute,
+				contentType: "socket-init",
+			});
+
+			connectedSocket = {
+				socketId: getRandomString(),
+			};
+
+			return connectedSocket;
+		})
+		.catch(() => new WebSocket(`ws://localhost:5173${socketRoute}`));
