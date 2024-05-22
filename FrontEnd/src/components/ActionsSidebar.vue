@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {useWindowsStore} from 'src/stores/windows'
-import {WindowStore} from 'src/types/windows'
+import { useWindowsStore } from 'src/stores/windows';
+import { WindowStore } from 'src/types/windows'
 
 const windowStore = useWindowsStore()
 const windowObject: WindowStore = windowStore.$state

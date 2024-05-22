@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import {computed, onMounted, ref} from 'vue'
-import {useRouter} from 'vue-router'
-import {useToast} from 'vue-toastification'
-import {useI18n} from 'vue-i18n'
-import {DropdownOption} from 'src/types/Dropdown'
-import {UserRequest} from 'src/types/users'
-import {useUsersStore} from 'src/stores/users'
-import {initWebRTCClient, rtFetch} from 'src/utils/fetchOverRTC'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+import { useI18n } from 'vue-i18n'
+import { DropdownOption } from 'src/types/Dropdown'
+import { UserRequest } from 'src/types/users'
+import { useUsersStore } from 'src/stores/users'
+import { initWebRTCClient, rtFetch } from 'src/utils/fetchOverRTC'
 
 const players = ref<DropdownOption[]>([])
-const loginData = ref<LoginRequest>({username: '', password: ''})
+const loginData = ref({ username: '', password: '' })
 const usersStore = useUsersStore()
 const router = useRouter()
 const toast = useToast()
-const {t} = useI18n()
+const { t } = useI18n()
 
 onMounted(async () => {
   await initWebRTCClient('server')
@@ -27,7 +27,7 @@ onMounted(async () => {
 
   const users = (usersRes.data?.users as UserRequest[])
 
-  players.value = users?.map?.((user) => ({optionName: user.username, id: user.id})) ?? []
+  players.value = users?.map?.((user) => ({ optionName: user.username, id: user.id })) ?? []
 })
 
 const onDropdownChange = (newValue: DropdownOption) => loginData.value.username = newValue.optionName
@@ -64,15 +64,15 @@ const dropdownInitialValue = computed(() => {
   }">
     <div class="login-form-container">
       <FormOptionComponent :label="$t('login.userDropdown.label')">
-        <DropdownComponent :options="players" :initial="dropdownInitialValue" @change="onDropdownChange"/>
+        <DropdownComponent :options="players" :initial="dropdownInitialValue" @change="onDropdownChange" />
       </FormOptionComponent>
 
       <FormOptionComponent :label="$t('login.userPassword.label')">
-        <InputComponent type="password" :placeholder="$t('login.userPassword.placeholder')" @change="onInputChange"/>
+        <InputComponent type="password" :placeholder="$t('login.userPassword.placeholder')" @change="onInputChange" />
       </FormOptionComponent>
 
       <div class="join-container">
-        <ButtonComponent :content="$t('login.enterButton.label')" @click="login"/>
+        <ButtonComponent :content="$t('login.enterButton.label')" @click="login" />
       </div>
     </div>
   </div>
