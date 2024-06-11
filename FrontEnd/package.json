@@ -16,7 +16,7 @@
     "@fortawesome/vue-fontawesome": "^3.0.1",
     "@lmiller1990/v-switch": "^1.1.0",
     "@vueup/vue-quill": "^1.2.0",
-    "@vueuse/core": "^9.3.0",
+    "@vueuse/core": "^9.13.0",
     "axios": "^1.6.7",
     "concaveman": "^1.2.1",
     "dice-parsering-library": "^1.0.7",
