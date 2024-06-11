@@ -25,7 +25,7 @@
     "peerjs": "^2.0.0-beta.3",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
-    "sass": "^1.54.9",
+    "sass": "^1.77.2",
     "swiper": "^8.4.3",
     "three": "^0.163.0",
     "three-mesh-bvh": "^0.7.3",
