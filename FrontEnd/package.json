@@ -21,7 +21,7 @@
     "concaveman": "^1.2.1",
     "dice-parsering-library": "^1.0.7",
     "floating-vue": "^5.2.2",
-    "motion": "^10.14.2",
+    "motion": "^10.17.0",
     "peerjs": "^2.0.0-beta.3",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
